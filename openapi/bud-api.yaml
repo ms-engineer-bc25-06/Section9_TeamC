@@ -1,0 +1,94 @@
+openapi: 3.0.3
+info:
+  title: BUD API
+  version: 1.0.0
+  description: |
+    子どもチャレンジ応援アプリ『BUD』のAPI仕様書
+
+    ## 概要
+    BUDは、小学生が外国人との対面交流にチャレンジすることを支援するアプリです。
+    親子で成功体験を記録し、振り返ることができます。
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: ローカル開発環境
+  - url: https://api.bud-app.com/v1
+    description: 本番環境（予定）
+
+tags:
+  - name: auth
+    description: 認証関連のエンドポイント
+  - name: children
+    description: 子ども管理関連のエンドポイント
+  - name: challenges
+    description: チャレンジ記録関連のエンドポイント
+  - name: transcription
+    description: 音声文字起こし関連のエンドポイント
+
+paths:
+  /health:
+    get:
+      summary: APIの稼働状態を確認
+      description: APIサーバーが正常に動作しているかを確認するエンドポイント
+      tags:
+        - health
+      responses:
+        "200":
+          description: APIは正常に稼働中
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2024-08-01T12:00:00Z"
+
+ /auth/google:
+    post:
+      summary: Googleアカウントでログイン
+      description: Googleの認証トークンを使用してログインし、アプリ用のアクセストークンを取得
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - idToken
+              properties:
+                idToken:
+                  type: string
+                  description: GoogleのIDトークン
+                  example: "eyJhbGciOiJSUzI1NiIsImtpZCI..."
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: BUDアプリ用のアクセストークン
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "user123"
+                      email:
+                        type: string
+                        example: "parent@example.com"
+                      name:
+                        type: string
+                        example: "テスト太郎"
+        '401':
+          description: 認証失敗
