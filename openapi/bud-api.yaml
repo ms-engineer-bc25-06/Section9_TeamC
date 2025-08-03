@@ -99,7 +99,7 @@ paths:
                         example: "parent@example.com"
                       name:
                         type: string
-                        example: "山田太郎"
+                        example: "テスト太郎"
         "401":
           description: 認証失敗
           content:
@@ -251,7 +251,11 @@ paths:
   /challenges:
     post:
       summary: チャレンジ記録を作成
-      description: 子どもが外国人と話した記録を保存します
+      description: |
+        子どもが外国人と話した記録を保存します。
+
+        - Phase 1: Web Speech APIで取得済みの文字起こしテキストを送信
+        - Phase 2: 音声ファイルIDと文字起こしテキストの両方を送信可能
       tags:
         - challenges
       security:
@@ -488,3 +492,98 @@ paths:
                     format: date-time
         "404":
           description: チャレンジ記録が見つからない
+
+  /transcription:
+    post:
+      summary: 音声データを文字起こし（Phase 2で実装予定）
+      description: |
+        録音した音声データをテキストに変換します。
+
+        ## 実装フェーズ
+        - **Phase 1 (MVP)**: Web Speech APIを使用したリアルタイム文字起こし
+          - フロントエンドで完結するため、このAPIは使用しない
+          - 録音と同時に文字起こしを実行
+          
+        - **Phase 2 (将来)**: MediaRecorder + Whisper API
+          - MediaRecorder APIで録音した音声ファイルを送信
+          - サーバー側でOpenAI Whisper APIを使用して高精度な文字起こし
+          - このAPIを使用
+      tags:
+        - transcription
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - audio
+              properties:
+                audio:
+                  type: string
+                  format: binary
+                  description: |
+                    音声ファイル（wav, mp3, m4a, webm等）
+                    MediaRecorder APIで録音したファイル
+                language:
+                  type: string
+                  default: "en"
+                  example: "en"
+                  description: |
+                    音声の言語コード
+                    - en: 英語
+                    - ja: 日本語
+      responses:
+        "200":
+          description: 文字起こし成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transcription:
+                    type: string
+                    example: "Hello! Where are you from?"
+                    description: Whisper APIで文字起こしされたテキスト
+                  confidence:
+                    type: number
+                    format: float
+                    minimum: 0
+                    maximum: 1
+                    example: 0.95
+                    description: 文字起こしの信頼度（0-1）
+                  duration:
+                    type: integer
+                    example: 5
+                    description: 音声の長さ（秒）
+                  detectedLanguage:
+                    type: string
+                    example: "en"
+                    description: Whisperが検出した言語
+                  segments:
+                    type: array
+                    description: タイムスタンプ付きのセグメント情報
+                    items:
+                      type: object
+                      properties:
+                        start:
+                          type: number
+                          example: 0.0
+                        end:
+                          type: number
+                          example: 2.5
+                        text:
+                          type: string
+                          example: "Hello!"
+        "400":
+          description: |
+            リクエストエラー
+            - 音声ファイルが不正
+            - サポートされていない形式
+            - ファイルサイズが大きすぎる（25MB以上）
+        "413":
+          description: ファイルサイズが大きすぎる
+        "500":
+          description: Whisper API処理エラー
