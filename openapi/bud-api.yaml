@@ -16,6 +16,8 @@ servers:
     description: 本番環境（予定）
 
 tags:
+  - name: health
+    description: ヘルスチェック
   - name: auth
     description: 認証関連のエンドポイント
   - name: children
@@ -48,7 +50,7 @@ paths:
                     format: date-time
                     example: "2024-08-01T12:00:00Z"
 
- /auth/google:
+  /auth/google:
     post:
       summary: Googleアカウントでログイン
       description: Googleの認証トークンを使用してログインし、アプリ用のアクセストークンを取得
@@ -68,7 +70,7 @@ paths:
                   description: GoogleのIDトークン
                   example: "eyJhbGciOiJSUzI1NiIsImtpZCI..."
       responses:
-        '200':
+        "200":
           description: ログイン成功
           content:
             application/json:
@@ -90,5 +92,158 @@ paths:
                       name:
                         type: string
                         example: "テスト太郎"
-        '401':
+        "401":
           description: 認証失敗
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid token"
+
+  /children:
+    get:
+      summary: 子ども一覧を取得
+      description: ログインしている親に紐づく子どもの一覧を取得します
+      tags:
+        - children
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: 子ども一覧の取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  children:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "child_001"
+                        name:
+                          type: string
+                          example: "たろう"
+                        grade:
+                          type: integer
+                          example: 2
+                          description: 学年（1-6）
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: "2024-08-01T10:00:00Z"
+
+    post:
+      summary: 新しい子どもを登録
+      description: 新しい子どもの情報を登録します
+      tags:
+        - children
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - grade
+              properties:
+                name:
+                  type: string
+                  example: "はなこ"
+                  description: 子どもの名前
+                grade:
+                  type: integer
+                  example: 1
+                  minimum: 1
+                  maximum: 6
+                  description: 学年（1-6）
+      responses:
+        "201":
+          description: 子どもの登録成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "child_002"
+                  name:
+                    type: string
+                    example: "はなこ"
+                  grade:
+                    type: integer
+                    example: 1
+                  createdAt:
+                    type: string
+                    format: date-time
+        "400":
+          description: 入力データが不正
+
+  /children/{childId}:
+    put:
+      summary: 子ども情報を更新
+      description: 指定した子どもの情報を更新します
+      tags:
+        - children
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: childId
+          in: path
+          required: true
+          description: 子どものID
+          schema:
+            type: string
+            example: "child_001"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "たろう"
+                grade:
+                  type: integer
+                  example: 3
+                  minimum: 1
+                  maximum: 6
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  grade:
+                    type: integer
+                  updatedAt:
+                    type: string
+                    format: date-time
+        "404":
+          description: 子どもが見つからない
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Googleログイン後に取得したアクセストークンを使用
