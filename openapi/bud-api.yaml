@@ -27,6 +27,14 @@ tags:
   - name: transcription
     description: 音声文字起こし関連のエンドポイント
 
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Googleログイン後に取得したアクセストークンを使用
+
 paths:
   /health:
     get:
@@ -91,7 +99,7 @@ paths:
                         example: "parent@example.com"
                       name:
                         type: string
-                        example: "テスト太郎"
+                        example: "山田太郎"
         "401":
           description: 認証失敗
           content:
@@ -240,10 +248,243 @@ paths:
         "404":
           description: 子どもが見つからない
 
-components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: Googleログイン後に取得したアクセストークンを使用
+  /challenges:
+    post:
+      summary: チャレンジ記録を作成
+      description: 子どもが外国人と話した記録を保存します
+      tags:
+        - challenges
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - childId
+                - transcription
+              properties:
+                childId:
+                  type: string
+                  example: "child_001"
+                  description: チャレンジした子どものID
+                transcription:
+                  type: string
+                  example: "Hello! Where are you from?"
+                  description: 話した内容の文字起こし
+                country:
+                  type: string
+                  example: "USA"
+                  description: 相手の出身国（任意）
+                comment:
+                  type: string
+                  example: "初めて自分から話しかけられた！"
+                  description: 親や子どものコメント（任意）
+                challengeType:
+                  type: string
+                  enum: ["wave", "greeting", "question", "conversation"]
+                  example: "greeting"
+                  description: |
+                    チャレンジのレベル
+                    - wave: 手を振る
+                    - greeting: 挨拶する（Hello等）
+                    - question: 質問する（Where are you from?等）
+                    - conversation: 会話する
+      responses:
+        "201":
+          description: チャレンジ記録の作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "challenge_001"
+                  childId:
+                    type: string
+                    example: "child_001"
+                  transcription:
+                    type: string
+                  country:
+                    type: string
+                  comment:
+                    type: string
+                  challengeType:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+        "400":
+          description: 入力データが不正
+
+    get:
+      summary: チャレンジ一覧を取得
+      description: 条件に応じてチャレンジ記録の一覧を取得します
+      tags:
+        - challenges
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: childId
+          in: query
+          required: false
+          description: 特定の子どもの記録のみ取得
+          schema:
+            type: string
+            example: "child_001"
+        - name: limit
+          in: query
+          required: false
+          description: 取得件数の上限
+          schema:
+            type: integer
+            default: 20
+            example: 10
+        - name: offset
+          in: query
+          required: false
+          description: 取得開始位置
+          schema:
+            type: integer
+            default: 0
+            example: 0
+      responses:
+        "200":
+          description: チャレンジ一覧の取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  challenges:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "challenge_001"
+                        childId:
+                          type: string
+                          example: "child_001"
+                        childName:
+                          type: string
+                          example: "たろう"
+                          description: 子どもの名前（表示用）
+                        transcription:
+                          type: string
+                          example: "Hello! Nice to meet you!"
+                        country:
+                          type: string
+                          example: "Canada"
+                        challengeType:
+                          type: string
+                          example: "greeting"
+                        createdAt:
+                          type: string
+                          format: date-time
+                  total:
+                    type: integer
+                    example: 25
+                    description: 全体の記録数
+                  hasMore:
+                    type: boolean
+                    example: true
+                    description: さらに記録があるかどうか
+
+  /challenges/{challengeId}:
+    get:
+      summary: チャレンジ詳細を取得
+      description: 指定したチャレンジ記録の詳細情報を取得します
+      tags:
+        - challenges
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: challengeId
+          in: path
+          required: true
+          description: チャレンジ記録のID
+          schema:
+            type: string
+            example: "challenge_001"
+      responses:
+        "200":
+          description: チャレンジ詳細の取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "challenge_001"
+                  childId:
+                    type: string
+                    example: "child_001"
+                  childName:
+                    type: string
+                    example: "たろう"
+                  transcription:
+                    type: string
+                    example: "Hello! Where are you from? I'm from Japan!"
+                  country:
+                    type: string
+                    example: "France"
+                  comment:
+                    type: string
+                    example: "フランスの人と話せた！最初は緊張したけど、優しく答えてくれて嬉しかった。"
+                  challengeType:
+                    type: string
+                    example: "question"
+                  duration:
+                    type: integer
+                    example: 45
+                    description: 録音時間（秒）
+                  aiReview:
+                    type: object
+                    description: AIによるレビュー（MVP段階では固定、将来OpenAI連携予定）
+                    properties:
+                      content:
+                        type: string
+                        example: |
+                          素晴らしいチャレンジでした！🎉
+
+                          【良かった点】
+                          - 「Hello」の挨拶がはっきりと言えていました
+                          - 「Where are you from?」という質問もできました
+                          - 相手の目を見て話せていたようですね
+
+                          【次のステップ】
+                          - 相手の答えに「That's nice!」と反応してみましょう
+                          - 自分の好きなものも英語で伝えてみましょう
+                      positivePoints:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                          - "はっきりとした声で話せた"
+                          - "質問ができた"
+                          - "笑顔で接することができた"
+                      nextChallenges:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                          - "相手の答えに反応してみよう"
+                          - "自己紹介をしてみよう"
+                          - "好きな食べ物を聞いてみよう"
+                      encouragement:
+                        type: string
+                        example: "この調子で頑張りましょう！英語で話すことがどんどん楽しくなってきますよ！"
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+        "404":
+          description: チャレンジ記録が見つからない
