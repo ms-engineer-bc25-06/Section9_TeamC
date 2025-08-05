@@ -12,12 +12,17 @@ class Settings(BaseSettings):
     
     DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/dbname")
     
-    ALLOWED_HOSTS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    ALLOWED_HOSTS: str = os.getenv("ALLOWED_HOSTS", "http://localhost:3000,http://127.0.0.1:3000")
     
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379")
     
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     DEBUG: bool = os.getenv("DEBUG", "true").lower() == "true"
+    
+    @property
+    def allowed_hosts_list(self) -> List[str]:
+        """Convert comma-separated ALLOWED_HOSTS string to list"""
+        return [host.strip() for host in self.ALLOWED_HOSTS.split(",")]
     
     class Config:
         env_file = ".env"
