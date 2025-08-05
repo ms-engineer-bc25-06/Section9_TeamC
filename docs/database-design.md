@@ -23,8 +23,6 @@ BUD アプリケーションのデータベース設計をまとめたもので�
 | ---------- | ------------ | ---------------- | ---------------------------- |
 | id         | UUID         | PRIMARY KEY      | ユーザー ID                  |
 | google_id  | VARCHAR(255) | UNIQUE, NOT NULL | Google 連携用 ID             |
-| name       | VARCHAR(50)  | NOT NULL         | ニックネーム                 |
-| email      | VARCHAR(255) | UNIQUE, NOT NULL | メールアドレス（ログイン用） |
 | created_at | TIMESTAMP    | DEFAULT now()    | 登録日時                     |
 | updated_at | TIMESTAMP    | DEFAULT now()    | 更新日時（更新時に明示更新） |
 
