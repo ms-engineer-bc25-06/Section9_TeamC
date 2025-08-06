@@ -1,0 +1,42 @@
+# コード品質チェック用ワークフロー
+# エラーが出た場合は、ログをよく読み、必要に応じて依存パッケージのインストールや設定を見直してください。
+name: Lint & Format Check
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+jobs:
+  lint-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v3
+      - name: Node.jsをセットアップ
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - name: 依存パッケージをインストール
+        run: cd frontend && npm install
+      - name: ESLintでコードチェック
+        run: cd frontend && npx eslint . --ext .ts,.tsx
+      - name: Prettierで自動整形チェック
+        run: cd frontend && npx prettier --check .
+
+  lint-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v3
+      - name: Pythonをセットアップ
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: 依存パッケージをインストール
+        run: pip install -r backend/requirements-dev.txt
+      - name: Ruffでコードチェック
+        run: ruff backend/
+      - name: autopep8で自動整形チェック
+        run: autopep8 --diff --recursive backend/
