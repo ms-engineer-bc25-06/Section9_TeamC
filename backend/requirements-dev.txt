@@ -1,0 +1,4 @@
+# 開発用パッケージ
+ruff  # Pythonコードチェック
+autopep8  # Python自動整形 
+black
