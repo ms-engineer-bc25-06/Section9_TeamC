@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../styles/globals.css";
 
+
 // Interフォントを読み込み、サブセットを指定
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,3 +23,4 @@ export default function RootLayout({
     </html>
   );
 }
+
