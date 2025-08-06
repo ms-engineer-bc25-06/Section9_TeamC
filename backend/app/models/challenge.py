@@ -1,14 +1,25 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, Boolean, Enum
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    DateTime,
+    Text,
+    Boolean,
+    Enum,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from enum import Enum as PyEnum
 from app.core.database import Base
+
 
 class ChallengeStatus(PyEnum):
     DRAFT = "draft"
     ACTIVE = "active"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
+
 
 class ChallengeCategory(PyEnum):
     STUDY = "study"
@@ -17,6 +28,7 @@ class ChallengeCategory(PyEnum):
     LIFE_SKILLS = "life_skills"
     SOCIAL = "social"
     OTHER = "other"
+
 
 class Challenge(Base):
     __tablename__ = "challenges"
@@ -36,7 +48,12 @@ class Challenge(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     creator = relationship("User", back_populates="created_challenges")
-    participations = relationship("ChallengeParticipation", back_populates="challenge", cascade="all, delete-orphan")
+    participations = relationship(
+        "ChallengeParticipation",
+        back_populates="challenge",
+        cascade="all, delete-orphan",
+    )
+
 
 class ChallengeParticipation(Base):
     __tablename__ = "challenge_participations"
@@ -44,7 +61,9 @@ class ChallengeParticipation(Base):
     id = Column(Integer, primary_key=True, index=True)
     challenge_id = Column(Integer, ForeignKey("challenges.id"), nullable=False)
     child_id = Column(Integer, ForeignKey("children.id"), nullable=False)
-    status = Column(String(50), default="not_started")  # not_started, in_progress, completed, failed
+    status = Column(
+        String(50), default="not_started"
+    )  # not_started, in_progress, completed, failed
     progress_percentage = Column(Integer, default=0)
     notes = Column(Text)
     completed_at = Column(DateTime(timezone=True))

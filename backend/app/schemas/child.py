@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, date
 
+
 class ChildBase(BaseModel):
     name: str
     birth_date: Optional[date] = None
@@ -10,8 +11,10 @@ class ChildBase(BaseModel):
     interests: Optional[str] = None
     profile_image: Optional[str] = None
 
+
 class ChildCreate(ChildBase):
     pass
+
 
 class ChildUpdate(BaseModel):
     name: Optional[str] = None
@@ -20,6 +23,7 @@ class ChildUpdate(BaseModel):
     school: Optional[str] = None
     interests: Optional[str] = None
     profile_image: Optional[str] = None
+
 
 class Child(ChildBase):
     id: int
@@ -30,11 +34,13 @@ class Child(ChildBase):
     class Config:
         from_attributes = True
 
+
 class ChildWithParent(Child):
     parent: "User"
 
     class Config:
         from_attributes = True
+
 
 class ChildWithChallenges(Child):
     challenge_participations: List["ChallengeParticipation"] = []
@@ -42,7 +48,9 @@ class ChildWithChallenges(Child):
     class Config:
         from_attributes = True
 
+
 from app.schemas.user import User
 from app.schemas.challenge import ChallengeParticipation
+
 ChildWithParent.model_rebuild()
 ChildWithChallenges.model_rebuild()

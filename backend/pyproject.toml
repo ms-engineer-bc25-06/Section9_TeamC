@@ -1,0 +1,4 @@
+# Python自動整形ツールautopep8の設定
+[tool.autopep8]
+max_line_length = 100  # 1行の最大文字数
+ignore = "E501"  # 行の長さ制限は無視 

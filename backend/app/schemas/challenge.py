@@ -3,6 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 from app.models.challenge import ChallengeStatus, ChallengeCategory
 
+
 class ChallengeBase(BaseModel):
     title: str
     description: Optional[str] = None
@@ -13,8 +14,10 @@ class ChallengeBase(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
 
+
 class ChallengeCreate(ChallengeBase):
     pass
+
 
 class ChallengeUpdate(BaseModel):
     title: Optional[str] = None
@@ -27,6 +30,7 @@ class ChallengeUpdate(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
 
+
 class Challenge(ChallengeBase):
     id: int
     status: ChallengeStatus
@@ -37,17 +41,20 @@ class Challenge(ChallengeBase):
     class Config:
         from_attributes = True
 
+
 class ChallengeWithCreator(Challenge):
     creator: "User"
 
     class Config:
         from_attributes = True
 
+
 class ChallengeWithParticipations(Challenge):
     participations: List["ChallengeParticipation"] = []
 
     class Config:
         from_attributes = True
+
 
 class ChallengeParticipationBase(BaseModel):
     challenge_id: int
@@ -56,14 +63,17 @@ class ChallengeParticipationBase(BaseModel):
     progress_percentage: int = 0
     notes: Optional[str] = None
 
+
 class ChallengeParticipationCreate(ChallengeParticipationBase):
     pass
+
 
 class ChallengeParticipationUpdate(BaseModel):
     status: Optional[str] = None
     progress_percentage: Optional[int] = None
     notes: Optional[str] = None
     points_earned: Optional[int] = None
+
 
 class ChallengeParticipation(ChallengeParticipationBase):
     id: int
@@ -75,6 +85,7 @@ class ChallengeParticipation(ChallengeParticipationBase):
     class Config:
         from_attributes = True
 
+
 class ChallengeParticipationWithDetails(ChallengeParticipation):
     challenge: Challenge
     child: "Child"
@@ -82,8 +93,10 @@ class ChallengeParticipationWithDetails(ChallengeParticipation):
     class Config:
         from_attributes = True
 
+
 from app.schemas.user import User
 from app.schemas.child import Child
+
 ChallengeWithCreator.model_rebuild()
 ChallengeWithParticipations.model_rebuild()
 ChallengeParticipationWithDetails.model_rebuild()

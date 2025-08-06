@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
 
+
 class Child(Base):
     __tablename__ = "children"
 
@@ -18,4 +19,6 @@ class Child(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     parent = relationship("User", back_populates="children")
-    challenge_participations = relationship("ChallengeParticipation", back_populates="child", cascade="all, delete-orphan")
+    challenge_participations = relationship(
+        "ChallengeParticipation", back_populates="child", cascade="all, delete-orphan"
+    )

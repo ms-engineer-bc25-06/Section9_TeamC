@@ -1,0 +1,10 @@
+{
+  "name": "section9_teamc-monorepo",
+  "private": true,
+  "scripts": {
+    "lint:front": "cd frontend && npx eslint . --ext .ts,.tsx",
+    "format:front": "cd frontend && npx prettier --write .",
+    "check:all": "npm run lint:front && npm run format:front"
+  },
+  "devDependencies": {}
+} 

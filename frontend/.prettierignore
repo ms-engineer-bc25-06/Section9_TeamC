@@ -1,0 +1,6 @@
+# Prettierで整形しないファイルやディレクトリ
+node_modules/
+.next/
+dist/
+build/
+public/ 
