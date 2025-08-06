@@ -37,14 +37,8 @@ export default function Home() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 p-4 sm:p-6 lg:p-8">
       <div className="w-full max-w-md rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm sm:p-8 md:p-10 text-center space-y-8">
         <div className="flex justify-center">
-          <Image
-            src="/images/logo.png"
-            alt="BUDアプリのロゴ：英国旗とテキストアイコンの吹き出し、芽生え"
-            width={200}
-            height={200}
-            className="object-contain"
-            priority
-          />
+          {/* TODO: 次回のPRでロゴファイルを追加予定 */}
+          <div className="text-8xl mb-4">🌱</div>
         </div>
 
         <h1 className="text-3xl font-bold text-gray-800 sm:text-4xl">
