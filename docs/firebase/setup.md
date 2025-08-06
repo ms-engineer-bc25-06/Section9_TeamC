@@ -24,4 +24,10 @@
 
 - [x] Web アプリ追加 ✅
 - [x] Authentication 有効化 ✅
-- [ ] Google プロバイダー設定
+- [x] Google プロバイダー設定 ✅
+
+## 完了事項
+
+- Google 認証機能実装完了
+- 動作テスト完了 (2025-08-06)
+- Firebase SDK: 10.12.5 (安定版)
