@@ -31,7 +31,3 @@ async def shutdown():
 @app.get("/")
 async def root():
     return {"message": "Section9 TeamC Backend API"}
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
