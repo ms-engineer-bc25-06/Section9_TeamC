@@ -1,0 +1,3 @@
+# コミット前にフロントエンドのコードチェックと自動整形を実行します
+npm run lint:front
+npm run format:front 
