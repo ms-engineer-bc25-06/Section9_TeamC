@@ -1,3 +1,5 @@
+from app.schemas.user import User
+from app.schemas.challenge import ChallengeParticipation
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, date
@@ -42,7 +44,6 @@ class ChildWithChallenges(Child):
     class Config:
         from_attributes = True
 
-from app.schemas.user import User
-from app.schemas.challenge import ChallengeParticipation
+
 ChildWithParent.model_rebuild()
 ChildWithChallenges.model_rebuild()
