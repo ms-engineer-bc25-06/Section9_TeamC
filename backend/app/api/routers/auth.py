@@ -119,7 +119,7 @@ async def register_user(user: UserCreate):
             status_code=400,
             detail="Username already registered"
         )
-    
+
     hashed_password = get_password_hash(user.password)
     fake_users_db[user.username] = {
         "username": user.username,
@@ -128,7 +128,7 @@ async def register_user(user: UserCreate):
         "hashed_password": hashed_password,
         "disabled": False,
     }
-    
+
     return User(**fake_users_db[user.username])
 
 @router.get("/users/me", response_model=User)

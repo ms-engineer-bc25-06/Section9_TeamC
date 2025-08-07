@@ -39,13 +39,13 @@ async def get_child(
         Child.id == child_id,
         Child.parent_id == current_user.id
     ).first()
-    
+
     if not child:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Child not found"
         )
-    
+
     return child
 
 @router.put("/{child_id}", response_model=ChildSchema)
@@ -59,17 +59,17 @@ async def update_child(
         Child.id == child_id,
         Child.parent_id == current_user.id
     ).first()
-    
+
     if not child:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Child not found"
         )
-    
+
     update_data = child_update.dict(exclude_unset=True)
     for field, value in update_data.items():
         setattr(child, field, value)
-    
+
     db.commit()
     db.refresh(child)
     return child
@@ -84,13 +84,13 @@ async def delete_child(
         Child.id == child_id,
         Child.parent_id == current_user.id
     ).first()
-    
+
     if not child:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Child not found"
         )
-    
+
     db.delete(child)
     db.commit()
     return {"message": "Child deleted successfully"}
