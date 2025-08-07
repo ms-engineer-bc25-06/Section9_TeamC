@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import Image from "next/image";
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import Image from 'next/image';
 
 export default function Home() {
   const { user, loginWithGoogle, loading } = useAuth();
@@ -12,16 +12,16 @@ export default function Home() {
   // 既にログイン済みの場合はアプリページにリダイレクト
   useEffect(() => {
     if (user) {
-      router.push("/children");
+      router.push('/children');
     }
   }, [user, router]);
 
   const handleGoogleLogin = async () => {
     const result = await loginWithGoogle();
     if (result.success) {
-      console.log("ログイン成功:", result.user?.displayName);
+      console.log('ログイン成功:', result.user?.displayName);
     } else {
-      console.error("ログイン失敗:", result.error);
+      console.error('ログイン失敗:', result.error);
     }
   };
 
@@ -41,13 +41,9 @@ export default function Home() {
           <div className="text-8xl mb-4">🌱</div>
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-800 sm:text-4xl">
-          BUDへようこそ！
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-800 sm:text-4xl">BUDへようこそ！</h1>
 
-        <p className="text-lg text-gray-600 sm:text-xl">
-          お子様と一緒に英語を楽しく学びましょう
-        </p>
+        <p className="text-lg text-gray-600 sm:text-xl">お子様と一緒に英語を楽しく学びましょう</p>
 
         <button
           onClick={handleGoogleLogin}

@@ -11,7 +11,6 @@ from app.schemas.challenge import (
     ChallengeUpdate,
     ChallengeWithCreator,
     ChallengeParticipation as ChallengeParticipationSchema,
-    ChallengeParticipationCreate,
     ChallengeParticipationUpdate
 )
 from app.api.routers.auth import get_current_active_user
@@ -45,13 +44,13 @@ async def get_challenge(
     current_user: User = Depends(get_current_active_user)
 ):
     challenge = db.query(Challenge).filter(Challenge.id == challenge_id).first()
-    
+
     if not challenge:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Challenge not found"
         )
-    
+
     return challenge
 
 @router.put("/{challenge_id}", response_model=ChallengeSchema)
@@ -62,23 +61,23 @@ async def update_challenge(
     db: Session = Depends(get_db)
 ):
     challenge = db.query(Challenge).filter(Challenge.id == challenge_id).first()
-    
+
     if not challenge:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Challenge not found"
         )
-    
+
     if challenge.creator_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to update this challenge"
         )
-    
+
     update_data = challenge_update.dict(exclude_unset=True)
     for field, value in update_data.items():
         setattr(challenge, field, value)
-    
+
     db.commit()
     db.refresh(challenge)
     return challenge
@@ -90,19 +89,19 @@ async def delete_challenge(
     db: Session = Depends(get_db)
 ):
     challenge = db.query(Challenge).filter(Challenge.id == challenge_id).first()
-    
+
     if not challenge:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Challenge not found"
         )
-    
+
     if challenge.creator_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to delete this challenge"
         )
-    
+
     db.delete(challenge)
     db.commit()
     return {"message": "Challenge deleted successfully"}
@@ -120,7 +119,7 @@ async def participate_in_challenge(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Challenge not found"
         )
-    
+
     child = db.query(Child).filter(
         Child.id == child_id,
         Child.parent_id == current_user.id
@@ -130,18 +129,18 @@ async def participate_in_challenge(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Child not found or not authorized"
         )
-    
+
     existing_participation = db.query(ChallengeParticipation).filter(
         ChallengeParticipation.challenge_id == challenge_id,
         ChallengeParticipation.child_id == child_id
     ).first()
-    
+
     if existing_participation:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Child is already participating in this challenge"
         )
-    
+
     participation = ChallengeParticipation(
         challenge_id=challenge_id,
         child_id=child_id
@@ -163,11 +162,11 @@ async def get_challenge_participations(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Challenge not found"
         )
-    
+
     participations = db.query(ChallengeParticipation).filter(
         ChallengeParticipation.challenge_id == challenge_id
     ).all()
-    
+
     return participations
 
 @router.put("/participations/{participation_id}", response_model=ChallengeParticipationSchema)
@@ -180,31 +179,31 @@ async def update_participation(
     participation = db.query(ChallengeParticipation).filter(
         ChallengeParticipation.id == participation_id
     ).first()
-    
+
     if not participation:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Participation not found"
         )
-    
+
     child = db.query(Child).filter(Child.id == participation.child_id).first()
     if child.parent_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to update this participation"
         )
-    
+
     update_data = participation_update.dict(exclude_unset=True)
     for field, value in update_data.items():
         setattr(participation, field, value)
-    
+
     if participation_update.status == "completed":
         from datetime import datetime
         participation.completed_at = datetime.utcnow()
         if not participation.points_earned:
             challenge = db.query(Challenge).filter(Challenge.id == participation.challenge_id).first()
             participation.points_earned = challenge.reward_points
-    
+
     db.commit()
     db.refresh(participation)
     return participation
