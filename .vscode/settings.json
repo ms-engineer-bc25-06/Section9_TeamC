@@ -1,10 +1,17 @@
 {
   "editor.formatOnSave": true,
-  "eslint.enable": true,
-  "prettier.enable": true,
-  "python.formatting.provider": "autopep8",
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit",
-    "source.organizeImports": "explicit"
+    "source.fixAll": true,
+    "source.organizeImports": true
+  },
+  "python.formatting.provider": "autopep8",
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff" // Ruff使ってる場合
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }
