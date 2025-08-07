@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function ChildrenPage() {
   const { user, logout, loading } = useAuth();
@@ -11,14 +11,14 @@ export default function ChildrenPage() {
   // 未ログインの場合はトップページにリダイレクト
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/");
+      router.push('/');
     }
   }, [user, loading, router]);
 
   const handleLogout = async () => {
     const result = await logout();
     if (result.success) {
-      router.push("/");
+      router.push('/');
     }
   };
 
@@ -40,9 +40,7 @@ export default function ChildrenPage() {
         <header className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">🌱 子ども管理</h1>
-            <p className="text-gray-600 mt-1">
-              こんにちは、{user.displayName}さん
-            </p>
+            <p className="text-gray-600 mt-1">こんにちは、{user.displayName}さん</p>
           </div>
           <button
             onClick={handleLogout}
