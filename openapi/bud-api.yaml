@@ -1,0 +1,589 @@
+openapi: 3.0.3
+info:
+  title: BUD API
+  version: 1.0.0
+  description: |
+    子どもチャレンジ応援アプリ『BUD』のAPI仕様書
+
+    ## 概要
+    BUDは、小学生が外国人との対面交流にチャレンジすることを支援するアプリです。
+    親子で成功体験を記録し、振り返ることができます。
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: ローカル開発環境
+  - url: https://api.bud-app.com/v1
+    description: 本番環境（予定）
+
+tags:
+  - name: health
+    description: ヘルスチェック
+  - name: auth
+    description: 認証関連のエンドポイント
+  - name: children
+    description: 子ども管理関連のエンドポイント
+  - name: challenges
+    description: チャレンジ記録関連のエンドポイント
+  - name: transcription
+    description: 音声文字起こし関連のエンドポイント
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Googleログイン後に取得したアクセストークンを使用
+
+paths:
+  /health:
+    get:
+      summary: APIの稼働状態を確認
+      description: APIサーバーが正常に動作しているかを確認するエンドポイント
+      tags:
+        - health
+      responses:
+        "200":
+          description: APIは正常に稼働中
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2024-08-01T12:00:00Z"
+
+  /auth/google:
+    post:
+      summary: Googleアカウントでログイン
+      description: Googleの認証トークンを使用してログインし、アプリ用のアクセストークンを取得
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - idToken
+              properties:
+                idToken:
+                  type: string
+                  description: GoogleのIDトークン
+                  example: "eyJhbGciOiJSUzI1NiIsImtpZCI..."
+      responses:
+        "200":
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: BUDアプリ用のアクセストークン
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "user123"
+                      email:
+                        type: string
+                        example: "parent@example.com"
+                      name:
+                        type: string
+                        example: "テスト太郎"
+        "401":
+          description: 認証失敗
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid token"
+
+  /children:
+    get:
+      summary: 子ども一覧を取得
+      description: ログインしている親に紐づく子どもの一覧を取得します
+      tags:
+        - children
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: 子ども一覧の取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  children:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "child_001"
+                        name:
+                          type: string
+                          example: "たろう"
+                        grade:
+                          type: integer
+                          example: 2
+                          description: 学年（1-6）
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: "2024-08-01T10:00:00Z"
+
+    post:
+      summary: 新しい子どもを登録
+      description: 新しい子どもの情報を登録します
+      tags:
+        - children
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - grade
+              properties:
+                name:
+                  type: string
+                  example: "はなこ"
+                  description: 子どもの名前
+                grade:
+                  type: integer
+                  example: 1
+                  minimum: 1
+                  maximum: 6
+                  description: 学年（1-6）
+      responses:
+        "201":
+          description: 子どもの登録成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "child_002"
+                  name:
+                    type: string
+                    example: "はなこ"
+                  grade:
+                    type: integer
+                    example: 1
+                  createdAt:
+                    type: string
+                    format: date-time
+        "400":
+          description: 入力データが不正
+
+  /children/{childId}:
+    put:
+      summary: 子ども情報を更新
+      description: 指定した子どもの情報を更新します
+      tags:
+        - children
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: childId
+          in: path
+          required: true
+          description: 子どものID
+          schema:
+            type: string
+            example: "child_001"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "たろう"
+                grade:
+                  type: integer
+                  example: 3
+                  minimum: 1
+                  maximum: 6
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  grade:
+                    type: integer
+                  updatedAt:
+                    type: string
+                    format: date-time
+        "404":
+          description: 子どもが見つからない
+
+  /challenges:
+    post:
+      summary: チャレンジ記録を作成
+      description: |
+        子どもが外国人と話した記録を保存します。
+
+        - Phase 1: Web Speech APIで取得済みの文字起こしテキストを送信
+        - Phase 2: 音声ファイルIDと文字起こしテキストの両方を送信可能
+      tags:
+        - challenges
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - childId
+                - transcription
+              properties:
+                childId:
+                  type: string
+                  example: "child_001"
+                  description: チャレンジした子どものID
+                transcription:
+                  type: string
+                  example: "Hello! Where are you from?"
+                  description: 話した内容の文字起こし
+                country:
+                  type: string
+                  example: "USA"
+                  description: 相手の出身国（任意）
+                comment:
+                  type: string
+                  example: "初めて自分から話しかけられた！"
+                  description: 親や子どものコメント（任意）
+                challengeType:
+                  type: string
+                  enum: ["wave", "greeting", "question", "conversation"]
+                  example: "greeting"
+                  description: |
+                    チャレンジのレベル
+                    - wave: 手を振る
+                    - greeting: 挨拶する（Hello等）
+                    - question: 質問する（Where are you from?等）
+                    - conversation: 会話する
+      responses:
+        "201":
+          description: チャレンジ記録の作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "challenge_001"
+                  childId:
+                    type: string
+                    example: "child_001"
+                  transcription:
+                    type: string
+                  country:
+                    type: string
+                  comment:
+                    type: string
+                  challengeType:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+        "400":
+          description: 入力データが不正
+
+    get:
+      summary: チャレンジ一覧を取得
+      description: 条件に応じてチャレンジ記録の一覧を取得します
+      tags:
+        - challenges
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: childId
+          in: query
+          required: false
+          description: 特定の子どもの記録のみ取得
+          schema:
+            type: string
+            example: "child_001"
+        - name: limit
+          in: query
+          required: false
+          description: 取得件数の上限
+          schema:
+            type: integer
+            default: 20
+            example: 10
+        - name: offset
+          in: query
+          required: false
+          description: 取得開始位置
+          schema:
+            type: integer
+            default: 0
+            example: 0
+      responses:
+        "200":
+          description: チャレンジ一覧の取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  challenges:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "challenge_001"
+                        childId:
+                          type: string
+                          example: "child_001"
+                        childName:
+                          type: string
+                          example: "たろう"
+                          description: 子どもの名前（表示用）
+                        transcription:
+                          type: string
+                          example: "Hello! Nice to meet you!"
+                        country:
+                          type: string
+                          example: "Canada"
+                        challengeType:
+                          type: string
+                          example: "greeting"
+                        createdAt:
+                          type: string
+                          format: date-time
+                  total:
+                    type: integer
+                    example: 25
+                    description: 全体の記録数
+                  hasMore:
+                    type: boolean
+                    example: true
+                    description: さらに記録があるかどうか
+
+  /challenges/{challengeId}:
+    get:
+      summary: チャレンジ詳細を取得
+      description: 指定したチャレンジ記録の詳細情報を取得します
+      tags:
+        - challenges
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: challengeId
+          in: path
+          required: true
+          description: チャレンジ記録のID
+          schema:
+            type: string
+            example: "challenge_001"
+      responses:
+        "200":
+          description: チャレンジ詳細の取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "challenge_001"
+                  childId:
+                    type: string
+                    example: "child_001"
+                  childName:
+                    type: string
+                    example: "たろう"
+                  transcription:
+                    type: string
+                    example: "Hello! Where are you from? I'm from Japan!"
+                  country:
+                    type: string
+                    example: "France"
+                  comment:
+                    type: string
+                    example: "フランスの人と話せた！最初は緊張したけど、優しく答えてくれて嬉しかった。"
+                  challengeType:
+                    type: string
+                    example: "question"
+                  duration:
+                    type: integer
+                    example: 45
+                    description: 録音時間（秒）
+                  aiReview:
+                    type: object
+                    description: AIによるレビュー（MVP段階では固定、将来OpenAI連携予定）
+                    properties:
+                      content:
+                        type: string
+                        example: |
+                          素晴らしいチャレンジでした！🎉
+
+                          【良かった点】
+                          - 「Hello」の挨拶がはっきりと言えていました
+                          - 「Where are you from?」という質問もできました
+                          - 相手の目を見て話せていたようですね
+
+                          【次のステップ】
+                          - 相手の答えに「That's nice!」と反応してみましょう
+                          - 自分の好きなものも英語で伝えてみましょう
+                      positivePoints:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                          - "はっきりとした声で話せた"
+                          - "質問ができた"
+                          - "笑顔で接することができた"
+                      nextChallenges:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                          - "相手の答えに反応してみよう"
+                          - "自己紹介をしてみよう"
+                          - "好きな食べ物を聞いてみよう"
+                      encouragement:
+                        type: string
+                        example: "この調子で頑張りましょう！英語で話すことがどんどん楽しくなってきますよ！"
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+        "404":
+          description: チャレンジ記録が見つからない
+
+  /transcription:
+    post:
+      summary: 音声データを文字起こし（Phase 2で実装予定）
+      description: |
+        録音した音声データをテキストに変換します。
+
+        ## 実装フェーズ
+        - **Phase 1 (MVP)**: Web Speech APIを使用したリアルタイム文字起こし
+          - フロントエンドで完結するため、このAPIは使用しない
+          - 録音と同時に文字起こしを実行
+          
+        - **Phase 2 (将来)**: MediaRecorder + Whisper API
+          - MediaRecorder APIで録音した音声ファイルを送信
+          - サーバー側でOpenAI Whisper APIを使用して高精度な文字起こし
+          - このAPIを使用
+      tags:
+        - transcription
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - audio
+              properties:
+                audio:
+                  type: string
+                  format: binary
+                  description: |
+                    音声ファイル（wav, mp3, m4a, webm等）
+                    MediaRecorder APIで録音したファイル
+                language:
+                  type: string
+                  default: "en"
+                  example: "en"
+                  description: |
+                    音声の言語コード
+                    - en: 英語
+                    - ja: 日本語
+      responses:
+        "200":
+          description: 文字起こし成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transcription:
+                    type: string
+                    example: "Hello! Where are you from?"
+                    description: Whisper APIで文字起こしされたテキスト
+                  confidence:
+                    type: number
+                    format: float
+                    minimum: 0
+                    maximum: 1
+                    example: 0.95
+                    description: 文字起こしの信頼度（0-1）
+                  duration:
+                    type: integer
+                    example: 5
+                    description: 音声の長さ（秒）
+                  detectedLanguage:
+                    type: string
+                    example: "en"
+                    description: Whisperが検出した言語
+                  segments:
+                    type: array
+                    description: タイムスタンプ付きのセグメント情報
+                    items:
+                      type: object
+                      properties:
+                        start:
+                          type: number
+                          example: 0.0
+                        end:
+                          type: number
+                          example: 2.5
+                        text:
+                          type: string
+                          example: "Hello!"
+        "400":
+          description: |
+            リクエストエラー
+            - 音声ファイルが不正
+            - サポートされていない形式
+            - ファイルサイズが大きすぎる（25MB以上）
+        "413":
+          description: ファイルサイズが大きすぎる
+        "500":
+          description: Whisper API処理エラー
