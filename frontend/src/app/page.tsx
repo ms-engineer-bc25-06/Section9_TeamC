@@ -3,7 +3,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import Image from 'next/image';
+
 
 export default function Home() {
   const { user, loginWithGoogle, loading } = useAuth();
