@@ -1,3 +1,4 @@
+from app.schemas.child import Child
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
@@ -39,5 +40,4 @@ class UserWithChildren(User):
     class Config:
         from_attributes = True
 
-from app.schemas.child import Child
 UserWithChildren.model_rebuild()
