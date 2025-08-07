@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   onAuthStateChanged,
   signInWithPopup,
   signOut,
   GoogleAuthProvider,
   User,
-} from "firebase/auth";
-import { auth } from "@/lib/firebase";
+} from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,7 +28,7 @@ export function useAuth() {
       const result = await signInWithPopup(auth, provider);
       return { success: true, user: result.user };
     } catch (error) {
-      console.error("Google login failed:", error);
+      console.error('Google login failed:', error);
       return { success: false, error };
     }
   };
@@ -38,7 +38,7 @@ export function useAuth() {
       await signOut(auth);
       return { success: true };
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error('Logout failed:', error);
       return { success: false, error };
     }
   };

@@ -17,7 +17,7 @@ jobs:
       - name: Node.jsをセットアップ
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: '18'
       - name: 依存パッケージをインストール
         run: cd frontend && npm install
       - name: ESLintでコードチェック
@@ -33,10 +33,10 @@ jobs:
       - name: Pythonをセットアップ
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: '3.10'
       - name: 依存パッケージをインストール
         run: pip install -r backend/requirements-dev.txt
       - name: Ruffでコードチェック
-        run: ruff backend/
+        run: ruff check backend/
       - name: autopep8で自動整形チェック
         run: autopep8 --diff --recursive backend/
