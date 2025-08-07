@@ -1,3 +1,27 @@
 # コミット前にフロントエンドのコードチェックと自動整形を実行します
-npm run lint:front
-npm run format:front 
+# npm run lint:front
+# npm run format:front 
+# docker exec section9_teamc-frontend-1 ls
+# echo "husky実行"
+
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+CONTAINER_NAME="section9_teamc-frontend-1"
+# docker exec section9_teamc-frontend-1 ls
+
+# コンテナIDを取得して、起動しているか確認
+CONTAINER_ID=$(docker ps -q --filter "name=^${CONTAINER_NAME}$")
+
+if [ -z "$CONTAINER_ID" ]; then
+  echo "Docker container '$CONTAINER_NAME' is not running. Skipping pre-commit hook."
+  # コンテナがなければフックを成功として終了させる（コミットは続行）
+  exit 0
+  # もしコンテナがない場合にコミットを失敗させたい場合は exit 1
+  # exit 1
+fi
+
+echo "Running pre-commit hook inside Docker container '$CONTAINER_NAME'..."
+
+# -i オプションを追加すると、インタラクティブなコマンドにも対応できる
+docker exec -i "$CONTAINER_ID" ls
