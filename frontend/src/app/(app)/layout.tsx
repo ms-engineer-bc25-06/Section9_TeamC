@@ -1,9 +1,8 @@
-import { cookies } from 'next/headers';
+﻿import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { ReactNode } from 'react';
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
-  
   // TODO: 認証機能が完成したら以下のコメントを外す
   // 開発中は認証をスキップしています
   /*
