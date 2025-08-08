@@ -10,7 +10,7 @@ info:
     親子で成功体験を記録し、振り返ることができます。
 
 servers:
-  - url: http://localhost:8000/api/v1
+  - url: http://localhost:8000/api
     description: ローカル開発環境
   - url: https://api.bud-app.com/v1
     description: 本番環境（予定）
@@ -138,10 +138,10 @@ paths:
                         name:
                           type: string
                           example: "たろう"
-                        grade:
-                          type: integer
-                          example: 2
-                          description: 学年（1-6）
+                        birthdate:
+                          type: string
+                          example: "2024-08-01T10:00:00Z"
+                          description: 生年月日
                         createdAt:
                           type: string
                           format: date-time
@@ -168,12 +168,10 @@ paths:
                   type: string
                   example: "はなこ"
                   description: 子どもの名前
-                grade:
-                  type: integer
-                  example: 1
-                  minimum: 1
-                  maximum: 6
-                  description: 学年（1-6）
+                birthdate:
+                  type: string
+                  example: "2024-08-01T10:00:00Z"
+                  description: 生年月日
       responses:
         "201":
           description: 子どもの登録成功
@@ -188,9 +186,9 @@ paths:
                   name:
                     type: string
                     example: "はなこ"
-                  grade:
-                    type: integer
-                    example: 1
+                  birthdate:
+                    type: string
+                    example: "2024-08-01T10:00:00Z"
                   createdAt:
                     type: string
                     format: date-time
@@ -223,11 +221,9 @@ paths:
                 name:
                   type: string
                   example: "たろう"
-                grade:
-                  type: integer
-                  example: 3
-                  minimum: 1
-                  maximum: 6
+                birthdate:
+                  type: string
+                  example: "2024-08-01T10:00:00Z"
       responses:
         "200":
           description: 更新成功
@@ -240,8 +236,8 @@ paths:
                     type: string
                   name:
                     type: string
-                  grade:
-                    type: integer
+                  birthdate:
+                    type: string
                   updatedAt:
                     type: string
                     format: date-time

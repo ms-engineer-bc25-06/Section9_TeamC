@@ -1,17 +1,21 @@
 'use client';
 
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { BarChart, Plus, Star } from 'lucide-react';
 import Image from 'next/image';
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 const childrenData = [
+
   { id: '1', name: 'ひなた', age: 6, avatar: '/placeholder.svg?height=100&width=100' },
   { id: '2', name: 'さくら', age: 8, avatar: '/placeholder.svg?height=100&width=100' },
+
 ];
 
 export default function ChildrenPage() {
@@ -35,23 +39,26 @@ export default function ChildrenPage() {
     );
   }
 
-  if (!user) return null;
+
+  if (!user) {
+    return null;
+  }
+
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <header className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">🌱 子ども管理</h1>
-            <p className="text-gray-600 mt-1">こんにちは、{user.displayName}さん</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-          >
-            ログアウト
-          </button>
-        </header>
+    <div className="flex min-h-screen flex-col items-center justify-between bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8">
+      <header className="w-full max-w-4xl flex justify-between items-center mb-4">
+        <div>
+          <p className="text-gray-600 text-lg">こんにちは、{user.displayName}さん</p>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+        >
+          ログアウト
+        </button>
+      </header>
+
 
         <main className="flex w-full max-w-4xl flex-1 flex-col items-center justify-center py-8">
           <h2 className="mb-8 text-center text-3xl font-bold text-gray-800 sm:text-4xl md:text-5xl">
