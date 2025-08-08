@@ -21,7 +21,7 @@ app = FastAPI(
 # CORS設定
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.allowed_hosts_list,  # config.pyから読み込み
+    allow_origins=["*"],  # 開発環境では全て許可
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
