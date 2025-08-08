@@ -1,13 +1,13 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { useAuth } from '@/hooks/useAuth';
-import { BarChart, Plus, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Plus, BarChart, Star } from 'lucide-react';
 
 const childrenData = [
   { id: '1', name: 'ひなた', age: 6, avatar: '/placeholder.svg?height=100&width=100' },
@@ -18,18 +18,13 @@ export default function ChildrenPage() {
   const { user, logout, loading } = useAuth();
   const router = useRouter();
 
-  // 未ログインの場合はトップページにリダイレクト
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/');
-    }
+    if (!loading && !user) router.push('/');
   }, [user, loading, router]);
 
   const handleLogout = async () => {
     const result = await logout();
-    if (result.success) {
-      router.push('/');
-    }
+    if (result.success) router.push('/');
   };
 
   if (loading) {
@@ -40,14 +35,11 @@ export default function ChildrenPage() {
     );
   }
 
-  if (!user) {
-    return null; // リダイレクト中
-  }
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto">
-        {/* ヘッダー */}
         <header className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">🌱 子ども管理</h1>
@@ -61,7 +53,6 @@ export default function ChildrenPage() {
           </button>
         </header>
 
-        {/* メイン：子ども一覧 or 空表示 */}
         <main className="flex w-full max-w-4xl flex-1 flex-col items-center justify-center py-8">
           <h2 className="mb-8 text-center text-3xl font-bold text-gray-800 sm:text-4xl md:text-5xl">
             今日は誰がチャレンジする？
@@ -108,7 +99,6 @@ export default function ChildrenPage() {
           )}
         </main>
 
-        {/* フッター */}
         <footer className="sticky bottom-0 z-10 mt-8 w-full max-w-4xl rounded-t-xl bg-white/90 p-4 shadow-lg backdrop-blur-sm sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-around">
             <Link href="/children/register">
