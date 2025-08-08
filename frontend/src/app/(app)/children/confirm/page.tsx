@@ -1,3 +1,4 @@
+
 'use client'; // クライアントコンポーネントとしてマーク
 
 import { Button } from '@/components/ui/button';
@@ -94,4 +95,5 @@ export default function ChallengeConfirmPage() {
       </Card>
     </div>
   );
+
 }

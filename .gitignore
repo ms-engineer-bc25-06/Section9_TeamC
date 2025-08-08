@@ -221,6 +221,12 @@ dmypy.json
 
 !frontend/package-lock.json
 
+# Marimo
+marimo/_static/
+marimo/_lsp/
+__marimo__/
+node_modules
+
 # yarn
 yarn.lock
 !frontend/yarn.lock
@@ -228,3 +234,5 @@ yarn.lock
 # pnpm
 pnpm-lock.yaml
 !frontend/pnpm-lock.yaml
+
+config/firebase-credentials.json
