@@ -38,7 +38,27 @@ async def health_check():
         "service": "bud-backend",
         "version": "1.0.0"
     }
+# =====================================
+# デモ用メモリストレージ
+temp_children = []
 
+@app.get("/api/children")
+async def get_children():
+    """子ども一覧取得（デモ用）"""
+    return temp_children
+
+@app.post("/api/children")
+async def create_child(child_data: dict):
+    """子ども登録（デモ用）"""
+    new_child = {
+        "id": len(temp_children) + 1,
+        "name": child_data["name"],
+        "age": child_data.get("age", 5),
+        "created_at": "2025-08-08"
+    }
+    temp_children.append(new_child)
+    return new_child
+# ===================================
 # 🔐 認証テスト用エンドポイント
 @app.get("/api/auth/test")
 async def test_auth(user: Dict[str, Any] = Depends(get_current_user)):

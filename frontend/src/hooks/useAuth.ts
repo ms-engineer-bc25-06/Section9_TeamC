@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { auth } from '@/lib/firebase';
 import {
@@ -52,3 +52,7 @@ export function useAuth() {
     isAuthenticated: !!user,
   };
 }
+
+
+
+
