@@ -1,4 +1,4 @@
-'use client'; // クライアントコンポーネントとしてマーク
+﻿'use client'; // 繧ｯ繝ｩ繧､繧｢繝ｳ繝医さ繝ｳ繝昴・繝阪Φ繝医→縺励※繝槭・繧ｯ
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { cn } from "@/lib/utils"; // shadcn/uiのcnユーティリティ
+import { cn } from "@/lib/utils"; // shadcn/ui縺ｮcn繝ｦ繝ｼ繝・ぅ繝ｪ繝・ぅ
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -23,10 +23,10 @@ export default function ChildRegisterPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: ここで子どもの情報をデータベースに登録するロジックを実装
-    console.log('登録情報:', { nickname, birthDate: birthDate?.toISOString() });
+    // TODO: 縺薙％縺ｧ蟄舌←繧ゅ・諠・ｱ繧偵ョ繝ｼ繧ｿ繝吶・繧ｹ縺ｫ逋ｻ骭ｲ縺吶ｋ繝ｭ繧ｸ繝・け繧貞ｮ溯｣・
+    console.log('逋ｻ骭ｲ諠・ｱ:', { nickname, birthDate: birthDate?.toISOString() });
 
-    // 登録後、ユーザー選択画面にリダイレクト
+    // 逋ｻ骭ｲ蠕後√Θ繝ｼ繧ｶ繝ｼ驕ｸ謚樒判髱｢縺ｫ繝ｪ繝繧､繝ｬ繧ｯ繝・
     router.push('/children');
   };
 
@@ -35,24 +35,24 @@ export default function ChildRegisterPage() {
       <Card className="w-full max-w-md rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm sm:p-8 md:p-10">
         <CardContent className="p-0">
           <h1 className="mb-6 text-center text-2xl font-bold text-gray-800 sm:text-3xl">
-            お子さまの情報を教えてください
+            縺雁ｭ舌＆縺ｾ縺ｮ諠・ｱ繧呈蕗縺医※縺上□縺輔＞
           </h1>
           <p className="mb-8 text-center text-gray-600 text-sm sm:text-base">
-            お子さまが楽しくアプリを使えるように、いくつか質問させてくださいね。
+            縺雁ｭ舌＆縺ｾ縺梧･ｽ縺励￥繧｢繝励Μ繧剃ｽｿ縺医ｋ繧医≧縺ｫ縲√＞縺上▽縺玖ｳｪ蝠上＆縺帙※縺上□縺輔＞縺ｭ縲・
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <Label htmlFor="nickname" className="text-base sm:text-lg font-medium text-gray-700 mb-2 block">
-                呼び名
+                蜻ｼ縺ｳ蜷・
               </Label>
               <p className="text-sm text-gray-500 mb-2">
-                アプリ内で表示されるお子さまの呼び名です。ひらがなやカタカナでも大丈夫ですよ。
+                繧｢繝励Μ蜀・〒陦ｨ遉ｺ縺輔ｌ繧九♀蟄舌＆縺ｾ縺ｮ蜻ｼ縺ｳ蜷阪〒縺吶ゅ・繧峨′縺ｪ繧・き繧ｿ繧ｫ繝翫〒繧ょ､ｧ荳亥､ｫ縺ｧ縺吶ｈ縲・
               </p>
               <Input
                 id="nickname"
                 type="text"
-                placeholder="例: ひなたちゃん"
+                placeholder="萓・ 縺ｲ縺ｪ縺溘■繧・ｓ"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 required
@@ -62,10 +62,10 @@ export default function ChildRegisterPage() {
 
             <div>
               <Label htmlFor="birthDate" className="text-base sm:text-lg font-medium text-gray-700 mb-2 block">
-                生年月日
+                逕溷ｹｴ譛域律
               </Label>
               <p className="text-sm text-gray-500 mb-2">
-                お子さまの年齢に合わせて、おすすめのチャレンジを提案します。
+                縺雁ｭ舌＆縺ｾ縺ｮ蟷ｴ鮨｢縺ｫ蜷医ｏ縺帙※縲√♀縺吶☆繧√・繝√Ε繝ｬ繝ｳ繧ｸ繧呈署譯医＠縺ｾ縺吶・
               </p>
               <Popover>
                 <PopoverTrigger asChild>
@@ -77,7 +77,7 @@ export default function ChildRegisterPage() {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-5 w-5" />
-                    {birthDate ? format(birthDate, "yyyy年MM月dd日") : <span>生年月日を選択</span>}
+                    {birthDate ? format(birthDate, "yyyy蟷ｴMM譛・d譌･") : <span>逕溷ｹｴ譛域律繧帝∈謚・/span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -86,9 +86,9 @@ export default function ChildRegisterPage() {
                     selected={birthDate}
                     onSelect={setBirthDate}
                     initialFocus
-                    captionLayout="dropdown-buttons" // 年と月のドロップダウンを追加
-                    fromYear={new Date().getFullYear() - 15} // 過去15年まで選択可能
-                    toYear={new Date().getFullYear()} // 今年まで選択可能
+                    captionLayout="dropdown-buttons" // 蟷ｴ縺ｨ譛医・繝峨Ο繝・・繝繧ｦ繝ｳ繧定ｿｽ蜉
+                    fromYear={new Date().getFullYear() - 15} // 驕主悉15蟷ｴ縺ｾ縺ｧ驕ｸ謚槫庄閭ｽ
+                    toYear={new Date().getFullYear()} // 莉雁ｹｴ縺ｾ縺ｧ驕ｸ謚槫庄閭ｽ
                   />
                 </PopoverContent>
               </Popover>
@@ -98,7 +98,7 @@ export default function ChildRegisterPage() {
               type="submit"
               className="w-full py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 bg-green-500 text-white hover:bg-green-600 mt-8"
             >
-              登録する
+              逋ｻ骭ｲ縺吶ｋ
             </Button>
           </form>
         </CardContent>
@@ -106,3 +106,7 @@ export default function ChildRegisterPage() {
     </div>
   );
 }
+
+
+
+
