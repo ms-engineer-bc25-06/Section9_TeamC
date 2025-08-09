@@ -1,10 +1,8 @@
-
 'use client'; // クライアントコンポーネントとしてマーク
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle } from 'lucide-react'; // チェックマークアイコン
-import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation'; // useSearchParamsをインポート
 
@@ -17,22 +15,11 @@ export default function ChallengeConfirmPage() {
       <Card className="w-full max-w-lg rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm sm:p-8 md:p-10 text-center">
         <CardContent className="p-0">
           <h1 className="mb-4 text-2xl font-bold text-gray-800 sm:text-3xl">
-            チャレンジの準備はOK？
+            いっしょにチェックしよう！
           </h1>
           <p className="mb-8 text-center text-gray-600 text-sm sm:text-base">
-            さあ、お子さまと一緒に英語チャレンジを始める前に、いくつか確認させてくださいね。
+            すべてチェックできたら、お話しできるよ。
           </p>
-
-          <div className="mb-8 flex justify-center">
-            <Image
-              src="/images/challenge-confirm-illustration.png"
-              alt="親子が外国人と話しているシンプルなイラスト"
-              width={250}
-              height={250}
-              className="object-contain rounded-lg shadow-sm"
-              priority
-            />
-          </div>
 
           <div className="mb-10 space-y-4 text-left">
             <div className="flex items-start">
@@ -95,5 +82,4 @@ export default function ChallengeConfirmPage() {
       </Card>
     </div>
   );
-
 }
