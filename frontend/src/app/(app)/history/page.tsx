@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select';
 import { format, isSameMonth, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { ArrowLeft, CalendarDays } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Download } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -41,7 +41,7 @@ const dummyChallengeRecords = [
     id: 'rec_003',
     childId: '1',
     date: '2025-08-03T11:00:00Z',
-    summary: '英語で言えたよ！',
+    summary: '色を英語で完璧に言えたよ！',
   },
 ];
 
@@ -89,7 +89,7 @@ export default function ChallengeHistoryPage() {
           <span className="text-lg font-medium">戻る</span>
         </Link>
         <h1 className="absolute left-1/2 -translate-x-1/2 text-xl font-bold text-gray-800 sm:text-2xl">
-          ふりかえり
+          チャレンジの記録
         </h1>
         <div className="w-24"></div>
       </header>
@@ -152,10 +152,18 @@ export default function ChallengeHistoryPage() {
             ))
           ) : (
             <Card className="w-full rounded-xl bg-white/80 p-6 shadow-md backdrop-blur-sm text-center">
-              <CardContent className="p-0 text-gray-600 text-lg">記録がありません。</CardContent>
+              <CardContent className="p-0 text-gray-600 text-lg">
+                まだチャレンジの記録がありません。
+              </CardContent>
             </Card>
           )}
         </div>
+
+        {/* エクスポート機能（今後API連携で動作予定） */}
+        <Button className="py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 bg-green-300 text-white hover:bg-green-400 w-full max-w-xs">
+          <Download className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
+          記録をエクスポート
+        </Button>
       </main>
     </div>
   );
