@@ -23,8 +23,8 @@ if not firebase_admin._apps:
     print(f"🔍 Firebase認証ファイルパス: {cred_path}")
     print(f"🔍 ファイル存在確認: {os.path.exists(cred_path)}")
     
-    # cred = credentials.Certificate(cred_path)
-    # firebase_admin.initialize_app(cred)
+    cred = credentials.Certificate(cred_path)
+    firebase_admin.initialize_app(cred)
 
 # 2. トークンを取得するための仕組み
 security = HTTPBearer()
