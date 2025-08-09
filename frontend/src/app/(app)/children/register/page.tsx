@@ -1,17 +1,17 @@
-﻿'use client'; // 繧ｯ繝ｩ繧､繧｢繝ｳ繝医さ繝ｳ繝昴・繝阪Φ繝医→縺励※繝槭・繧ｯ
+﻿'use client';
 
-import { Button } from '@/components/ui/Button';
-import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils'; // shadcn/uiのcnユーティリティ
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 export default function ChildRegisterPage() {
   const [nickname, setNickname] = useState('');
@@ -20,10 +20,8 @@ export default function ChildRegisterPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 縺薙％縺ｧ蟄舌←繧ゅ・諠・ｱ繧偵ョ繝ｼ繧ｿ繝吶・繧ｹ縺ｫ逋ｻ骭ｲ縺吶ｋ繝ｭ繧ｸ繝・け繧貞ｮ溯｣・
-    console.log('逋ｻ骭ｲ諠・ｱ:', { nickname, birthDate: birthDate?.toISOString() });
-
-    // 逋ｻ骭ｲ蠕後√Θ繝ｼ繧ｶ繝ｼ驕ｸ謚樒判髱｢縺ｫ繝ｪ繝繧､繝ｬ繧ｯ繝・
+    // TODO: API連携で保存（今はログのみ）
+    console.log('送信:', { nickname, birthDate: birthDate?.toISOString() });
     router.push('/children');
   };
 
@@ -32,30 +30,26 @@ export default function ChildRegisterPage() {
       <Card className="w-full max-w-md rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm sm:p-8 md:p-10">
         <CardContent className="p-0">
           <h1 className="mb-6 text-center text-2xl font-bold text-gray-800 sm:text-3xl">
-            縺雁ｭ舌＆縺ｾ縺ｮ諠・ｱ繧呈蕗縺医※縺上□縺輔＞
+            お子さまの登録
           </h1>
           <p className="mb-8 text-center text-gray-600 text-sm sm:text-base">
-            縺雁ｭ舌＆縺ｾ縺梧･ｽ縺励￥繧｢繝励Μ繧剃ｽｿ縺医ｋ繧医≧縺ｫ縲√＞縺上▽縺玖ｳｪ蝠上＆縺帙※縺上□縺輔＞縺ｭ縲・
+            ニックネームと生年月日を入力してください。後から変更できます。
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* ニックネーム */}
             <div>
-
-                
               <Label
                 htmlFor="nickname"
-                className="text-base sm:text-lg font-medium text-gray-700 mb-2 block"
+                className="mb-2 block text-base font-medium text-gray-700 sm:text-lg"
               >
-                呼び名
-
+                ニックネーム
               </Label>
-              <p className="text-sm text-gray-500 mb-2">
-                繧｢繝励Μ蜀・〒陦ｨ遉ｺ縺輔ｌ繧九♀蟄舌＆縺ｾ縺ｮ蜻ｼ縺ｳ蜷阪〒縺吶ゅ・繧峨′縺ｪ繧・き繧ｿ繧ｫ繝翫〒繧ょ､ｧ荳亥､ｫ縺ｧ縺吶ｈ縲・
-              </p>
+              <p className="mb-2 text-sm text-gray-500">例：ひなた／さくら など</p>
               <Input
                 id="nickname"
                 type="text"
-                placeholder="萓・ 縺ｲ縺ｪ縺溘■繧・ｓ"
+                placeholder="例：ひなた"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 required
@@ -63,31 +57,28 @@ export default function ChildRegisterPage() {
               />
             </div>
 
+            {/* 生年月日 */}
             <div>
-
               <Label
                 htmlFor="birthDate"
-                className="text-base sm:text-lg font-medium text-gray-700 mb-2 block"
+                className="mb-2 block text-base font-medium text-gray-700 sm:text-lg"
               >
                 生年月日
-
               </Label>
-              <p className="text-sm text-gray-500 mb-2">
-                縺雁ｭ舌＆縺ｾ縺ｮ蟷ｴ鮨｢縺ｫ蜷医ｏ縺帙※縲√♀縺吶☆繧√・繝√Ε繝ｬ繝ｳ繧ｸ繧呈署譯医＠縺ｾ縺吶・
-              </p>
+              <p className="mb-2 text-sm text-gray-500">正確な年齢に基づいた問題が出題されます。</p>
+
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    variant={'outline'}
+                    type="button"
+                    variant="outline"
                     className={cn(
-                      'w-full justify-start text-left font-normal rounded-lg border border-gray-300 p-3 text-base',
+                      'w-full justify-start rounded-lg border border-gray-300 p-3 text-left font-normal text-base',
                       !birthDate && 'text-muted-foreground'
                     )}
                   >
                     <CalendarIcon className="mr-2 h-5 w-5" />
-
                     {birthDate ? format(birthDate, 'yyyy年MM月dd日') : <span>生年月日を選択</span>}
-
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -96,21 +87,20 @@ export default function ChildRegisterPage() {
                     selected={birthDate}
                     onSelect={setBirthDate}
                     initialFocus
-
-                    captionLayout="dropdown" // 年と月のドロップダウンを追加
-                    fromYear={new Date().getFullYear() - 15} // 過去15年まで選択可能
-                    toYear={new Date().getFullYear()} // 今年まで選択可能
-
+                    captionLayout="dropdown"
+                    fromYear={new Date().getFullYear() - 15}
+                    toYear={new Date().getFullYear()}
                   />
                 </PopoverContent>
               </Popover>
             </div>
 
+            {/* 送信 */}
             <Button
               type="submit"
-              className="w-full py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 bg-green-500 text-white hover:bg-green-600 mt-8"
+              className="mt-8 w-full rounded-full bg-green-500 py-3 text-lg font-semibold text-white shadow-md transition-transform hover:scale-105 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 sm:py-4 sm:text-xl"
             >
-              逋ｻ骭ｲ縺吶ｋ
+              登録する
             </Button>
           </form>
         </CardContent>
@@ -118,7 +108,5 @@ export default function ChildRegisterPage() {
     </div>
   );
 }
-
-
 
 
