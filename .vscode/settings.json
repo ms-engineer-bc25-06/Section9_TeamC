@@ -6,12 +6,19 @@
   },
   "python.formatting.provider": "autopep8",
   "[python]": {
-    "editor.defaultFormatter": "charliermarsh.ruff" // Ruff使ってる場合
+    "editor.defaultFormatter": "charliermarsh.ruff"
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+
+  // ▼ 文字化け防止
+  "files.encoding": "utf8", // 保存時はUTF-8(BOMなし)
+  "files.autoGuessEncoding": false, // 自動判別を無効化
+  "files.eol": "\n", // 改行はLF
+  "editor.insertFinalNewline": true, // 最終行に改行追加
+  "editor.detectIndentation": false // 自動インデント判別を無効化
 }

@@ -1,2 +1,7 @@
 # すべてのテキストファイルをLFで扱う
 * text eol=lf
+
+# TypeScript/TSX はUTF-8で扱う（BOMなし）
+*.ts  text working-tree-encoding=UTF-8
+*.tsx text working-tree-encoding=UTF-8
+
