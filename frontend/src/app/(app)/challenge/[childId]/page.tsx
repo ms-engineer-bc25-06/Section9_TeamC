@@ -18,7 +18,6 @@ import { useEffect, useRef, useState } from 'react';
 const childrenData = [
   { id: '1', name: 'ひなた' },
   { id: '2', name: 'さくら' },
-
 ];
 
 export default function ChallengePage() {
@@ -98,7 +97,6 @@ export default function ChallengePage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-between bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8">
-
       {/* ヘッダー */}
       <header className="relative w-full max-w-4xl flex justify-between items-center mb-8">
         <Link
@@ -110,7 +108,6 @@ export default function ChallengePage() {
         </Link>
         <h1 className="absolute left-1/2 -translate-x-1/2 text-xl font-bold text-gray-800 sm:text-2xl">
           {childName}ちゃんのチャレンジ中！
-
         </h1>
         {/* 右側にスペースを確保するためだけの要素 */}
         <div className="w-24"></div>
@@ -161,7 +158,6 @@ export default function ChallengePage() {
           >
             <HelpCircle className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
             たすけて
-
           </Button>
         </div>
       </main>
