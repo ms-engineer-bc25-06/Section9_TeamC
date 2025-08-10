@@ -86,7 +86,7 @@ export default function ChallengeHistoryPage() {
           className="text-gray-600 hover:text-gray-800 transition-colors flex items-center"
         >
           <ArrowLeft className="h-6 w-6 mr-1" />
-          <span className="text-lg font-medium">戻る</span>
+          <span className="text-lg font-medium">もどる</span>
         </Link>
         <h1 className="absolute left-1/2 -translate-x-1/2 text-xl font-bold text-gray-800 sm:text-2xl">
           チャレンジの記録
