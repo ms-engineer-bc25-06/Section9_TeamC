@@ -1,6 +1,4 @@
-
 'use client'; // クライアントコンポーネントとしてマーク
-
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,11 +14,9 @@ export default function ChallengeConfirmPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8">
       <Card className="w-full max-w-lg rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm sm:p-8 md:p-10 text-center">
         <CardContent className="p-0">
-          <h1 className="mb-4 text-2xl font-bold text-gray-800 sm:text-3xl">
-            いっしょにチェックしよう！
-          </h1>
+          <h1 className="mb-4 text-2xl font-bold text-gray-800 sm:text-3xl">チェックしよう！</h1>
           <p className="mb-8 text-center text-gray-600 text-sm sm:text-base">
-            すべてチェックできたら、お話しできるよ。
+            すべてチェックできたら、がんばってみよう！
           </p>
 
           <div className="mb-10 space-y-4 text-left">
@@ -28,10 +24,10 @@ export default function ChallengeConfirmPage() {
               <CheckCircle className="mr-3 mt-1 h-6 w-6 flex-shrink-0 text-green-500" />
               <div>
                 <p className="text-base font-semibold text-gray-700 sm:text-lg">
-                  外国人の方に話しかけても大丈夫な状況ですか？
+                  話しかけても大丈夫？
                 </p>
                 <p className="text-sm text-gray-500">
-                  周りの環境や時間帯を確認して、安心して話せる場所を選びましょう。
+                  相手の行動や時間を見て、話しかけても大丈夫か確認しよう。
                 </p>
               </div>
             </div>
@@ -39,10 +35,10 @@ export default function ChallengeConfirmPage() {
               <CheckCircle className="mr-3 mt-1 h-6 w-6 flex-shrink-0 text-green-500" />
               <div>
                 <p className="text-base font-semibold text-gray-700 sm:text-lg">
-                  お子さまは話したい気持ちになっていますか？
+                  「はなしたい！」って思ってる？
                 </p>
                 <p className="text-sm text-gray-500">
-                  無理強いせず、お子さまの「話したい！」という気持ちを大切にしましょう。
+                  「はなしたい！」って思ってる時に頑張ってみよう。
                 </p>
               </div>
             </div>
@@ -50,7 +46,7 @@ export default function ChallengeConfirmPage() {
               <CheckCircle className="mr-3 mt-1 h-6 w-6 flex-shrink-0 text-green-500" />
               <div>
                 <p className="text-base font-semibold text-gray-700 sm:text-lg">
-                  録音の準備はできていますか？
+                  録音の準備はできてるかな？
                 </p>
                 <p className="text-sm text-gray-500">
                   チャレンジの記録を残すために、スマートフォンの録音機能などを準備しておきましょう。
@@ -67,7 +63,7 @@ export default function ChallengeConfirmPage() {
                 size="lg"
                 disabled={!childId} // childIdがない場合はボタンを無効化
               >
-                準備OK！始める
+                準備OK！はじめる
               </Button>
             </Link>
             <Link href="/children" passHref>
@@ -76,7 +72,7 @@ export default function ChallengeConfirmPage() {
                 size="lg"
                 variant="outline"
               >
-                もう少し待つ
+                あとにする
               </Button>
             </Link>
           </div>

@@ -80,7 +80,7 @@ export default function ChallengeDetailPage() {
   return (
     <div className="flex min-h-screen flex-col items-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8">
       {/* ヘッダー */}
-      <header className="relative w-full max-w-4xl flex justify-between items-center mb-8">
+      <header className="w-full max-w-4xl grid grid-cols-3 items-center mb-8">
         <Link
           href="/history"
           className="text-gray-600 hover:text-gray-800 transition-colors flex items-center"
@@ -88,12 +88,13 @@ export default function ChallengeDetailPage() {
           <ArrowLeft className="h-6 w-6 mr-1" />
           <span className="text-lg font-medium">もどる</span>
         </Link>
-        <h1 className="absolute left-1/2 -translate-x-1/2 text-xl font-bold text-gray-800 sm:text-2xl text-center">
-          {format(record.timestamp, 'yyyy年MM月dd日 (EEE)', { locale: ja })}
-          <br />
+        <h1 className="text-xl font-bold text-gray-800 sm:text-2xl text-center col-span-1">
+          <span className="whitespace-nowrap">
+            {format(record.timestamp, 'yyyy年MM月dd日 (EEE)', { locale: ja })}
+          </span>
         </h1>
         {/* 右側にスペースを確保するためだけの要素 */}
-        <div className="w-24"></div>
+        <div className="col-span-1"></div>
       </header>
 
       <main className="w-full max-w-2xl flex-1 flex flex-col items-center py-8">

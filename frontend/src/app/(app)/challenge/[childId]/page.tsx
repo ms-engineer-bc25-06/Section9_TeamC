@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils'; // cn関数をインポート
+import { cn } from '@/lib/utils';
 import { HelpCircle, Mic, Save, Volume2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -48,13 +48,12 @@ export default function ChallengePage() {
       mediaRecorderRef.current.onstop = () => {
         const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         setAudioBlob(blob);
-        // ストリームを停止してマイクを解放
         stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorderRef.current.start();
       setIsRecording(true);
-      setAudioBlob(null); // 新しい録音開始時に前のBlobをクリア
+      setAudioBlob(null);
     } catch (error) {
       console.error('マイクへのアクセスに失敗しました:', error);
       alert('マイクへのアクセスを許可してください。');
@@ -73,20 +72,14 @@ export default function ChallengePage() {
   const saveRecording = async () => {
     if (audioBlob) {
       console.log('録音データを保存中:', audioBlob);
-      // TODO: ここで録音データをサーバーにアップロードし、文字起こしを行う
-      // 例: const response = await fetch('/api/save-record', { method: 'POST', body: audioBlob });
-      // const recordId = await response.json(); // サーバーからrecordIdを受け取る
-
-      // ダミーのrecordIdを生成
       const recordId = `rec_${Date.now()}`;
       alert('録音を保存しました！');
-      router.push(`/record/${recordId}`); // 記録画面に遷移
+      router.push(`/record/${recordId}`);
     } else {
       alert('保存する録音データがありません。');
     }
   };
 
-  // コンポーネントアンマウント時に録音を停止
   useEffect(() => {
     return () => {
       if (mediaRecorderRef.current && isRecording) {
@@ -96,67 +89,68 @@ export default function ChallengePage() {
   }, [isRecording]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8">
+    <div className="flex min-h-screen flex-col items-center justify-start bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
       {/* ヘッダー */}
-      <header className="relative w-full max-w-4xl flex justify-between items-center mb-8">
+      <header className="w-full max-w-xl flex justify-between items-center mb-4">
         <Link
           href="/children"
-          className="text-gray-600 hover:text-gray-800 transition-colors flex items-center"
+          className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
         >
-          <XCircle className="h-6 w-6 mr-1" />
-          <span className="text-lg font-medium">やめる</span>
+          <XCircle className="h-5 w-5 sm:h-6 sm:w-6 mr-1" />
+          <span className="text-sm sm:text-base font-medium">やめる</span>
         </Link>
-        <h1 className="absolute left-1/2 -translate-x-1/2 text-xl font-bold text-gray-800 sm:text-2xl">
-          {childName}ちゃんのチャレンジ中！
+        <h1 className="flex-1 text-center text-lg font-bold text-gray-800 sm:text-xl">
+          <span className="font-extrabold text-2xl sm:text-3xl">{childName}</span>ちゃんの
+          <br className="sm:hidden" />
+          チャレンジ中！
         </h1>
-        {/* 右側にスペースを確保するためだけの要素 */}
-        <div className="w-24"></div>
+        <div className="w-20 sm:w-24"></div>
       </header>
 
       {/* メインコンテンツ */}
-      <main className="flex flex-1 flex-col items-center justify-center w-full max-w-4xl py-8">
+      <main className="flex flex-1 flex-col items-center justify-center w-full max-w-xl py-4">
         {/* 録音ボタン */}
-        <div className="flex flex-col items-center mb-12">
+        <div className="flex flex-col items-center">
           <Button
             onClick={isRecording ? stopRecording : startRecording}
             className={cn(
-              'w-48 h-48 sm:w-64 sm:h-64 rounded-full flex flex-col items-center justify-center shadow-xl transition-all duration-300',
+              'w-40 h-40 sm:w-48 sm:h-48 rounded-full flex flex-col items-center justify-center shadow-xl transition-all duration-300',
               isRecording
                 ? 'bg-red-500 hover:bg-red-600 animate-pulse'
                 : 'bg-blue-400 hover:bg-blue-500'
             )}
             size="icon"
           >
-            <Mic className="h-24 w-24 sm:h-32 sm:w-32 text-white" />
-            <span className="mt-2 text-white text-lg sm:text-xl font-semibold">
+            <Mic className="h-16 w-16 sm:h-20 sm:w-20 text-white" />
+            <span className="mt-2 text-white text-base sm:text-lg font-semibold">
               {isRecording ? '録音中...' : 'はじめる'}
             </span>
           </Button>
           {!isRecording && audioBlob && (
             <Button
               onClick={saveRecording}
-              className="mt-8 py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 bg-green-500 text-white hover:bg-green-600 w-48 sm:w-64"
+              className="mt-8 py-3 text-lg font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 bg-green-500 text-white hover:bg-green-600 w-40 sm:w-48"
             >
-              <Save className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
+              <Save className="mr-2 h-5 w-5" />
               保存する
             </Button>
           )}
         </div>
 
         {/* フレーズボタン */}
-        <div className="flex flex-col sm:flex-row gap-6 w-full max-w-md">
+        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-xs mt-12">
           <Button
             onClick={() => setShowMamaPhraseDialog(true)}
-            className="flex-1 py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 bg-purple-300 text-white hover:bg-purple-400"
+            className="flex-1 py-3 text-sm sm:text-base font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 bg-purple-300 text-white hover:bg-purple-400"
           >
-            <Volume2 className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
+            <Volume2 className="mr-2 h-4 w-4" />
             おねがい
           </Button>
           <Button
             onClick={() => setShowChildPhraseDialog(true)}
-            className="flex-1 py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 bg-yellow-300 text-white hover:bg-yellow-400"
+            className="flex-1 py-3 text-sm sm:text-base font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 bg-yellow-300 text-white hover:bg-yellow-400"
           >
-            <HelpCircle className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
+            <HelpCircle className="mr-2 h-4 w-4" />
             たすけて
           </Button>
         </div>
@@ -166,8 +160,8 @@ export default function ChallengePage() {
       <Dialog open={showMamaPhraseDialog} onOpenChange={setShowMamaPhraseDialog}>
         <DialogContent className="sm:max-w-[425px] rounded-xl p-6">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-gray-800">お願いフレーズ</DialogTitle>
-            <DialogDescription className="text-gray-600">
+            <DialogTitle className="text-xl font-bold text-gray-800">おねがいフレーズ</DialogTitle>
+            <DialogDescription className="text-gray-600 text-sm">
               外国の方に話しかける前に使えます。
             </DialogDescription>
           </DialogHeader>
@@ -181,7 +175,7 @@ export default function ChallengePage() {
             onClick={() => setShowMamaPhraseDialog(false)}
             className="mt-6 w-full rounded-full bg-blue-400 hover:bg-blue-500 text-white"
           >
-            閉じる
+            とじる
           </Button>
         </DialogContent>
       </Dialog>
@@ -190,30 +184,29 @@ export default function ChallengePage() {
       <Dialog open={showChildPhraseDialog} onOpenChange={setShowChildPhraseDialog}>
         <DialogContent className="sm:max-w-[425px] rounded-xl p-6">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-gray-800">お助けフレーズ</DialogTitle>
-            <DialogDescription className="text-gray-600">
-              会話中に困った時に使ってください。
+            <DialogTitle className="text-xl font-bold text-gray-800">おたすけフレーズ</DialogTitle>
+            <DialogDescription className="text-gray-600 text-sm">
+              かいわにこまったときに、これをつかってみよう！
             </DialogDescription>
           </DialogHeader>
           <div className="mt-4 space-y-3 text-lg text-gray-700">
             <p className="font-semibold">Again, please.</p>
-            <p className="text-sm text-gray-500">（もう一回話して）</p>
+            <p className="text-sm text-gray-500">（もう一回いって）</p>
             <p className="font-semibold">Slowly, please.</p>
-            <p className="text-sm text-gray-500">（ゆっくり話して）</p>
+            <p className="text-sm text-gray-500">（ゆっくりいって）</p>
             <p className="font-semibold">Sorry, I don’t understand.</p>
-            <p className="text-sm text-gray-500">（わからないよ）</p>
+            <p className="text-sm text-gray-500">（ごめんね、わからなかった）</p>
             <p className="font-semibold">Thank you! Bye-bye.</p>
-            <p className="text-sm text-gray-500">（バイバイ!）</p>
+            <p className="text-sm text-gray-500">（ありがとう！バイバイ。）</p>
           </div>
           <Button
             onClick={() => setShowChildPhraseDialog(false)}
             className="mt-6 w-full rounded-full bg-blue-400 hover:bg-blue-500 text-white"
           >
-            閉じる
+            とじる
           </Button>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
-
