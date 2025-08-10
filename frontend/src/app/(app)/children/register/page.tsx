@@ -31,10 +31,10 @@ export default function ChildRegisterPage() {
       <Card className="w-full max-w-md rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm sm:p-8 md:p-10">
         <CardContent className="p-0">
           <h1 className="mb-6 text-center text-2xl font-bold text-gray-800 sm:text-3xl">
-            お子さまの情報を教えてください
+            なまえを教えてね
           </h1>
           <p className="mb-8 text-center text-gray-600 text-sm sm:text-base">
-            お子さまが楽しくアプリを使えるように、いくつか質問させてくださいね。
+            たのしく遊べるように、少しだけ聞かせてね
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -43,11 +43,9 @@ export default function ChildRegisterPage() {
                 htmlFor="nickname"
                 className="text-base sm:text-lg font-medium text-gray-700 mb-2 block"
               >
-                呼び名
+                なまえ
               </Label>
-              <p className="text-sm text-gray-500 mb-2">
-                アプリ内で表示されるお子さまの呼び名です。ひらがなやカタカナでも大丈夫ですよ。
-              </p>
+              <p className="text-sm text-gray-500 mb-2">ニックネームでもOK！</p>
               <Input
                 id="nickname"
                 type="text"
@@ -64,11 +62,9 @@ export default function ChildRegisterPage() {
                 htmlFor="birthDate"
                 className="text-base sm:text-lg font-medium text-gray-700 mb-2 block"
               >
-                生年月日
+                おたんじょう日🎂
               </Label>
-              <p className="text-sm text-gray-500 mb-2">
-                お子さまの年齢に合わせて、おすすめのチャレンジを提案します。
-              </p>
+              <p className="text-sm text-gray-500 mb-2"></p>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
