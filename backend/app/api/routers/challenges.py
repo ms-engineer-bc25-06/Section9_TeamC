@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from typing import List
+from sqlalchemy.orm import Session, joinedload
+from typing import List, Optional
 from app.core.database import get_db
 from app.models.challenge import Challenge, ChallengeParticipation
 from app.models.child import Child
@@ -11,7 +11,9 @@ from app.schemas.challenge import (
     ChallengeUpdate,
     ChallengeWithCreator,
     ChallengeParticipation as ChallengeParticipationSchema,
-    ChallengeParticipationUpdate
+    ChallengeParticipationUpdate,
+    ChallengeHistoryItem,
+    ChallengeHistoryDetail
 )
 from app.api.routers.auth import get_current_active_user
 
@@ -122,7 +124,7 @@ async def participate_in_challenge(
 
     child = db.query(Child).filter(
         Child.id == child_id,
-        Child.parent_id == current_user.id
+        Child.user_id == current_user.firebase_uid
     ).first()
     if not child:
         raise HTTPException(
@@ -186,8 +188,9 @@ async def update_participation(
             detail="Participation not found"
         )
 
-    child = db.query(Child).filter(Child.id == participation.child_id).first()
-    if child.parent_id != current_user.id:
+    child = db.query(Child).filter(Child.id == participation.child_id,
+    Child.user_id == current_user.firebase_uid).first()
+    if not child:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to update this participation"
@@ -207,3 +210,82 @@ async def update_participation(
     db.commit()
     db.refresh(participation)
     return participation
+
+@router.get("/children/{child_id}/history", response_model=List[ChallengeHistoryItem])
+async def get_challenge_history(
+    child_id: int,
+    sort: Optional[str] = "date_desc",
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    # 子どもの所有チェック（children.py と同じやり方）
+    child = db.query(Child).filter(
+        Child.id == child_id,
+        Child.user_id == current_user.firebase_uid
+    ).first()
+    if not child:
+        raise HTTPException(status_code=404, detail="Child not found or not authorized")
+
+    # 参加記録を取得（ChallengeをJOINしてタイトルなどを取る）
+    query = db.query(ChallengeParticipation).options(joinedload(ChallengeParticipation.challenge)) \
+        .filter(ChallengeParticipation.child_id == child_id)
+
+    # ソート条件
+    if sort == "score_desc":
+        query = query.order_by(ChallengeParticipation.points_earned.desc())
+    else:
+        query = query.order_by(ChallengeParticipation.completed_at.desc())
+
+    participations = query.all()
+
+    return [
+        ChallengeHistoryItem(
+            participation_id=p.id,
+            challenge_id=p.challenge.id,
+            title=p.challenge.title,
+            completed_at=p.completed_at,
+            points_earned=p.points_earned
+        )
+        for p in participations
+    ]
+
+
+@router.get("/children/{child_id}/history/{participation_id}", response_model=ChallengeHistoryDetail)
+async def get_challenge_detail(
+    child_id: int,
+    participation_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    # 子どもの所有チェック
+    child = db.query(Child).filter(
+        Child.id == child_id,
+        Child.user_id == current_user.firebase_uid
+    ).first()
+    if not child:
+        raise HTTPException(status_code=404, detail="Child not found or not authorized")
+
+    # 参加記録1件取得
+    participation = db.query(ChallengeParticipation).options(joinedload(ChallengeParticipation.challenge)) \
+        .filter(
+            ChallengeParticipation.child_id == child_id,
+            ChallengeParticipation.id == participation_id
+        ).first()
+
+    if not participation:
+        raise HTTPException(status_code=404, detail="Challenge participation not found")
+
+    return ChallengeHistoryDetail(
+        participation_id=participation.id,
+        challenge_id=participation.challenge.id,
+        title=participation.challenge.title,
+        description=participation.challenge.description,
+        category=participation.challenge.category,
+        difficulty_level=participation.challenge.difficulty_level,
+        estimated_duration=participation.challenge.estimated_duration,
+        reward_points=participation.challenge.reward_points,
+        status=participation.status,
+        completed_at=participation.completed_at,
+        points_earned=participation.points_earned,
+        notes=participation.notes
+    )
