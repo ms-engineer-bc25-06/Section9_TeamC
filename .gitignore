@@ -235,6 +235,4 @@ yarn.lock
 pnpm-lock.yaml
 !frontend/pnpm-lock.yaml
 
-# Firebase認証ファイル
-config/firebase-credentials.json
-serviceAccountKey.json
+config/firebase-credentials.jsonserviceAccountKey.json
