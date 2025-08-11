@@ -249,3 +249,7 @@ async def get_user_profile(user: Dict[str, Any] = Depends(get_current_user)):
 @app.get("/api/test-no-auth")
 async def test_no_auth():
     return {"message": "API動作OK!"}
+
+# Voice Transcription API
+from app.api.voice.transcription import router as voice_router
+app.include_router(voice_router)

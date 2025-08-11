@@ -19,6 +19,7 @@ class ChallengeCategory(PyEnum):
     OTHER = "other"
 
 class Challenge(Base):
+    __table_args__ = {'extend_existing': True}
     __tablename__ = "challenges"
 
     id = Column(Integer, primary_key=True, index=True)
