@@ -239,3 +239,7 @@ app.include_router(voice_router)
 # Children Management API
 from app.api.routers.children import router as children_router
 app.include_router(children_router, prefix="/api", tags=["children"])
+
+# Challenges API
+from app.api.routers.challenges import router as challenges_router
+app.include_router(challenges_router, prefix="/api", tags=["challenges"])

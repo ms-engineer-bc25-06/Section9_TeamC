@@ -83,7 +83,33 @@ class ChallengeParticipationWithDetails(ChallengeParticipation):
 
     class Config:
         from_attributes = True
+class ChallengeHistoryItem(BaseModel):
+    participation_id: int
+    challenge_id: int
+    title: str
+    completed_at: Optional[datetime] = None
+    points_earned: int
 
+    class Config:
+        from_attributes = True
+
+
+class ChallengeHistoryDetail(BaseModel):
+    participation_id: int
+    challenge_id: int
+    title: str
+    description: Optional[str] = None
+    category: ChallengeCategory
+    difficulty_level: int
+    estimated_duration: Optional[int] = None
+    reward_points: int
+    status: str
+    completed_at: Optional[datetime] = None
+    points_earned: int
+    notes: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 ChallengeWithCreator.model_rebuild()
 ChallengeWithParticipations.model_rebuild()
