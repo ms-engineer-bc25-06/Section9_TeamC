@@ -4,7 +4,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -22,10 +22,11 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev
     ports:
-      - "8000:8000"
+      - '8000:8000'
     volumes:
       - ./backend:/app
       - /app/__pycache__
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
     env_file:
       - .env
     environment:
@@ -40,7 +41,7 @@ services:
   db:
     image: postgres:15-alpine
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-bud_user}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-bud_password}
@@ -53,8 +54,8 @@ services:
     healthcheck:
       test:
         [
-          "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-bud_user} -d ${POSTGRES_DB:-bud_db}",
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-bud_user} -d ${POSTGRES_DB:-bud_db}',
         ]
       interval: 5s
       timeout: 5s
