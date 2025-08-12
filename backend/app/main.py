@@ -1,7 +1,7 @@
 from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.utils.auth import get_current_user
@@ -62,7 +62,7 @@ async def test_auth(user: Dict[str, Any] = Depends(get_current_user)):
 @app.post("/api/auth/login")
 async def firebase_login(
     user: Dict[str, Any] = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Firebase認証後の初回ログイン/ユーザー同期
@@ -96,7 +96,7 @@ async def firebase_login(
 @app.get("/api/auth/profile")
 async def get_auth_profile(
     user: Dict[str, Any] = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     認証済みユーザーのプロフィール情報取得
@@ -130,7 +130,7 @@ async def get_auth_profile(
 async def update_auth_profile(
     profile_data: dict,
     user: Dict[str, Any] = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     認証済みユーザーのプロフィール情報更新
@@ -172,7 +172,7 @@ async def update_auth_profile(
 @app.get("/api/auth/children")
 async def get_user_children(
     user: Dict[str, Any] = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     認証済みユーザーの子ども一覧取得
@@ -188,18 +188,18 @@ async def get_user_children(
                 detail="ユーザーが見つかりません"
             )
         
+        children = await user_service.get_user_children(db_user["id"])
+        
         children_data = [
             {
-                "id": child.id,
-                "name": child.name,
-                "birth_date": child.birth_date.isoformat() if child.birth_date else None,
-                "grade": child.grade,
-                "school": child.school,
-                "profile_image": child.profile_image,
-                "interests": child.interests,
-                "created_at": child.created_at.isoformat()
+                "id": child["id"],
+                "name": child["name"],
+                "nickname": child["nickname"],
+                "grade": child["grade"],
+                "display_name": child["nickname"] + "ちゃん　" + (child["grade"] or ""),
+                "created_at": child["created_at"]
             }
-            for child in db_user.children
+            for child in children
         ]
         
         return {
