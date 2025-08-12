@@ -16,8 +16,10 @@ cp frontend/.env.local.template frontend/.env.local
 # バックエンド環境変数  
 cp backend/.env.template backend/.env
 
-# Firebase認証ファイル配置（Slackで共有）
-# serviceAccountKey.json をプロジェクトルートに配置
+# Firebase認証ファイル配置
+# 1. Firebase Console → BUDプロジェクト → サービスアカウント → 新しい秘密鍵生成
+# 2. ダウンロードしたファイルを serviceAccountKey.json に名前変更
+# 3. プロジェクトルートに配置
 3️⃣ Docker環境起動
 bashdocker-compose up -d
 docker-compose ps  # 全サービス起動確認
