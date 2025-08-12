@@ -1,10 +1,9 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
-from sqlalchemy import text
 from app.core.database import get_db
 from app.models.child import Child
+from app.models.challenge import Challenge
 from app.services.voice_service import voice_service
-from datetime import datetime
 
 router = APIRouter(prefix="/api/voice", tags=["voice-transcription"])
 
@@ -31,25 +30,22 @@ async def transcribe_voice(
     if not child:
         raise HTTPException(status_code=404, detail="子供が見つかりません")
     
-    # 生SQLでレコード作成
-    result = db.execute(
-        text("INSERT INTO challenges (child_id, created_at) VALUES (:child_id, :created_at) RETURNING id"),
-        {"child_id": child_id, "created_at": datetime.utcnow()}
-    )
-    voice_record_id = result.fetchone()[0]
+    challenge = Challenge(child_id=child_id)
+    db.add(challenge)
     db.commit()
+    db.refresh(challenge)
     
     # バックグラウンドで音声認識・フィードバック生成を実行
     background_tasks.add_task(
         process_voice_transcription,
-        voice_record_id,
+        challenge.id,  # ← voice_record_id から challenge.id に修正
         await file.read(),
         file.filename,
         child.name
     )
     
     return {
-        "transcript_id": voice_record_id,
+        "transcript_id": challenge.id,
         "status": "processing",
         "message": "音声認識を開始しました"
     }
@@ -72,20 +68,18 @@ async def process_voice_transcription(
         # AIフィードバック生成
         feedback = await voice_service.generate_feedback(transcribed_text, child_name)
         
-        # 生SQLで結果を保存
-        db.execute(
-            text("UPDATE challenges SET transcript = :transcript, comment = :comment WHERE id = :id"),
-            {"transcript": transcribed_text, "comment": feedback, "id": transcript_id}
-        )
-        db.commit()
+        challenge = db.query(Challenge).filter(Challenge.id == transcript_id).first()
+        if challenge:
+            challenge.transcript = transcribed_text
+            challenge.comment = feedback
+            db.commit()
         
     except Exception as e:
         # エラーの場合もログを残す
-        db.execute(
-            text("UPDATE challenges SET comment = :comment WHERE id = :id"),
-            {"comment": f"処理エラー: {str(e)}", "id": transcript_id}
-        )
-        db.commit()
+        challenge = db.query(Challenge).filter(Challenge.id == transcript_id).first()
+        if challenge:
+            challenge.comment = f"処理エラー: {str(e)}"
+            db.commit()
         
     finally:
         db.close()
@@ -94,46 +88,39 @@ async def process_voice_transcription(
 async def get_transcript(transcript_id: int, db: Session = Depends(get_db)):
     """音声認識結果の取得"""
     
-    result = db.execute(
-        text("SELECT id, child_id, transcript, comment, created_at FROM challenges WHERE id = :id"),
-        {"id": transcript_id}
-    ).fetchone()
-    
-    if not result:
+    challenge = db.query(Challenge).filter(Challenge.id == transcript_id).first()
+
+    if not challenge:
         raise HTTPException(status_code=404, detail="音声記録が見つかりません")
-    
+
     return {
-        "id": result[0],
-        "child_id": result[1],
-        "transcript": result[2],
-        "comment": result[3],
-        "created_at": result[4],
-        "status": "completed" if result[2] else "processing"
+        "id": challenge.id,
+        "child_id": challenge.child_id,
+        "transcript": challenge.transcript,
+        "comment": challenge.comment,
+        "created_at": challenge.created_at,
+        "status": "completed" if challenge.transcript else "processing"
     }
 
 @router.get("/history/{child_id}")
 async def get_voice_history(child_id: int, db: Session = Depends(get_db)):
     """子供の音声認識履歴を取得"""
     
-    results = db.execute(
-        text("""
-            SELECT id, transcript, comment, created_at 
-            FROM challenges 
-            WHERE child_id = :child_id AND transcript IS NOT NULL
-            ORDER BY created_at DESC
-        """),
-        {"child_id": child_id}
-    ).fetchall()
-    
+    challenges = db.query(Challenge)\
+        .filter(Challenge.child_id == child_id)\
+        .filter(Challenge.transcript.isnot(None))\
+        .order_by(Challenge.created_at.desc())\
+        .all()
+
     return {
         "child_id": child_id,
         "transcripts": [
             {
-                "id": row[0],
-                "transcript": row[1],
-                "comment": row[2],
-                "created_at": row[3]
+                "id": challenge.id,
+                "transcript": challenge.transcript,
+                "comment": challenge.comment,
+                "created_at": challenge.created_at
             }
-            for row in results
+            for challenge in challenges
         ]
     }

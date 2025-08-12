@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy.pool import QueuePool
+from sqlalchemy.pool import NullPool  # QueuePoolの代わり
 import os
 from typing import AsyncGenerator
 
@@ -11,7 +11,7 @@ DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@db:5432
 # psycopg2が含まれている場合は除去してからasyncpgに変換
 if "+psycopg2" in DATABASE_URL:
     DATABASE_URL = DATABASE_URL.replace("+psycopg2", "")
-    print(f"�� psycopg2除去後: {DATABASE_URL}")
+    print(f"🔧 psycopg2除去後: {DATABASE_URL}")
 
 # asyncpg用のURLに変換
 ASYNC_DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
@@ -19,7 +19,6 @@ ASYNC_DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg:/
 # 非同期エンジンの作成
 async_engine = create_async_engine(
     ASYNC_DATABASE_URL,
-    poolclass=QueuePool,
     pool_size=20,
     max_overflow=30,
     pool_pre_ping=True,
@@ -29,6 +28,9 @@ async_engine = create_async_engine(
 
 # 同期エンジン（Alembicで使用）
 sync_engine = create_engine(DATABASE_URL)
+
+# 同期セッション（transcription.pyで使用）
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
 
 # 非同期セッションメーカー
 AsyncSessionLocal = sessionmaker(
@@ -40,8 +42,16 @@ AsyncSessionLocal = sessionmaker(
 # Base class for models
 Base = declarative_base()
 
-# 依存性注入用の非同期関数
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
+# 同期用の依存性注入関数
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# 非同期用の依存性注入関数
+async def get_async_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         try:
             yield session
