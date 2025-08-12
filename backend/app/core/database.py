@@ -7,7 +7,6 @@ from typing import AsyncGenerator
 
 # 環境変数から直接DATABASE_URLを取得
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@db:5432/bud")
-print(f"🔍 元のDATABASE_URL: {DATABASE_URL}")
 
 # psycopg2が含まれている場合は除去してからasyncpgに変換
 if "+psycopg2" in DATABASE_URL:
@@ -16,7 +15,6 @@ if "+psycopg2" in DATABASE_URL:
 
 # asyncpg用のURLに変換
 ASYNC_DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
-print(f"🔍 変換後のASYNC_DATABASE_URL: {ASYNC_DATABASE_URL}")
 
 # 非同期エンジンの作成
 async_engine = create_async_engine(
