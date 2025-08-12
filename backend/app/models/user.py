@@ -21,4 +21,3 @@ class User(Base):
     
     # リレーション（変更なし）
     # children = relationship("Child", back_populates="parent", cascade="all, delete-orphan")
-    # created_challenges = relationship("Challenge", back_populates="creator", cascade="all, delete-orphan")

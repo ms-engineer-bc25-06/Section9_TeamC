@@ -77,12 +77,12 @@ async def firebase_login(
         return {
             "message": "ログイン成功",
             "user": {
-                "id": db_user.id,
-                "firebase_uid": db_user.firebase_uid,
-                "email": db_user.email,
-                "full_name": db_user.full_name,
-                "username": db_user.username,
-                "is_active": db_user.is_active
+                "id": db_user["id"],
+                "firebase_uid": db_user["firebase_uid"],
+                "email": db_user["email"],
+                "full_name": db_user["full_name"],
+                "username": db_user["username"],
+                "is_active": True
             }
         }
         

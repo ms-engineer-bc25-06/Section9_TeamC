@@ -21,4 +21,3 @@ class Child(Base):
     
     # リレーションシップは一旦コメントアウト（userテーブルとの整合性確認が必要）
     # parent = relationship("User", back_populates="children")
-    # challenge_participations = relationship("ChallengeParticipation", back_populates="child", cascade="all, delete-orphan")
