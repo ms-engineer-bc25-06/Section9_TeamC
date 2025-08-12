@@ -36,7 +36,7 @@ class Challenge(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    creator = relationship("User", back_populates="created_challenges")
+    creator = relationship("User", )
     participations = relationship("ChallengeParticipation", back_populates="challenge", cascade="all, delete-orphan")
 
 class ChallengeParticipation(Base):

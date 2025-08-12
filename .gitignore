@@ -237,3 +237,8 @@ pnpm-lock.yaml
 
 config/firebase-credentials.json
 serviceAccountKey.json
+
+# Environment files
+frontend/.env.local
+backend/.env
+serviceAccountKey.json

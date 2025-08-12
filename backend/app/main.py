@@ -72,17 +72,17 @@ async def firebase_login(
         user_service = UserService(db)
         
         # Firebase認証データからDBユーザーを取得/作成
-        db_user = await user_service.get_or_create_user_from_firebase(user)
+        db_user = await user_service.create_or_update_user_from_firebase(user)
         
         return {
             "message": "ログイン成功",
             "user": {
-                "id": db_user.id,
-                "firebase_uid": db_user.firebase_uid,
-                "email": db_user.email,
-                "full_name": db_user.full_name,
-                "username": db_user.username,
-                "is_active": db_user.is_active
+                "id": db_user["id"],
+                "firebase_uid": db_user["firebase_uid"],
+                "email": db_user["email"],
+                "full_name": db_user["full_name"],
+                "username": db_user["username"],
+                "is_active": True
             }
         }
         
