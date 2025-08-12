@@ -20,5 +20,5 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # リレーション（変更なし）
-    children = relationship("Child", back_populates="parent", cascade="all, delete-orphan")
-    created_challenges = relationship("Challenge", back_populates="creator", cascade="all, delete-orphan")
+    # children = relationship("Child", back_populates="parent", cascade="all, delete-orphan")
+    # created_challenges = relationship("Challenge", back_populates="creator", cascade="all, delete-orphan")

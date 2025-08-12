@@ -72,7 +72,7 @@ async def firebase_login(
         user_service = UserService(db)
         
         # Firebase認証データからDBユーザーを取得/作成
-        db_user = await user_service.get_or_create_user_from_firebase(user)
+        db_user = await user_service.create_or_update_user_from_firebase(user)
         
         return {
             "message": "ログイン成功",
