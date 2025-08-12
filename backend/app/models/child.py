@@ -14,6 +14,8 @@ class Child(Base):
     user_id = Column(String(255), nullable=False)  # Firebase UIDに対応
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
+    challenges = relationship("Challenge", back_populates="child")
+
     # 不要なフィールドを削除:
     # - school, profile_image, interests (要件にない)
     # - updated_at (DBスキーマにない)
