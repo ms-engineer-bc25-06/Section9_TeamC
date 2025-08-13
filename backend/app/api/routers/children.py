@@ -1,183 +1,224 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from typing import List, Optional
 from datetime import date
+
 from app.core.database import get_db
+from app.utils.auth import get_current_user
 from app.models.child import Child
-from app.models.user import User
 from app.schemas.child import Child as ChildSchema, ChildCreate, ChildUpdate
-from app.api.routers.auth import get_current_active_user
 
 router = APIRouter()
 
-@router.get("/", response_model=List[ChildSchema])
+def calculate_age(birth_date: date) -> int:
+    """生年月日から年齢を計算"""
+    today = date.today()
+    return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+
+@router.get("/children", response_model=List[ChildSchema])
 async def get_children(
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db),
-    page: int = Query(1, ge=1, description="ページ番号"),
-    limit: int = Query(10, ge=1, le=100, description="1ページあたりの件数"),
-    sort: Optional[str] = Query("created_at_desc", description="ソート順")
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    skip: int = Query(0, ge=0, description="スキップする件数"),
+    limit: int = Query(100, ge=1, le=100, description="取得する件数"),
+    sort_by: str = Query("created_at", description="ソート基準"),
+    order: str = Query("desc", description="ソート順序")
 ):
-    """子ども一覧取得（ページネーション・ソート対応）"""
-    
-    # ソート設定
-    sort_options = {
-        "created_at_desc": Child.created_at.desc(),
-        "created_at_asc": Child.created_at.asc(),
-        "name_asc": Child.name.asc(),
-        "name_desc": Child.name.desc(),
-    }
-    
-    order_by = sort_options.get(sort, Child.created_at.desc())
-    
-    # ページネーション計算
-    offset = (page - 1) * limit
-    
-    # クエリ実行 - user_id を使用
-    children = db.query(Child)\
-        .filter(Child.user_id == current_user.firebase_uid)\
-        .order_by(order_by)\
-        .offset(offset)\
-        .limit(limit)\
-        .all()
-    
-    # 年齢計算を追加
-    for child in children:
-        if child.birth_date:
-            today = date.today()
-            age = today.year - child.birth_date.year
-            if today.month < child.birth_date.month or \
-               (today.month == child.birth_date.month and today.day < child.birth_date.day):
-                age -= 1
-            child.age = age
-    
-    return children
-
-@router.post("/", response_model=ChildSchema)
-async def create_child(
-    child: ChildCreate,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """子ども登録"""
-    
-    # 重複チェック（同じユーザーの同じ名前）
-    existing_child = db.query(Child).filter(
-        Child.user_id == current_user.firebase_uid,
-        Child.name == child.name.strip()
-    ).first()
-    
-    if existing_child:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="同じ名前の子どもが既に登録されています"
+    """認証済みユーザーの子ども一覧を取得"""
+    try:
+        # ソート順序の設定
+        order_by = None
+        if hasattr(Child, sort_by):
+            column = getattr(Child, sort_by)
+            order_by = column.desc() if order == "desc" else column.asc()
+        else:
+            order_by = Child.created_at.desc()
+        
+        # 子ども一覧を取得
+        result = await db.execute(
+            select(Child)
+            .where(Child.user_id == current_user["user_id"])
+            .order_by(order_by)
+            .offset(skip)
+            .limit(limit)
         )
-    
-    # 新規作成 - user_id を使用
-    db_child = Child(
-        **child.dict(),
-        user_id=current_user.firebase_uid  # parent_id → user_id に修正
-    )
-    
-    db.add(db_child)
-    db.commit()
-    db.refresh(db_child)
-    
-    # 年齢計算
-    if db_child.birth_date:
-        today = date.today()
-        age = today.year - db_child.birth_date.year
-        if today.month < db_child.birth_date.month or \
-           (today.month == db_child.birth_date.month and today.day < db_child.birth_date.day):
-            age -= 1
-        db_child.age = age
-    
-    return db_child
+        children = result.scalars().all()
+        
+        # 年齢を計算して追加
+        for child in children:
+            if child.birth_date:
+                child.age = calculate_age(child.birth_date)
+        
+        return children
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"子ども一覧の取得に失敗しました: {str(e)}"
+        )
 
-@router.get("/{child_id}", response_model=ChildSchema)
+@router.post("/children", response_model=ChildSchema, status_code=status.HTTP_201_CREATED)
+async def create_child(
+    child_data: ChildCreate,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """新しい子どもを登録"""
+    try:
+        # 同名の子どもがいないかチェック
+        result = await db.execute(
+            select(Child)
+            .where(Child.user_id == current_user["user_id"])
+            .where(Child.name == child_data.name)
+        )
+        existing_child = result.scalar_one_or_none()
+        
+        if existing_child:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"「{child_data.name}」という名前の子どもは既に登録されています"
+            )
+        
+        # 新しい子どもを作成
+        new_child = Child(
+            name=child_data.name,
+            nickname=child_data.nickname,
+            grade=child_data.grade,
+            birth_date=child_data.birth_date,
+            user_id=current_user["user_id"]
+        )
+        
+        db.add(new_child)
+        await db.commit()
+        await db.refresh(new_child)
+        
+        # 年齢を計算して追加
+        if new_child.birth_date:
+            new_child.age = calculate_age(new_child.birth_date)
+        
+        return new_child
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"子どもの登録に失敗しました: {str(e)}"
+        )
+
+@router.get("/children/{child_id}", response_model=ChildSchema)
 async def get_child(
     child_id: int,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
-    """子ども詳細取得"""
-    child = db.query(Child).filter(
-        Child.id == child_id,
-        Child.user_id == current_user.firebase_uid  # parent_id → user_id に修正
-    ).first()
-
-    if not child:
+    """特定の子ども情報を取得"""
+    try:
+        result = await db.execute(
+            select(Child)
+            .where(Child.id == child_id)
+            .where(Child.user_id == current_user["user_id"])
+        )
+        child = result.scalar_one_or_none()
+        
+        if not child:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="指定された子どもが見つかりません"
+            )
+        
+        # 年齢を計算して追加
+        if child.birth_date:
+            child.age = calculate_age(child.birth_date)
+        
+        return child
+        
+    except HTTPException:
+        raise
+    except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="子どもが見つかりません"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"子ども情報の取得に失敗しました: {str(e)}"
         )
 
-    # 年齢計算
-    if child.birth_date:
-        today = date.today()
-        age = today.year - child.birth_date.year
-        if today.month < child.birth_date.month or \
-           (today.month == child.birth_date.month and today.day < child.birth_date.day):
-            age -= 1
-        child.age = age
-
-    return child
-
-@router.put("/{child_id}", response_model=ChildSchema)
+@router.put("/children/{child_id}", response_model=ChildSchema)
 async def update_child(
     child_id: int,
     child_update: ChildUpdate,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
-    """子ども情報更新"""
-    child = db.query(Child).filter(
-        Child.id == child_id,
-        Child.user_id == current_user.firebase_uid  # parent_id → user_id に修正
-    ).first()
-
-    if not child:
+    """子ども情報を更新"""
+    try:
+        result = await db.execute(
+            select(Child)
+            .where(Child.id == child_id)
+            .where(Child.user_id == current_user["user_id"])
+        )
+        child = result.scalar_one_or_none()
+        
+        if not child:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="指定された子どもが見つかりません"
+            )
+        
+        # 更新データを適用
+        update_data = child_update.dict(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(child, field, value)
+        
+        await db.commit()
+        await db.refresh(child)
+        
+        # 年齢を計算して追加
+        if child.birth_date:
+            child.age = calculate_age(child.birth_date)
+        
+        return child
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="子どもが見つかりません"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"子ども情報の更新に失敗しました: {str(e)}"
         )
 
-    update_data = child_update.dict(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(child, field, value)
-
-    db.commit()
-    db.refresh(child)
-    
-    # 年齢計算
-    if child.birth_date:
-        today = date.today()
-        age = today.year - child.birth_date.year
-        if today.month < child.birth_date.month or \
-           (today.month == child.birth_date.month and today.day < child.birth_date.day):
-            age -= 1
-        child.age = age
-
-    return child
-
-@router.delete("/{child_id}")
+@router.delete("/children/{child_id}")
 async def delete_child(
     child_id: int,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
-    """子ども削除"""
-    child = db.query(Child).filter(
-        Child.id == child_id,
-        Child.user_id == current_user.firebase_uid  # parent_id → user_id に修正
-    ).first()
-
-    if not child:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="子どもが見つかりません"
+    """子どもを削除"""
+    try:
+        result = await db.execute(
+            select(Child)
+            .where(Child.id == child_id)
+            .where(Child.user_id == current_user["user_id"])
         )
-
-    db.delete(child)
-    db.commit()
-    return {"message": "子どもを削除しました"}
+        child = result.scalar_one_or_none()
+        
+        if not child:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="指定された子どもが見つかりません"
+            )
+        
+        await db.delete(child)
+        await db.commit()
+        
+        return {"message": "子どもを削除しました"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"子どもの削除に失敗しました: {str(e)}"
+        )
