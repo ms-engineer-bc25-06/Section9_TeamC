@@ -1,15 +1,15 @@
--- Section9 TeamC Database Initialization Script
--- This script creates the database schema for the child challenge tracking application
+- Section9 TeamC データベース初期化スクリプト
+-- 子供向け英語学習チャレンジアプリのデータベーススキーマを作成します
 
--- Create database and user (handled by Docker environment variables)
+-- データベースとユーザーの作成（Docker環境変数で処理）
 -- CREATE DATABASE bud_db;
 -- CREATE USER bud_user WITH PASSWORD 'bud_password';
 -- GRANT ALL PRIVILEGES ON DATABASE bud_db TO bud_user;
 
--- Enable necessary extensions
+-- 必要な拡張機能を有効化
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Users table
+-- ユーザーテーブル（親）
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -19,10 +19,10 @@ CREATE TABLE users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create index on email for faster lookups
+-- メールアドレスの高速検索用インデックス
 CREATE INDEX idx_users_email ON users(email);
 
--- Children table
+-- 子供テーブル
 CREATE TABLE children (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -32,10 +32,10 @@ CREATE TABLE children (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create index on user_id for faster parent-child lookups
+-- 親子関係の高速検索用インデックス
 CREATE INDEX idx_children_user_id ON children(user_id);
 
--- Challenges table
+-- チャレンジテーブル（音声認識記録）
 CREATE TABLE challenges (
     id SERIAL PRIMARY KEY,
     child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
@@ -44,55 +44,60 @@ CREATE TABLE challenges (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create index on child_id for faster challenge lookups per child
+-- 子供ごとのチャレンジ検索用インデックス
 CREATE INDEX idx_challenges_child_id ON challenges(child_id);
--- Create index on created_at for chronological queries
+-- 時系列検索用インデックス
 CREATE INDEX idx_challenges_created_at ON challenges(created_at);
 
--- Create a function to automatically update the updated_at column
+-- updated_at列を自動更新するための関数
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
+
 $$ language 'plpgsql';
 
--- Create trigger to automatically update updated_at for users table
+-- ユーザーテーブルのupdated_at自動更新トリガー
 CREATE TRIGGER update_users_updated_at 
     BEFORE UPDATE ON users 
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
 
--- Add some constraints for data integrity
+-- 子供テーブルのupdated_at自動更新トリガー
+CREATE TRIGGER update_children_updated_at 
+    BEFORE UPDATE ON children 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- データ整合性のための制約を追加
 ALTER TABLE users ADD CONSTRAINT check_email_format 
     CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
 
 ALTER TABLE users ADD CONSTRAINT check_name_length 
     CHECK (LENGTH(TRIM(name)) >= 1);
 
-ALTER TABLE children ADD CONSTRAINT check_name_length 
-    CHECK (LENGTH(TRIM(name)) >= 1);
-
-ALTER TABLE challenges ADD CONSTRAINT check_audio_duration_positive 
-    CHECK (audio_duration IS NULL OR audio_duration >= 0);
-
--- Insert sample data for development/testing
+-- 開発・テスト用のサンプルデータを挿入
 INSERT INTO users (email, name) VALUES 
     ('parent1@example.com', '田中太郎'),
     ('parent2@example.com', '佐藤花子');
 
-INSERT INTO children (user_id, nickname, grade) VALUES 
-    (1, 'いちろう', '小学3年'),
-    (1, 'じろう', '小学1年'),
-    (2, 'さぶろう', '小学5年');
+INSERT INTO children (user_id, nickname, birthdate) VALUES 
+    (1, 'ゆうくん', '2016-04-15'),  -- 2025年時点で8-9歳
+    (1, 'あかりちゃん', '2018-08-20'),  -- 2025年時点で6-7歳
+    (2, 'そらちゃん', '2014-12-10');  -- 2025年時点で10-11歳
 
-INSERT INTO challenges (child_id, transcript, comment, audio_duration) VALUES 
-    (1, '今日は算数の宿題を頑張りました。九九を全部覚えました。', '素晴らしい頑張りでした！', 30),
-    (1, '友達と一緒に公園で遊びました。楽しかったです。', '友達と仲良く遊べてよかったね', 25),
-    (2, 'ひらがなの練習をしました。「あ」から「ん」まで書けました。', '上手に書けるようになったね！', 20),
-    (3, '理科の実験をしました。水が氷になる実験です。', '実験の観察がよくできていました', 35);
+INSERT INTO challenges (child_id, transcript, comment) VALUES 
+    (1, 'Hello!', 'とても上手に挨拶できたね！😊 発音がきれいだよ！'),
+    (1, 'My name is Yuto.', '完璧な自己紹介だったよ！👏 はっきりと話せてすごいね！'),
+    (1, 'I like apples.', 'すばらしい！「I like apples」って上手に言えたね！🍎 りんごは美味しいよね！'),
+    (1, 'Thank you very much.', 'とても丁寧にありがとうが言えたね！✨ 礼儀正しくて素晴らしいよ！'),
+    (2, 'Good morning!', '元気な朝の挨拶だったね！🌅 笑顔が伝わってくるよ！'),
+    (2, 'How are you?', '上手に質問できたね！💬 会話が上達してるよ！'),
+    (3, 'I am fine.', 'パーフェクトな答えだったよ！😄 とても上手になったね！'),
+    (3, 'See you later!', '素敵なお別れの挨拶だね！👋 たくさんの英語フレーズを覚えたね！');
 
--- Grant permissions to the application user
+-- アプリケーションユーザーに権限を付与
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO bud_user;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO bud_user;
