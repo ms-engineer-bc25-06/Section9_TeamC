@@ -22,7 +22,9 @@ BUD アプリケーションのデータベース設計をまとめたもので�
 | カラム名   | 型           | 制約             | 説明                         |
 | ---------- | ------------ | ---------------- | ---------------------------- |
 | id         | UUID         | PRIMARY KEY      | ユーザー ID                  |
-| google_id  | VARCHAR(255) | UNIQUE, NOT NULL | Google 連携用 ID             |
+| email      | VARCHAR(255) | UNIQUE, NOT NULL | メールアドレス               |
+| name       | VARCHAR(100) | NOT NULL         | ユーザー名                   |
+| google_id  | VARCHAR(255) | UNIQUE           | Google 連携用 ID             |
 | created_at | TIMESTAMP    | DEFAULT now()    | 登録日時                     |
 | updated_at | TIMESTAMP    | DEFAULT now()    | 更新日時（更新時に明示更新） |
 
@@ -34,8 +36,8 @@ BUD アプリケーションのデータベース設計をまとめたもので�
 | ---------- | ----------- | --------------------------------- | ---------------------------- |
 | id         | UUID        | PRIMARY KEY                       | 子ども ID                    |
 | user_id    | UUID        | FOREIGN KEY → users(id), NOT NULL | 親ユーザー ID                |
-| name       | VARCHAR(50) | NOT NULL                          | 子どもの名前                 |
-| birthdate  | DATE        | NOT NULL                          | 誕生日（年齢計算用）         |
+| nickname   | VARCHAR(50) |                                   | 子どもの呼び名               |
+| birthdate  | DATE        |                                   | 誕生日（年齢計算用）         |
 | created_at | TIMESTAMP   | DEFAULT now()                     | 登録日時                     |
 | updated_at | TIMESTAMP   | DEFAULT now()                     | 更新日時（更新時に明示更新） |
 
@@ -43,13 +45,13 @@ BUD アプリケーションのデータベース設計をまとめたもので�
 
 ### 3.3 challenges（チャレンジ記録）
 
-| カラム名          | 型        | 制約                                 | 説明               |
-| ----------------- | --------- | ------------------------------------ | ------------------ |
-| id                | UUID      | PRIMARY KEY                          | チャレンジ記録 ID  |
-| child_id          | UUID      | FOREIGN KEY → children(id), NOT NULL | 対象の子ども       |
-| transcription     | TEXT      | NOT NULL                             | 文字起こし結果     |
-| ai_review_content | TEXT      |                                      | AI レビュー内容    |
-| created_at        | TIMESTAMP | DEFAULT now()                        | チャレンジ実施日時 |
+| カラム名   | 型        | 制約                                 | 説明               |
+| ---------- | --------- | ------------------------------------ | ------------------ |
+| id         | UUID      | PRIMARY KEY                          | チャレンジ記録 ID  |
+| child_id   | UUID      | FOREIGN KEY → children(id), NOT NULL | 対象の子ども       |
+| transcript | TEXT      |                                      | 文字起こし結果     |
+| comment    | TEXT      |                                      | AI レビュー内容    |
+| created_at | TIMESTAMP | DEFAULT now()                        | チャレンジ実施日時 |
 
 ---
 
@@ -69,10 +71,10 @@ BUD アプリケーションのデータベース設計をまとめたもので�
 
 ## 5. 補足・注意点
 
-- 録音データは DB に保存せず、クライアント側で処理。DB には文字起こし結果（transcription）のみ保存
+- 録音データは DB に保存せず、クライアント側で処理。DB には文字起こし結果（transcript）のみ保存
 - 親ユーザー 1 人に複数の子どもを登録可能（1:N）
 - 子どもごとにチャレンジ履歴を管理（1:N）
 - `birthdate` から年齢はクエリやアプリ側で動的に算出する設計
-- チャレンジ記録には**AI レビュー内容（ai_review_content）**も保存可能
+- チャレンジ記録には**AI レビュー内容（comment）**も保存可能
 
 ---
