@@ -14,6 +14,7 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
+    google_id VARCHAR(255) UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -25,10 +26,10 @@ CREATE INDEX idx_users_email ON users(email);
 CREATE TABLE children (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name VARCHAR(100) NOT NULL,
     nickname VARCHAR(50),
-    grade VARCHAR(20),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    birthdate DATE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create index on user_id for faster parent-child lookups
@@ -40,7 +41,6 @@ CREATE TABLE challenges (
     child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
     transcript TEXT,
     comment TEXT,
-    audio_duration INTEGER, -- duration in seconds
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -82,10 +82,10 @@ INSERT INTO users (email, name) VALUES
     ('parent1@example.com', '田中太郎'),
     ('parent2@example.com', '佐藤花子');
 
-INSERT INTO children (user_id, name, nickname, grade) VALUES 
-    (1, '田中一郎', 'いちろう', '小学3年'),
-    (1, '田中二郎', 'じろう', '小学1年'),
-    (2, '佐藤三郎', 'さぶろう', '小学5年');
+INSERT INTO children (user_id, nickname, grade) VALUES 
+    (1, 'いちろう', '小学3年'),
+    (1, 'じろう', '小学1年'),
+    (2, 'さぶろう', '小学5年');
 
 INSERT INTO challenges (child_id, transcript, comment, audio_duration) VALUES 
     (1, '今日は算数の宿題を頑張りました。九九を全部覚えました。', '素晴らしい頑張りでした！', 30),
