@@ -238,4 +238,4 @@ app.include_router(voice_router)
 
 # Children Management API
 from app.api.routers.children import router as children_router
-app.include_router(children_router, prefix="/api", tags=["children"])
+app.include_router(children_router, prefix="/api/children", tags=["children"])

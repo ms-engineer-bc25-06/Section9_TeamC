@@ -1,11 +1,13 @@
-'use client'; // クライアントコンポーネントとしてマーク
+﻿'use client'; // クライアントコンポーネントとしてマーク
 
+import { createChild } from '@/app/(app)/children/childApi';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils'; // shadcn/uiのcnユーティリティ
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
@@ -16,14 +18,48 @@ export default function ChildRegisterPage() {
   const [nickname, setNickname] = useState('');
   const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
   const router = useRouter();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: ここで子どもの情報をデータベースに登録するロジックを実装
-    console.log('登録情報:', { nickname, birthDate: birthDate?.toISOString() });
+    console.log('handleSubmit発火');
 
-    // 登録後、ユーザー選択画面にリダイレクト
-    router.push('/children');
+    if (!birthDate) {
+      toast({
+        variant: 'destructive',
+        description: '誕生日を入力してください',
+      });
+      return;
+    }
+
+    try {
+      setLoading(true); // ローディング開始
+
+      await createChild({
+        nickname,
+        birthday: birthDate.toISOString().split('T')[0], // "YYYY-MM-DD"
+      });
+      toast({
+        description: '子どもを登録しました', // 成功通知
+      });
+
+      router.push('/children');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast({
+          variant: 'destructive', // 赤色系
+          description: error.message,
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          description: '登録に失敗しました',
+        });
+      }
+    } finally {
+      setLoading(false); // ローディング終了
+    }
   };
 
   return (
@@ -92,11 +128,8 @@ export default function ChildRegisterPage() {
               </Popover>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 bg-green-500 text-white hover:bg-green-600 mt-8"
-            >
-              登録する
+            <Button type="submit" disabled={loading}>
+              {loading ? '登録中...' : '登録する'}
             </Button>
           </form>
         </CardContent>
@@ -104,5 +137,3 @@ export default function ChildRegisterPage() {
     </div>
   );
 }
-
-// temp change to force update
