@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 // Firebase認証トークンを取得するヘルパー関数（デバッグ強化版）
 const getAuthHeaders = async (): Promise<Record<string, string>> => {
@@ -192,6 +192,38 @@ export const api = {
         return res.json();
       } catch (error) {
         console.error('子どもの登録に失敗:', error);
+        throw error;
+      }
+    },
+  },
+  // 音声文字起こしAPI
+  voice: {
+    transcribe: async (audioBlob: Blob, childId: string) => {
+      try {
+        const headers = await getAuthHeaders();
+        delete headers['Content-Type'];
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'recording.webm');
+        formData.append('child_id', childId);
+
+        const res = await fetch(`${API_URL}/voice/transcribe`, {
+          method: 'POST',
+          headers: {
+            ...headers,
+            // FormDataを使用する場合はContent-Typeを自動設定
+          },
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error('バックエンドエラー詳細:', errorData);
+          throw new Error(errorData.detail || `文字起こしに失敗しました(${res.status})`);
+        }
+
+        return res.json();
+      } catch (error) {
+        console.error('文字起こしに失敗:', error);
         throw error;
       }
     },
