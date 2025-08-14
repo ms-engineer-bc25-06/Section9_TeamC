@@ -1,5 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, BackgroundTasks
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from uuid import UUID
 from app.core.database import get_db
 from app.models.child import Child
 from app.models.challenge import Challenge
@@ -16,8 +18,8 @@ async def test_endpoint():
 async def transcribe_voice(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    child_id: int = 1,
-    db: Session = Depends(get_db)
+    child_id: str,  # UUID文字列として受け取り
+    db: AsyncSession = Depends(get_db)  # 非同期セッション
 ):
     """音声ファイルをアップロードして音声認識・AIフィードバック生成を実行"""
     
@@ -25,23 +27,26 @@ async def transcribe_voice(
     if not file.content_type or not file.content_type.startswith('audio/'):
         raise HTTPException(status_code=400, detail="音声ファイルが必要です")
     
-    # 子供の存在確認
-    child = db.query(Child).filter(Child.id == child_id).first()
+    # 子供の存在確認（UUID変換して非同期クエリ）
+    child_uuid = UUID(child_id)  # 文字列をUUIDに変換
+    result = await db.execute(select(Child).where(Child.id == child_uuid))
+    child = result.scalar_one_or_none()
     if not child:
         raise HTTPException(status_code=404, detail="子供が見つかりません")
     
-    challenge = Challenge(child_id=child_id)
+    # チャレンジ記録を作成・保存
+    challenge = Challenge(child_id=child_uuid)
     db.add(challenge)
-    db.commit()
-    db.refresh(challenge)
+    await db.commit()
+    await db.refresh(challenge)
     
     # バックグラウンドで音声認識・フィードバック生成を実行
     background_tasks.add_task(
         process_voice_transcription,
-        challenge.id,  # ← voice_record_id から challenge.id に修正
+        str(challenge.id),  # UUIDを文字列として渡す
         await file.read(),
         file.filename,
-        child.name
+        child.nickname  # nicknameに修正
     )
     
     return {
@@ -51,7 +56,7 @@ async def transcribe_voice(
     }
 
 async def process_voice_transcription(
-    transcript_id: int,
+    transcript_id: str,  # UUID文字列として受け取り
     audio_content: bytes,
     filename: str,
     child_name: str
@@ -59,6 +64,7 @@ async def process_voice_transcription(
     """音声認識とフィードバック生成のバックグラウンド処理"""
     from app.core.database import SessionLocal
     
+    # 同期セッションを使用（BackgroundTasks内のため）
     db = SessionLocal()
     
     try:
@@ -68,7 +74,9 @@ async def process_voice_transcription(
         # AIフィードバック生成
         feedback = await voice_service.generate_feedback(transcribed_text, child_name)
         
-        challenge = db.query(Challenge).filter(Challenge.id == transcript_id).first()
+        # UUID変換して記録を更新
+        transcript_uuid = UUID(transcript_id)
+        challenge = db.query(Challenge).filter(Challenge.id == transcript_uuid).first()
         if challenge:
             challenge.transcript = transcribed_text
             challenge.comment = feedback
@@ -76,19 +84,23 @@ async def process_voice_transcription(
         
     except Exception as e:
         # エラーの場合もログを残す
-        challenge = db.query(Challenge).filter(Challenge.id == transcript_id).first()
+        transcript_uuid = UUID(transcript_id)  # UUID変換を追加
+        challenge = db.query(Challenge).filter(Challenge.id == transcript_uuid).first()
         if challenge:
-            challenge.comment = f"処理エラー: {str(e)}"
-            db.commit()
+           challenge.comment = f"処理エラー: {str(e)}"
+           db.commit()
         
     finally:
         db.close()
 
 @router.get("/transcript/{transcript_id}")
-async def get_transcript(transcript_id: int, db: Session = Depends(get_db)):
+async def get_transcript(transcript_id: str, db: AsyncSession = Depends(get_db)):
     """音声認識結果の取得"""
-    
-    challenge = db.query(Challenge).filter(Challenge.id == transcript_id).first()
+
+    # UUID変換して非同期クエリ実行
+    transcript_uuid = UUID(transcript_id)
+    result = await db.execute(select(Challenge).where(Challenge.id == transcript_uuid))
+    challenge = result.scalar_one_or_none()
 
     if not challenge:
         raise HTTPException(status_code=404, detail="音声記録が見つかりません")
@@ -103,14 +115,18 @@ async def get_transcript(transcript_id: int, db: Session = Depends(get_db)):
     }
 
 @router.get("/history/{child_id}")
-async def get_voice_history(child_id: int, db: Session = Depends(get_db)):
+async def get_voice_history(child_id: str, db: AsyncSession = Depends(get_db)):
     """子供の音声認識履歴を取得"""
     
-    challenges = db.query(Challenge)\
-        .filter(Challenge.child_id == child_id)\
-        .filter(Challenge.transcript.isnot(None))\
-        .order_by(Challenge.created_at.desc())\
-        .all()
+    # UUID変換して履歴を非同期取得
+    child_uuid = UUID(child_id)
+    result = await db.execute(
+        select(Challenge)
+        .where(Challenge.child_id == child_uuid)
+        .where(Challenge.transcript.isnot(None))  # 完了した記録のみ
+        .order_by(Challenge.created_at.desc())  # 新しい順
+    )
+    challenges = result.scalars().all()
 
     return {
         "child_id": child_id,
