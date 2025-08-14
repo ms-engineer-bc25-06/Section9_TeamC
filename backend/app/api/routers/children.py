@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List, Optional
 from datetime import date
+from uuid import UUID  # UUID対応のため追加
 
 from app.core.database import get_db
 from app.utils.auth import get_current_user
@@ -35,20 +36,23 @@ async def get_children(
         else:
             order_by = Child.created_at.desc()
         
-        # 子ども一覧を取得
+        # 認証ユーザーのuser_idをUUIDに変換
+        user_uuid = UUID(current_user["user_id"])
+        
+        # 子ども一覧を非同期で取得
         result = await db.execute(
             select(Child)
-            .where(Child.user_id == current_user["user_id"])
+            .where(Child.user_id == user_uuid)  # UUID形式で検索
             .order_by(order_by)
             .offset(skip)
             .limit(limit)
         )
         children = result.scalars().all()
         
-        # 年齢を計算して追加
+        # 各子どもの年齢を計算して追加
         for child in children:
-            if child.birth_date:
-                child.age = calculate_age(child.birth_date)
+            if child.birthdate:  # birth_date → birthdate に修正
+                child.age = calculate_age(child.birthdate)
         
         return children
         
@@ -66,27 +70,28 @@ async def create_child(
 ):
     """新しい子どもを登録"""
     try:
-        # 同名の子どもがいないかチェック
+        # 認証ユーザーのuser_idをUUIDに変換
+        user_uuid = UUID(current_user["user_id"])
+        
+        # 同じnicknameの子どもがいないかチェック（nameはモデルから削除済み）
         result = await db.execute(
             select(Child)
-            .where(Child.user_id == current_user["user_id"])
-            .where(Child.name == child_data.name)
+            .where(Child.user_id == user_uuid)
+            .where(Child.nickname == child_data.nickname)
         )
         existing_child = result.scalar_one_or_none()
         
         if existing_child:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"「{child_data.name}」という名前の子どもは既に登録されています"
+                detail=f"「{child_data.nickname}」という呼び名の子どもは既に登録されています"
             )
         
-        # 新しい子どもを作成
+        # 新しい子どもを作成（UUID構造に対応）
         new_child = Child(
-            name=child_data.name,
-            nickname=child_data.nickname,
-            grade=child_data.grade,
-            birth_date=child_data.birth_date,
-            user_id=current_user["user_id"]
+            nickname=child_data.nickname,  # nameは削除、nicknameのみ
+            birthdate=child_data.birthdate,  # birth_date → birthdate
+            user_id=user_uuid  # UUID形式で保存
         )
         
         db.add(new_child)
@@ -94,8 +99,8 @@ async def create_child(
         await db.refresh(new_child)
         
         # 年齢を計算して追加
-        if new_child.birth_date:
-            new_child.age = calculate_age(new_child.birth_date)
+        if new_child.birthdate:
+            new_child.age = calculate_age(new_child.birthdate)
         
         return new_child
         
@@ -110,16 +115,21 @@ async def create_child(
 
 @router.get("/children/{child_id}", response_model=ChildSchema)
 async def get_child(
-    child_id: int,
+    child_id: str,  # UUID文字列として受け取り
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """特定の子ども情報を取得"""
     try:
+        # UUID変換
+        child_uuid = UUID(child_id)
+        user_uuid = UUID(current_user["user_id"])
+        
+        # 指定された子どもを非同期で取得
         result = await db.execute(
             select(Child)
-            .where(Child.id == child_id)
-            .where(Child.user_id == current_user["user_id"])
+            .where(Child.id == child_uuid)
+            .where(Child.user_id == user_uuid)  # 認証ユーザーの子どものみ
         )
         child = result.scalar_one_or_none()
         
@@ -130,13 +140,18 @@ async def get_child(
             )
         
         # 年齢を計算して追加
-        if child.birth_date:
-            child.age = calculate_age(child.birth_date)
+        if child.birthdate:
+            child.age = calculate_age(child.birthdate)
         
         return child
         
     except HTTPException:
         raise
+    except ValueError:  # UUID変換エラー
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="無効な子どもIDです"
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -145,17 +160,22 @@ async def get_child(
 
 @router.put("/children/{child_id}", response_model=ChildSchema)
 async def update_child(
-    child_id: int,
+    child_id: str,  # UUID文字列として受け取り
     child_update: ChildUpdate,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """子ども情報を更新"""
     try:
+        # UUID変換
+        child_uuid = UUID(child_id)
+        user_uuid = UUID(current_user["user_id"])
+        
+        # 更新対象の子どもを取得
         result = await db.execute(
             select(Child)
-            .where(Child.id == child_id)
-            .where(Child.user_id == current_user["user_id"])
+            .where(Child.id == child_uuid)
+            .where(Child.user_id == user_uuid)  # 認証ユーザーの子どものみ
         )
         child = result.scalar_one_or_none()
         
@@ -174,13 +194,18 @@ async def update_child(
         await db.refresh(child)
         
         # 年齢を計算して追加
-        if child.birth_date:
-            child.age = calculate_age(child.birth_date)
+        if child.birthdate:
+            child.age = calculate_age(child.birthdate)
         
         return child
         
     except HTTPException:
         raise
+    except ValueError:  # UUID変換エラー
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="無効な子どもIDです"
+        )
     except Exception as e:
         await db.rollback()
         raise HTTPException(
@@ -190,16 +215,21 @@ async def update_child(
 
 @router.delete("/children/{child_id}")
 async def delete_child(
-    child_id: int,
+    child_id: str,  # UUID文字列として受け取り
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """子どもを削除"""
     try:
+        # UUID変換
+        child_uuid = UUID(child_id)
+        user_uuid = UUID(current_user["user_id"])
+        
+        # 削除対象の子どもを取得
         result = await db.execute(
             select(Child)
-            .where(Child.id == child_id)
-            .where(Child.user_id == current_user["user_id"])
+            .where(Child.id == child_uuid)
+            .where(Child.user_id == user_uuid)  # 認証ユーザーの子どものみ
         )
         child = result.scalar_one_or_none()
         
@@ -209,6 +239,7 @@ async def delete_child(
                 detail="指定された子どもが見つかりません"
             )
         
+        # 子どもを削除
         await db.delete(child)
         await db.commit()
         
@@ -216,6 +247,11 @@ async def delete_child(
         
     except HTTPException:
         raise
+    except ValueError:  # UUID変換エラー
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="無効な子どもIDです"
+        )
     except Exception as e:
         await db.rollback()
         raise HTTPException(
