@@ -28,7 +28,7 @@ export default function ChildEditPage() {
   useEffect(() => {
     const fetchChild = async () => {
       if (!childId) return;
-      
+
       try {
         setIsFetching(true);
         const childData = await api.children.get(childId);
@@ -192,7 +192,7 @@ export default function ChildEditPage() {
               >
                 {isLoading ? '更新中...' : '更新する'}
               </Button>
-              
+
               <Button
                 type="button"
                 onClick={handleDelete}
@@ -205,11 +205,7 @@ export default function ChildEditPage() {
           </form>
 
           <div className="mt-6">
-            <Button
-              onClick={() => router.push('/children')}
-              variant="outline"
-              className="w-full"
-            >
+            <Button onClick={() => router.push('/children')} variant="outline" className="w-full">
               キャンセル
             </Button>
           </div>

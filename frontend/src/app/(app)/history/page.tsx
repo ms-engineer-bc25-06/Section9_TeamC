@@ -52,23 +52,26 @@ export default function ChallengeHistoryPage() {
     const fetchRecords = async () => {
       try {
         setLoading(true);
-        
+
         // 音声認識履歴をAPIから取得
         const data = await api.voice.getHistory(selectedChildId);
-        
+
         // APIレスポンスを画面表示用の形式に変換
-        const recordsForChild = data.transcripts.map((item: { 
-          id: string; 
-          created_at: string; 
-          transcript?: string 
-        }) => ({
-          id: item.id,
-          childId: selectedChildId,
-          date: item.created_at,
-          summary: item.transcript ? 
-            (item.transcript.length > 30 ? item.transcript.substring(0, 30) + '...' : item.transcript) :
-            'チャレンジ記録'
-        })).sort((a: ChallengeRecord, b: ChallengeRecord) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
+        const recordsForChild = data.transcripts
+          .map((item: { id: string; created_at: string; transcript?: string }) => ({
+            id: item.id,
+            childId: selectedChildId,
+            date: item.created_at,
+            summary: item.transcript
+              ? item.transcript.length > 30
+                ? item.transcript.substring(0, 30) + '...'
+                : item.transcript
+              : 'チャレンジ記録',
+          }))
+          .sort(
+            (a: ChallengeRecord, b: ChallengeRecord) =>
+              parseISO(b.date).getTime() - parseISO(a.date).getTime()
+          );
 
         setRecords(recordsForChild);
 
@@ -78,7 +81,6 @@ export default function ChallengeHistoryPage() {
           isSameMonth(parseISO(record.date), currentMonth)
         ).length;
         setThisMonthChallengeCount(count);
-        
       } catch (error) {
         console.error('履歴取得エラー:', error);
         setError('履歴の取得に失敗しました');
@@ -213,8 +215,8 @@ export default function ChallengeHistoryPage() {
         </div>
 
         {/* エクスポート機能（今後実装予定） */}
-        <Button 
-          disabled 
+        <Button
+          disabled
           className="py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md w-full max-w-xs bg-gray-300 text-gray-500 cursor-not-allowed"
         >
           <Download className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />

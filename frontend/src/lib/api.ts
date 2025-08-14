@@ -222,7 +222,10 @@ export const api = {
       }
     },
 
-    update: async (childId: string, data: { name?: string; nickname?: string; birthdate?: string }) => {
+    update: async (
+      childId: string,
+      data: { name?: string; nickname?: string; birthdate?: string }
+    ) => {
       try {
         const headers = await getAuthHeaders();
         const res = await fetch(`${API_URL}/children/${childId}`, {
@@ -340,10 +343,8 @@ export const api = {
     list: async (childId?: string) => {
       try {
         const headers = await getAuthHeaders();
-        const url = childId 
-          ? `${API_URL}/voice/history/${childId}`
-          : `${API_URL}/conversations`;
-        
+        const url = childId ? `${API_URL}/voice/history/${childId}` : `${API_URL}/conversations`;
+
         const res = await fetch(url, {
           method: 'GET',
           headers,
