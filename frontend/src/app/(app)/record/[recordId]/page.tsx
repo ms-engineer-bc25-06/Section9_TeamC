@@ -37,10 +37,10 @@ export default function RecordCompletionPage() {
       try {
         setLoading(true);
         setError(null);
-        
+
         // 音声認識結果をAPIから取得
         const data = await api.voice.getTranscript(recordId);
-        
+
         // 子ども情報も取得
         let childName = 'お子さま';
         try {
@@ -49,16 +49,15 @@ export default function RecordCompletionPage() {
         } catch (childError) {
           console.error('子ども情報取得エラー:', childError);
         }
-        
+
         // APIレスポンスを画面表示用の形式に変換
         setRecord({
           id: data.id,
           childId: data.child_id,
           childName: childName,
           timestamp: new Date(data.created_at),
-          aiFeedback: data.comment || 'AIフィードバックを生成中です...'
+          aiFeedback: data.comment || 'AIフィードバックを生成中です...',
         });
-        
       } catch (error) {
         console.error('記録取得エラー:', error);
         setError(error instanceof Error ? error.message : '記録の取得に失敗しました');

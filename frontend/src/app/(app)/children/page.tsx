@@ -78,12 +78,14 @@ export default function ChildrenPage() {
                 <Link href={`/children/confirm?childId=${child.id}`} className="block">
                   <Card className="flex h-full cursor-pointer flex-col justify-center rounded-xl bg-white/70 backdrop-blur-md p-6 shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg border border-white/50">
                     <CardContent className="flex flex-col p-0">
-                      <p className="text-xl font-bold text-gray-700">{child.nickname || child.name}ちゃん</p>
+                      <p className="text-xl font-bold text-gray-700">
+                        {child.nickname || child.name}ちゃん
+                      </p>
                       <p className="text-md text-gray-500">{getDisplayName(child)}</p>
                     </CardContent>
                   </Card>
                 </Link>
-                <Link 
+                <Link
                   href={`/children/edit/${child.id}`}
                   className="absolute top-2 right-2 bg-white/80 hover:bg-white text-gray-600 hover:text-gray-800 rounded-full p-2 shadow-md transition-all"
                 >
