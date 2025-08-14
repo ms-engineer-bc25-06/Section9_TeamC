@@ -16,9 +16,9 @@ async def test_endpoint():
 
 @router.post("/transcribe")
 async def transcribe_voice(
-    child_id: str,  # UUID文字列として受け取り
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
+    child_id: str,  # UUID文字列として受け取り
     db: AsyncSession = Depends(get_db)  # 非同期セッション
 ):
     """音声ファイルをアップロードして音声認識・AIフィードバック生成を実行"""
@@ -30,7 +30,7 @@ async def transcribe_voice(
     # 子供の存在確認（UUID変換して非同期クエリ）
     child_uuid = UUID(child_id)  # 文字列をUUIDに変換
     result = await db.execute(select(Child).where(Child.id == child_uuid))
-    child = result.scalars().first()
+    child = result.scalar_one_or_none()
     if not child:
         raise HTTPException(status_code=404, detail="子供が見つかりません")
     
@@ -100,7 +100,7 @@ async def get_transcript(transcript_id: str, db: AsyncSession = Depends(get_db))
     # UUID変換して非同期クエリ実行
     transcript_uuid = UUID(transcript_id)
     result = await db.execute(select(Challenge).where(Challenge.id == transcript_uuid))
-    challenge = result.scalars().first()
+    challenge = result.scalar_one_or_none()
 
     if not challenge:
         raise HTTPException(status_code=404, detail="音声記録が見つかりません")

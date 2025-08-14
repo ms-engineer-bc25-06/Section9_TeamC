@@ -11,19 +11,35 @@ import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { api } from '@/lib/api';
 
 export default function ChildRegisterPage() {
   const [nickname, setNickname] = useState('');
   const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: ここで子どもの情報をデータベースに登録するロジックを実装
-    console.log('登録情報:', { nickname, birthDate: birthDate?.toISOString() });
+    setIsLoading(true);
+    setError(null);
 
-    // 登録後、ユーザー選択画面にリダイレクト
-    router.push('/children');
+    try {
+      await api.children.create({
+        name: nickname,
+        nickname: nickname,
+        birthdate: birthDate?.toISOString().split('T')[0], // YYYY-MM-DD形式
+      });
+
+      // 登録後、ユーザー選択画面にリダイレクト
+      router.push('/children');
+    } catch (error) {
+      console.error('子ども登録エラー:', error);
+      setError(error instanceof Error ? error.message : '登録に失敗しました');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -36,6 +52,12 @@ export default function ChildRegisterPage() {
           <p className="mb-8 text-center text-gray-600 text-sm sm:text-base">
             たのしく遊べるように、少しだけ聞かせてね
           </p>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -94,9 +116,10 @@ export default function ChildRegisterPage() {
 
             <Button
               type="submit"
-              className="w-full py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 bg-green-500 text-white hover:bg-green-600 mt-8"
+              disabled={isLoading || !nickname.trim()}
+              className="w-full py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 bg-green-500 text-white hover:bg-green-600 mt-8 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
             >
-              登録する
+              {isLoading ? '登録中...' : '登録する'}
             </Button>
           </form>
         </CardContent>
