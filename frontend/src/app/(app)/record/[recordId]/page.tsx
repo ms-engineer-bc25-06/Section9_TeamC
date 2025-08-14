@@ -7,6 +7,7 @@ import { ja } from 'date-fns/locale'; // 日本語ロケールをインポート
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
 
 // API連携用の型定義
 interface RecordData {
@@ -38,23 +39,22 @@ export default function RecordCompletionPage() {
         setError(null);
         
         // 音声認識結果をAPIから取得
-        const response = await fetch(`/api/voice/transcript/${recordId}`);
+        const data = await api.voice.getTranscript(recordId);
         
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('指定された記録が見つかりませんでした');
-          } else {
-            throw new Error('記録の取得に失敗しました');
-          }
+        // 子ども情報も取得
+        let childName = 'お子さま';
+        try {
+          const childData = await api.children.get(data.child_id);
+          childName = childData.nickname || childData.name || 'お子さま';
+        } catch (childError) {
+          console.error('子ども情報取得エラー:', childError);
         }
-        
-        const data = await response.json();
         
         // APIレスポンスを画面表示用の形式に変換
         setRecord({
           id: data.id,
           childId: data.child_id,
-          childName: 'お子さま', // 一旦固定（後で子ども名取得APIと連携可能）
+          childName: childName,
           timestamp: new Date(data.created_at),
           aiFeedback: data.comment || 'AIフィードバックを生成中です...'
         });

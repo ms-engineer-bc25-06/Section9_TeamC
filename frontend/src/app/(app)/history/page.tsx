@@ -9,6 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useChildren } from '@/hooks/useChildren';
+import { api } from '@/lib/api';
 import { format, isSameMonth, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { ArrowLeft, CalendarDays, Download } from 'lucide-react';
@@ -16,11 +18,6 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 // API連携用の型定義
-interface ChildData {
-  id: string;
-  nickname: string;
-}
-
 interface ChallengeRecord {
   id: string;
   childId: string;
@@ -29,38 +26,20 @@ interface ChallengeRecord {
 }
 
 export default function ChallengeHistoryPage() {
-  const [children, setChildren] = useState<ChildData[]>([]);
+  const { children, isLoading: childrenLoading } = useChildren();
   const [selectedChildId, setSelectedChildId] = useState<string>('');
   const [records, setRecords] = useState<ChallengeRecord[]>([]);
   const [thisMonthChallengeCount, setThisMonthChallengeCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 子ども一覧を取得
+  // 子ども選択の初期化
   useEffect(() => {
-    const fetchChildren = async () => {
-      try {
-        const response = await fetch('/api/children');
-        if (!response.ok) {
-          throw new Error('子ども一覧の取得に失敗しました');
-        }
-        const data = await response.json();
-        
-        setChildren(data);
-        // 最初の子どもを選択状態にする
-        if (data.length > 0) {
-          setSelectedChildId(data[0].id);
-        }
-      } catch (error) {
-        console.error('子ども一覧取得エラー:', error);
-        setError('子ども一覧の取得に失敗しました');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchChildren();
-  }, []);
+    if (!childrenLoading && children.length > 0 && !selectedChildId) {
+      setSelectedChildId(children[0].id);
+    }
+    setLoading(false);
+  }, [children, childrenLoading, selectedChildId]);
 
   // 選択された子どもの履歴を取得
   useEffect(() => {
@@ -75,22 +54,21 @@ export default function ChallengeHistoryPage() {
         setLoading(true);
         
         // 音声認識履歴をAPIから取得
-        const response = await fetch(`/api/voice/history/${selectedChildId}`);
-        if (!response.ok) {
-          throw new Error('履歴の取得に失敗しました');
-        }
-        
-        const data = await response.json();
+        const data = await api.voice.getHistory(selectedChildId);
         
         // APIレスポンスを画面表示用の形式に変換
-        const recordsForChild = data.transcripts.map((item: any) => ({
+        const recordsForChild = data.transcripts.map((item: { 
+          id: string; 
+          created_at: string; 
+          transcript?: string 
+        }) => ({
           id: item.id,
           childId: selectedChildId,
           date: item.created_at,
           summary: item.transcript ? 
             (item.transcript.length > 30 ? item.transcript.substring(0, 30) + '...' : item.transcript) :
             'チャレンジ記録'
-        })).sort((a: any, b: any) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
+        })).sort((a: ChallengeRecord, b: ChallengeRecord) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
 
         setRecords(recordsForChild);
 

@@ -1,14 +1,15 @@
-'use client'; // クライアントコンポーネントとしてマーク
+'use client';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle } from 'lucide-react'; // チェックマークアイコン
+import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation'; // useSearchParamsをインポート
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function ChallengeConfirmPage() {
+function ConfirmPageContent() {
   const searchParams = useSearchParams();
-  const childId = searchParams.get('childId'); // URLからchildIdを取得
+  const childId = searchParams.get('childId');
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8">
@@ -79,5 +80,13 @@ export default function ChallengeConfirmPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function ChallengeConfirmPage() {
+  return (
+    <Suspense fallback={<div>読み込み中...</div>}>
+      <ConfirmPageContent />
+    </Suspense>
   );
 }
