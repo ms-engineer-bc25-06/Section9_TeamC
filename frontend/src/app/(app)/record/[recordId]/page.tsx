@@ -8,60 +8,93 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-// TODO: 将来的にはAPIから取得するダミーデータは別ファイルに分割しても良い
-const dummyRecords = [
-  {
-    id: 'rec_1700000000000', // 例: rec_Date.now()
-    childId: '1',
-    childName: 'ひなた',
-    timestamp: new Date('2025-08-07T10:30:00Z'),
-    aiFeedback:
-      'ひなたちゃん、素晴らしい発音でした！特に"apple"の発音がとてもクリアで、自信を持って話せていましたね。これからも色々な単語に挑戦してみよう！',
-  },
-  {
-    id: 'rec_1700000000001',
-    childId: '2',
-    childName: 'さくら',
-    timestamp: new Date('2025-08-07T11:15:00Z'),
-    aiFeedback:
-      'さくらちゃん、今日は積極的に話そうとする姿勢がとても良かったです！少し詰まっても、最後まで伝えようとする気持ちが大切だよ。次はもっと長い文章に挑戦してみようね！',
-  },
-];
+// API連携用の型定義
+interface RecordData {
+  id: string;
+  childId: string;
+  childName: string;
+  timestamp: Date;
+  aiFeedback: string;
+}
 
 export default function RecordCompletionPage() {
   const params = useParams();
   const recordId = params.recordId as string;
 
-  const [record, setRecord] = useState<(typeof dummyRecords)[0] | null>(null);
+  const [record, setRecord] = useState<RecordData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // TODO: API連携時はfetchやaxiosで非同期取得する想定
-    setLoading(true);
+    if (!recordId) {
+      setError('記録IDが指定されていません');
+      setLoading(false);
+      return;
+    }
 
-    // ダミーデータから該当recordを探す（同期処理）
-    const foundRecord = dummyRecords.find((rec) => rec.id === recordId) ?? null;
+    const fetchRecord = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // 音声認識結果をAPIから取得
+        const response = await fetch(`/api/voice/transcript/${recordId}`);
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('指定された記録が見つかりませんでした');
+          } else {
+            throw new Error('記録の取得に失敗しました');
+          }
+        }
+        
+        const data = await response.json();
+        
+        // APIレスポンスを画面表示用の形式に変換
+        setRecord({
+          id: data.id,
+          childId: data.child_id,
+          childName: 'お子さま', // 一旦固定（後で子ども名取得APIと連携可能）
+          timestamp: new Date(data.created_at),
+          aiFeedback: data.comment || 'AIフィードバックを生成中です...'
+        });
+        
+      } catch (error) {
+        console.error('記録取得エラー:', error);
+        setError(error instanceof Error ? error.message : '記録の取得に失敗しました');
+        setRecord(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // 本来は非同期通信の完了を待つのでsetTimeoutで擬似遅延を入れても良い
-    setRecord(foundRecord);
-    setLoading(false);
+    fetchRecord();
   }, [recordId]);
 
+  // ローディング中の表示
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8 text-center">
-        <p className="text-gray-600 text-lg">読み込み中...</p>
+        <Card className="w-full max-w-md rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm">
+          <CardContent className="p-0">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600 text-lg">記録を読み込み中...</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  if (!record) {
+  // エラー状態または記録が見つからない場合
+  if (error || !record) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8 text-center">
         <Card className="w-full max-w-md rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm">
           <CardContent className="p-0">
             <h1 className="text-2xl font-bold text-gray-800 mb-4">記録が見つかりません</h1>
-            <p className="text-gray-600 mb-6">指定された記録IDのデータが見つかりませんでした。</p>
+            <p className="text-gray-600 mb-6">
+              {error || '指定された記録IDのデータが見つかりませんでした。'}
+            </p>
             <Link href="/children" passHref>
               <Button className="w-full py-3 text-lg font-semibold rounded-full bg-blue-400 text-white hover:bg-blue-500">
                 ホームに戻る
@@ -73,6 +106,7 @@ export default function RecordCompletionPage() {
     );
   }
 
+  // 正常表示
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8 text-center">
       <main className="w-full max-w-2xl flex-1 flex flex-col items-center justify-center py-8">
