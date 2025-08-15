@@ -43,19 +43,34 @@ export default function ChallengeDetailPage() {
       try {
         setLoading(true);
         setError(null);
-        
+
         // 音声認識結果をAPIから取得
+<<<<<<< HEAD
         const data = await api.voice.getTranscript(recordId);
         
+=======
+        const response = await fetch(`/api/voice/transcript/${recordId}`);
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('指定されたチャレンジ記録が見つかりませんでした');
+          } else {
+            throw new Error('記録の取得に失敗しました');
+          }
+        }
+
+        const data = await response.json();
+
+>>>>>>> origin/develop
         // child_idが一致するかチェック
         if (data.child_id !== childId) {
           throw new Error('指定されたチャレンジ記録が見つかりませんでした');
         }
-        
+
         // APIのcommentを praise と advice に分割する簡易処理
         const comment = data.comment || 'AIフィードバックを生成中です...';
         const splitComment = splitAIFeedback(comment);
-        
+
         // APIレスポンスを画面表示用の形式に変換
         setRecord({
           id: data.id,
@@ -65,10 +80,9 @@ export default function ChallengeDetailPage() {
           transcript: data.transcript || '音声認識処理中...',
           aiFeedback: {
             praise: splitComment.praise,
-            advice: splitComment.advice
-          }
+            advice: splitComment.advice,
+          },
         });
-        
       } catch (error) {
         console.error('記録取得エラー:', error);
         setError(error instanceof Error ? error.message : '記録の取得に失敗しました');
@@ -84,18 +98,18 @@ export default function ChallengeDetailPage() {
   // AIフィードバックを praise と advice に分割する関数
   const splitAIFeedback = (comment: string) => {
     // シンプルな分割ロジック（改行や句点で分割）
-    const sentences = comment.split(/[。！\n]/).filter(s => s.trim());
-    
+    const sentences = comment.split(/[。！\n]/).filter((s) => s.trim());
+
     if (sentences.length >= 2) {
       const midPoint = Math.ceil(sentences.length / 2);
       return {
         praise: sentences.slice(0, midPoint).join('。') + '。',
-        advice: sentences.slice(midPoint).join('。') + '。'
+        advice: sentences.slice(midPoint).join('。') + '。',
       };
     } else {
       return {
         praise: comment,
-        advice: '引き続き頑張りましょう！'
+        advice: '引き続き頑張りましょう！',
       };
     }
   };

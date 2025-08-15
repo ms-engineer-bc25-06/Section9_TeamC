@@ -63,13 +63,16 @@ export const api = {
         const { getAuth } = await import('firebase/auth');
         const auth = getAuth();
         const user = auth.currentUser;
-        
+
         if (!user) {
           throw new Error('ユーザーが認証されていません');
         }
 
         const idToken = await user.getIdToken();
-        console.log('🚀 api.auth.login: IDトークン取得完了', idToken ? `${idToken.substring(0, 20)}...` : 'null');
+        console.log(
+          '🚀 api.auth.login: IDトークン取得完了',
+          idToken ? `${idToken.substring(0, 20)}...` : 'null'
+        );
 
         console.log('🚀 api.auth.login: fetchリクエスト開始');
         const res = await fetch(`${API_URL}/api/auth/login`, {
@@ -78,7 +81,7 @@ export const api = {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            idToken: idToken
+            idToken: idToken,
           }),
         });
 
@@ -236,7 +239,10 @@ export const api = {
       }
     },
 
-    update: async (childId: string, data: { name?: string; nickname?: string; birthdate?: string }) => {
+    update: async (
+      childId: string,
+      data: { name?: string; nickname?: string; birthdate?: string }
+    ) => {
       try {
         const headers = await getAuthHeaders();
         const res = await fetch(`${API_URL}/api/children/${childId}`, {
@@ -354,10 +360,10 @@ export const api = {
     list: async (childId?: string) => {
       try {
         const headers = await getAuthHeaders();
-        const url = childId 
+        const url = childId
           ? `${API_URL}/api/voice/history/${childId}`
           : `${API_URL}/conversations`;
-        
+
         const res = await fetch(url, {
           method: 'GET',
           headers,
