@@ -1,4 +1,4 @@
-﻿'use client'; // クライアントコンポーネントとしてマーク
+﻿'use client';
 
 import { createChild } from '@/app/(app)/children/childApi';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils'; // shadcn/uiのcnユーティリティ
+import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -20,6 +21,7 @@ export default function ChildRegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,31 +36,35 @@ export default function ChildRegisterPage() {
     }
 
     try {
-      setLoading(true); // ローディング開始
+      setLoading(true);
 
-      await createChild({
-        nickname,
-        birthday: birthDate.toISOString().split('T')[0], // "YYYY-MM-DD"
-      });
+      if (!user) {
+        throw new Error('ログインが必要です');
+      }
+
+      // Firebase IDトークン取得
+      const token = await user.getIdToken();
+
+      // API呼び出し（Authorizationヘッダー付き）
+      await createChild(
+        {
+          nickname,
+          birthday: birthDate.toISOString().split('T')[0],
+        },
+        token
+      );
+
       toast({
-        description: '子どもを登録しました', // 成功通知
+        description: '子どもを登録しました',
       });
-
       router.push('/children');
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast({
-          variant: 'destructive', // 赤色系
-          description: error.message,
-        });
-      } else {
-        toast({
-          variant: 'destructive',
-          description: '登録に失敗しました',
-        });
-      }
+      toast({
+        variant: 'destructive',
+        description: error instanceof Error ? error.message : '登録に失敗しました',
+      });
     } finally {
-      setLoading(false); // ローディング終了
+      setLoading(false);
     }
   };
 
@@ -100,7 +106,6 @@ export default function ChildRegisterPage() {
               >
                 おたんじょう日🎂
               </Label>
-              <p className="text-sm text-gray-500 mb-2"></p>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -120,9 +125,9 @@ export default function ChildRegisterPage() {
                     selected={birthDate}
                     onSelect={setBirthDate}
                     initialFocus
-                    captionLayout="dropdown" // 年と月のドロップダウンを追加
-                    fromYear={new Date().getFullYear() - 15} // 過去15年まで選択可能
-                    toYear={new Date().getFullYear()} // 今年まで選択可能
+                    captionLayout="dropdown"
+                    fromYear={new Date().getFullYear() - 15}
+                    toYear={new Date().getFullYear()}
                   />
                 </PopoverContent>
               </Popover>

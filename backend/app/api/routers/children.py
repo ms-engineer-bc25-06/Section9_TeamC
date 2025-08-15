@@ -58,7 +58,7 @@ async def get_children(
             detail=f"子ども一覧の取得に失敗しました: {str(e)}"
         )
 
-@router.post("/children", response_model=ChildSchema, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ChildSchema, status_code=status.HTTP_201_CREATED)
 async def create_child(
     child_data: ChildCreate,
     current_user: dict = Depends(get_current_user),

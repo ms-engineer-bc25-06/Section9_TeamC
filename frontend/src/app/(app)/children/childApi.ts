@@ -11,11 +11,13 @@ type CreateChildResponse = {
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
-export async function createChild(data: CreateChildRequest): Promise<CreateChildResponse> {
-  const res = await fetch(`${BASE_URL}/api/children`, {
+export async function createChild(data: { nickname: string; birthday: string }, token: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/children`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(data),
   });
 
