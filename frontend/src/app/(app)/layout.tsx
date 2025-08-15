@@ -1,32 +1,45 @@
-﻿import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { ReactNode } from 'react';
+﻿// frontend/src/app/(app)/layout.tsx - 認証機能有効化版
 
-export default async function AppLayout({ children }: { children: ReactNode }) {
-  // TODO: 認証機能が完成したら以下のコメントを外す
-  // 開発中は認証をスキップしています
-  /*
-  const cookieStore = await cookies();
-  const token = cookieStore.get('__session')?.value;
+'use client';
 
-  if (!token) {
-    redirect('/');
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const { user, isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // 認証状態の確定後にチェック
+    if (!loading) {
+      if (!isAuthenticated || !user) {
+        console.log('❌ 未認証のため、ログイン画面にリダイレクト');
+        router.push('/');
+        return;
+      }
+
+      console.log('✅ 認証済み:', user.email);
+    }
+  }, [isAuthenticated, user, loading, router]);
+
+  // ローディング中は読み込み画面を表示
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">認証状態を確認中...</p>
+        </div>
+      </div>
+    );
   }
 
-  // とりあえずトークンの存在だけで認証済み扱い（あとで差し替え）
-  const isValid = await verifyIdToken(token);
-
-  if (!isValid) {
-    redirect('/');
+  // 未認証の場合は何も表示しない（リダイレクト中）
+  if (!isAuthenticated || !user) {
+    return null;
   }
-  */
 
-  return <div>{children}</div>;
-}
-
-// TODO: 認証機能で使用する関数（現在は未使用）
-async function verifyIdToken(token: string | undefined): Promise<boolean> {
-  if (!token) return false;
-  console.warn('verifyIdToken: 現状は常にtrueを返しています。後で実装してください。');
-  return true;
+  // 認証済みの場合のみ子ページを表示
+  return <>{children}</>;
 }

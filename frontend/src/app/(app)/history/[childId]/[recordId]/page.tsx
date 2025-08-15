@@ -8,6 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
 
 // API連携用の型定義
 interface RecordDetail {
@@ -44,6 +45,10 @@ export default function ChallengeDetailPage() {
         setError(null);
 
         // 音声認識結果をAPIから取得
+<<<<<<< HEAD
+        const data = await api.voice.getTranscript(recordId);
+        
+=======
         const response = await fetch(`/api/voice/transcript/${recordId}`);
 
         if (!response.ok) {
@@ -56,6 +61,7 @@ export default function ChallengeDetailPage() {
 
         const data = await response.json();
 
+>>>>>>> origin/develop
         // child_idが一致するかチェック
         if (data.child_id !== childId) {
           throw new Error('指定されたチャレンジ記録が見つかりませんでした');
