@@ -1,24 +1,20 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, Date
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 from app.core.database import Base
 
 class Child(Base):
     __tablename__ = "children"
     
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     nickname = Column(String(50))
-    grade = Column(String(20))
-    birth_date = Column(Date)
-    user_id = Column(String(255), nullable=False)  # Firebase UIDに対応
+    birthdate = Column(Date)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)  # UUID外部キーに変更
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
-    challenges = relationship("Challenge", back_populates="child")
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now()) 
 
-    # 不要なフィールドを削除:
-    # - school, profile_image, interests (要件にない)
-    # - updated_at (DBスキーマにない)
-    # - parent_id (user_idに変更)
-    
-    # リレーションシップは一旦コメントアウト（userテーブルとの整合性確認が必要）
+     # リレーション
+    user = relationship("User", back_populates="children")
+    challenges = relationship("Challenge", back_populates="child")

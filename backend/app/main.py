@@ -1,98 +1,66 @@
-from datetime import datetime
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.config import settings
+from sqlalchemy.orm import Session
+from pydantic import BaseModel
 from app.core.database import get_db
-from app.utils.auth import get_current_user
+from app.utils.auth import verify_firebase_token
 from app.services.user_service import UserService
-from typing import Dict, Any
-import logging
+import os
 
-logger = logging.getLogger(__name__)
+# Pydanticモデル定義
+class LoginRequest(BaseModel):
+    idToken: str
 
-# FastAPIアプリケーション作成
-app = FastAPI(
-    title="BUD Backend API",
-    description="子ども英語チャレンジサポートアプリのバックエンドAPI",
-    version="1.0.0"
-)
+app = FastAPI(title="BUD Backend API")
 
-# CORS設定
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 開発環境では全て許可
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
-@app.get("/")
-async def root():
-    return {"message": "BUD Backend API is running"}
-
 @app.get("/health")
 async def health_check():
-    return {
-        "status": "healthy", 
-        "service": "bud-backend",
-        "version": "1.0.0"
-    }
+    return {"status": "healthy", "service": "bud-backend"}
 
-
-# ===================================
-# 🔐 認証テスト用エンドポイント
-@app.get("/api/auth/test")
-async def test_auth(user: Dict[str, Any] = Depends(get_current_user)):
-    """
-    認証テスト用エンドポイント
-    Firebase トークンが正しく検証されるかテスト
-    """
-    return {
-        "message": "🎉 認証成功！",
-        "user_info": {
-            "user_id": user["user_id"],
-            "email": user["email"],
-            "name": user["name"],
-            "email_verified": user["email_verified"]
-        }
-    }
-
-# 🚀 Firebase認証統合エンドポイント
 @app.post("/api/auth/login")
-async def firebase_login(
-    user: Dict[str, Any] = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+async def login(
+    request: LoginRequest,
+    db: Session = Depends(get_db)
 ):
-    """
-    Firebase認証後の初回ログイン/ユーザー同期
-    フロントエンドからFirebaseトークンでアクセス → DBにユーザー情報を同期
-    """
     try:
-        user_service = UserService(db)
+        token = request.idToken
+        if not token:
+            raise HTTPException(status_code=400, detail="idToken is required")
         
-        # Firebase認証データからDBユーザーを取得/作成
-        db_user = await user_service.create_or_update_user_from_firebase(user)
+        # Firebase トークン検証
+        decoded_token = await verify_firebase_token(token)
+        uid = decoded_token["uid"]
+        email = decoded_token.get("email", "")
+        name = decoded_token.get("name", "")
+        
+        print(f"✅ 認証成功: {email}")
+        
+        # ユーザー取得/作成
+        user_service = UserService(db)
+        user = await user_service.get_or_create_user_from_firebase(uid, email, name)
         
         return {
-            "message": "ログイン成功",
             "user": {
-                "id": db_user["id"],
-                "firebase_uid": db_user["firebase_uid"],
-                "email": db_user["email"],
-                "full_name": db_user["full_name"],
-                "username": db_user["username"],
-                "is_active": True
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "firebase_uid": user.firebase_uid
             }
         }
         
     except Exception as e:
-        logger.error(f"Firebase認証統合エラー: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="ログイン処理に失敗しました"
-        )
+        print(f"Firebase認証統合エラー: {e}")
+        raise HTTPException(status_code=500, detail="ログイン処理に失敗しました")
 
+<<<<<<< HEAD
 @app.get("/api/auth/profile")
 async def get_auth_profile(
     user: Dict[str, Any] = Depends(get_current_user),
@@ -239,3 +207,7 @@ app.include_router(voice_router)
 # Children Management API
 from app.api.routers.children import router as children_router
 app.include_router(children_router, prefix="/api/children", tags=["children"])
+=======
+from app.api.routers import children
+app.include_router(children.router, prefix="/api/children", tags=["children"])
+>>>>>>> develop

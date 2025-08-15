@@ -85,3 +85,25 @@ async def get_current_user_optional(
         return await get_current_user(token_credentials)
     except HTTPException:
         return None
+# 5. トークンのみを検証する関数（main.py用）
+async def verify_firebase_token(token: str) -> Dict[str, Any]:
+    """
+    Firebaseトークンを検証してデコード済みトークンを返す
+    
+    Args:
+        token: Firebase IDトークン
+        
+    Returns:
+        Dict[str, Any]: デコード済みトークン情報
+        
+    Raises:
+        Exception: 認証に失敗した場合
+    """
+    try:
+        # Firebase Admin SDKでトークン検証
+        decoded_token = auth.verify_id_token(token)
+        return decoded_token
+        
+    except Exception as e:
+        print(f"❌ トークン検証エラー: {str(e)}")
+        raise e

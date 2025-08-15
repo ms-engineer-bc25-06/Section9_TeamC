@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api';
+const API_URL = 'http://localhost:8000';
 
 // Firebase認証トークンを取得するヘルパー関数（デバッグ強化版）
 const getAuthHeaders = async (): Promise<Record<string, string>> => {
@@ -53,19 +53,36 @@ export const api = {
 
   // 🔐 認証関連API
   auth: {
-    // Firebase認証後のバックエンド連携（デバッグ強化版）
+    // Firebase認証後のバックエンド連携（修正版）
     login: async () => {
       try {
         console.log('🚀 api.auth.login: 開始');
         console.log('🚀 api.auth.login: API_URL', API_URL);
 
-        const headers = await getAuthHeaders();
-        console.log('🚀 api.auth.login: ヘッダー取得完了', headers);
+        // Firebase IDトークンを取得
+        const { getAuth } = await import('firebase/auth');
+        const auth = getAuth();
+        const user = auth.currentUser;
+
+        if (!user) {
+          throw new Error('ユーザーが認証されていません');
+        }
+
+        const idToken = await user.getIdToken();
+        console.log(
+          '🚀 api.auth.login: IDトークン取得完了',
+          idToken ? `${idToken.substring(0, 20)}...` : 'null'
+        );
 
         console.log('🚀 api.auth.login: fetchリクエスト開始');
-        const res = await fetch(`${API_URL}/auth/login`, {
+        const res = await fetch(`${API_URL}/api/auth/login`, {
           method: 'POST',
-          headers,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            idToken: idToken,
+          }),
         });
 
         console.log('🚀 api.auth.login: fetchレスポンス受信', res.status, res.statusText);
@@ -89,7 +106,7 @@ export const api = {
     getProfile: async () => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/auth/profile`, {
+        const res = await fetch(`${API_URL}/api/auth/profile`, {
           method: 'GET',
           headers,
         });
@@ -109,7 +126,7 @@ export const api = {
     updateProfile: async (profileData: { full_name?: string; username?: string; bio?: string }) => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/auth/profile`, {
+        const res = await fetch(`${API_URL}/api/auth/profile`, {
           method: 'PUT',
           headers,
           body: JSON.stringify(profileData),
@@ -130,7 +147,7 @@ export const api = {
     getChildren: async () => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/auth/children`, {
+        const res = await fetch(`${API_URL}/api/auth/children`, {
           method: 'GET',
           headers,
         });
@@ -150,7 +167,7 @@ export const api = {
     test: async () => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/auth/test`, {
+        const res = await fetch(`${API_URL}/api/auth/test`, {
           method: 'GET',
           headers,
         });
@@ -168,11 +185,15 @@ export const api = {
     },
   },
 
-  // 子ども管理（既存）
+  // 子ども管理API
   children: {
     list: async () => {
       try {
-        const res = await fetch(`${API_URL}/children`);
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API_URL}/api/children`, {
+          method: 'GET',
+          headers,
+        });
         if (!res.ok) throw new Error('Failed to fetch children');
         return res.json();
       } catch (error) {
@@ -181,17 +202,224 @@ export const api = {
       }
     },
 
-    create: async (data: { name: string; birthdate: string }) => {
+    create: async (data: { name: string; nickname?: string; birthdate?: string }) => {
       try {
-        const res = await fetch(`${API_URL}/children`, {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API_URL}/api/children`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
+          headers,
+          body: JSON.stringify({
+            nickname: data.name, // nameをnicknameとして送信
+            birthdate: data.birthdate,
+          }),
         });
-        if (!res.ok) throw new Error('Failed to create child');
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || 'Failed to create child');
+        }
         return res.json();
       } catch (error) {
         console.error('子どもの登録に失敗:', error);
+        throw error;
+      }
+    },
+
+    get: async (childId: string) => {
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API_URL}/api/children/${childId}`, {
+          method: 'GET',
+          headers,
+        });
+        if (!res.ok) throw new Error('Failed to fetch child');
+        return res.json();
+      } catch (error) {
+        console.error('子ども情報の取得に失敗:', error);
+        throw error;
+      }
+    },
+
+    update: async (
+      childId: string,
+      data: { name?: string; nickname?: string; birthdate?: string }
+    ) => {
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API_URL}/api/children/${childId}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({
+            nickname: data.name || data.nickname,
+            birthdate: data.birthdate,
+          }),
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || 'Failed to update child');
+        }
+        return res.json();
+      } catch (error) {
+        console.error('子ども情報の更新に失敗:', error);
+        throw error;
+      }
+    },
+
+    delete: async (childId: string) => {
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API_URL}/api/children/${childId}`, {
+          method: 'DELETE',
+          headers,
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || 'Failed to delete child');
+        }
+        return res.json();
+      } catch (error) {
+        console.error('子ども情報の削除に失敗:', error);
+        throw error;
+      }
+    },
+  },
+
+  // 音声文字起こしAPI
+  voice: {
+    transcribe: async (audioBlob: Blob, childId: string) => {
+      try {
+        const headers = await getAuthHeaders();
+        delete headers['Content-Type'];
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'recording.webm');
+        formData.append('child_id', childId);
+
+        const res = await fetch(`${API_URL}/api/voice/transcribe`, {
+          method: 'POST',
+          headers: {
+            ...headers,
+          },
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error('バックエンドエラー詳細:', errorData);
+          throw new Error(errorData.detail || `文字起こしに失敗しました(${res.status})`);
+        }
+
+        return res.json();
+      } catch (error) {
+        console.error('文字起こしに失敗:', error);
+        throw error;
+      }
+    },
+
+    getTranscript: async (transcriptId: string) => {
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API_URL}/api/voice/transcript/${transcriptId}`, {
+          method: 'GET',
+          headers,
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || '音声認識結果の取得に失敗しました');
+        }
+
+        return res.json();
+      } catch (error) {
+        console.error('音声認識結果の取得に失敗:', error);
+        throw error;
+      }
+    },
+
+    getHistory: async (childId: string) => {
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API_URL}/api/voice/history/${childId}`, {
+          method: 'GET',
+          headers,
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || '音声履歴の取得に失敗しました');
+        }
+
+        return res.json();
+      } catch (error) {
+        console.error('音声履歴の取得に失敗:', error);
+        throw error;
+      }
+    },
+  },
+
+  // 会話履歴API
+  conversations: {
+    list: async (childId?: string) => {
+      try {
+        const headers = await getAuthHeaders();
+        const url = childId
+          ? `${API_URL}/api/voice/history/${childId}`
+          : `${API_URL}/conversations`;
+
+        const res = await fetch(url, {
+          method: 'GET',
+          headers,
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || '会話履歴の取得に失敗しました');
+        }
+
+        return res.json();
+      } catch (error) {
+        console.error('会話履歴の取得に失敗:', error);
+        throw error;
+      }
+    },
+
+    get: async (conversationId: string) => {
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API_URL}/api/voice/transcript/${conversationId}`, {
+          method: 'GET',
+          headers,
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || '会話詳細の取得に失敗しました');
+        }
+
+        return res.json();
+      } catch (error) {
+        console.error('会話詳細の取得に失敗:', error);
+        throw error;
+      }
+    },
+  },
+
+  // AIフィードバックAPI
+  feedback: {
+    generate: async (transcriptId: string) => {
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API_URL}/api/voice/transcript/${transcriptId}`, {
+          method: 'GET',
+          headers,
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || 'フィードバック取得に失敗しました');
+        }
+
+        return res.json();
+      } catch (error) {
+        console.error('フィードバック取得に失敗:', error);
         throw error;
       }
     },

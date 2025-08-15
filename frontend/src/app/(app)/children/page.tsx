@@ -3,19 +3,16 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
+import { useChildren } from '@/hooks/useChildren';
 import { BarChart, Plus, Star } from 'lucide-react';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-const childrenData = [
-  { id: '1', name: 'ひなた', age: 6, avatar: '/placeholder.svg?height=100&width=100' },
-  { id: '2', name: 'さくら', age: 8, avatar: '/placeholder.svg?height=100&width=100' },
-];
-
 export default function ChildrenPage() {
   const { user, logout, loading } = useAuth();
+  const { children, isLoading: childrenLoading, error, getDisplayName } = useChildren();
   const router = useRouter();
 
   useEffect(() => {
@@ -27,7 +24,7 @@ export default function ChildrenPage() {
     if (result.success) router.push('/');
   };
 
-  if (loading) {
+  if (loading || childrenLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div>🔄 読み込み中...</div>
@@ -58,7 +55,13 @@ export default function ChildrenPage() {
           今日は誰がする？
         </h2>
 
-        {childrenData.length === 0 ? (
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            エラー: {error}
+          </div>
+        )}
+
+        {children.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-6 text-center">
             <h2 className="text-xl font-semibold mb-4">子ども一覧</h2>
             <p className="text-gray-500">まだ子どもが登録されていません</p>
@@ -70,15 +73,25 @@ export default function ChildrenPage() {
           </div>
         ) : (
           <div className="grid w-full grid-cols-1 gap-4">
-            {childrenData.map((child) => (
-              <Link href={`/children/confirm?childId=${child.id}`} key={child.id} className="block">
-                <Card className="flex h-full cursor-pointer flex-col justify-center rounded-xl bg-white/70 backdrop-blur-md p-6 shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg border border-white/50">
-                  <CardContent className="flex flex-col p-0">
-                    <p className="text-xl font-bold text-gray-700">{child.name}ちゃん</p>
-                    <p className="text-md text-gray-500">（{child.age}歳）</p>
-                  </CardContent>
-                </Card>
-              </Link>
+            {children.map((child) => (
+              <div key={child.id} className="relative">
+                <Link href={`/children/confirm?childId=${child.id}`} className="block">
+                  <Card className="flex h-full cursor-pointer flex-col justify-center rounded-xl bg-white/70 backdrop-blur-md p-6 shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg border border-white/50">
+                    <CardContent className="flex flex-col p-0">
+                      <p className="text-xl font-bold text-gray-700">
+                        {child.nickname || child.name}ちゃん
+                      </p>
+                      <p className="text-md text-gray-500">{getDisplayName(child)}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
+                <Link
+                  href={`/children/edit/${child.id}`}
+                  className="absolute top-2 right-2 bg-white/80 hover:bg-white text-gray-600 hover:text-gray-800 rounded-full p-2 shadow-md transition-all"
+                >
+                  ✏️
+                </Link>
+              </div>
             ))}
           </div>
         )}

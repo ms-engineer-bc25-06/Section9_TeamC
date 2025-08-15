@@ -18,6 +18,8 @@ import { useState } from 'react';
 export default function ChildRegisterPage() {
   const [nickname, setNickname] = useState('');
   const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -78,6 +80,12 @@ export default function ChildRegisterPage() {
           <p className="mb-8 text-center text-gray-600 text-sm sm:text-base">
             たのしく遊べるように、少しだけ聞かせてね
           </p>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
