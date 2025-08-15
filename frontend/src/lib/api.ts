@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_URL = 'http://localhost:8000';
 
 // Firebase認証トークンを取得するヘルパー関数（デバッグ強化版）
 const getAuthHeaders = async (): Promise<Record<string, string>> => {
@@ -53,19 +53,33 @@ export const api = {
 
   // 🔐 認証関連API
   auth: {
-    // Firebase認証後のバックエンド連携（デバッグ強化版）
+    // Firebase認証後のバックエンド連携（修正版）
     login: async () => {
       try {
         console.log('🚀 api.auth.login: 開始');
         console.log('🚀 api.auth.login: API_URL', API_URL);
 
-        const headers = await getAuthHeaders();
-        console.log('🚀 api.auth.login: ヘッダー取得完了', headers);
+        // Firebase IDトークンを取得
+        const { getAuth } = await import('firebase/auth');
+        const auth = getAuth();
+        const user = auth.currentUser;
+        
+        if (!user) {
+          throw new Error('ユーザーが認証されていません');
+        }
+
+        const idToken = await user.getIdToken();
+        console.log('🚀 api.auth.login: IDトークン取得完了', idToken ? `${idToken.substring(0, 20)}...` : 'null');
 
         console.log('🚀 api.auth.login: fetchリクエスト開始');
-        const res = await fetch(`${API_URL}/auth/login`, {
+        const res = await fetch(`${API_URL}/api/auth/login`, {
           method: 'POST',
-          headers,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            idToken: idToken
+          }),
         });
 
         console.log('🚀 api.auth.login: fetchレスポンス受信', res.status, res.statusText);
@@ -89,7 +103,7 @@ export const api = {
     getProfile: async () => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/auth/profile`, {
+        const res = await fetch(`${API_URL}/api/auth/profile`, {
           method: 'GET',
           headers,
         });
@@ -109,7 +123,7 @@ export const api = {
     updateProfile: async (profileData: { full_name?: string; username?: string; bio?: string }) => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/auth/profile`, {
+        const res = await fetch(`${API_URL}/api/auth/profile`, {
           method: 'PUT',
           headers,
           body: JSON.stringify(profileData),
@@ -130,7 +144,7 @@ export const api = {
     getChildren: async () => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/auth/children`, {
+        const res = await fetch(`${API_URL}/api/auth/children`, {
           method: 'GET',
           headers,
         });
@@ -150,7 +164,7 @@ export const api = {
     test: async () => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/auth/test`, {
+        const res = await fetch(`${API_URL}/api/auth/test`, {
           method: 'GET',
           headers,
         });
@@ -173,7 +187,7 @@ export const api = {
     list: async () => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/children`, {
+        const res = await fetch(`${API_URL}/api/children`, {
           method: 'GET',
           headers,
         });
@@ -188,7 +202,7 @@ export const api = {
     create: async (data: { name: string; nickname?: string; birthdate?: string }) => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/children`, {
+        const res = await fetch(`${API_URL}/api/children`, {
           method: 'POST',
           headers,
           body: JSON.stringify({
@@ -210,7 +224,7 @@ export const api = {
     get: async (childId: string) => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/children/${childId}`, {
+        const res = await fetch(`${API_URL}/api/children/${childId}`, {
           method: 'GET',
           headers,
         });
@@ -225,7 +239,7 @@ export const api = {
     update: async (childId: string, data: { name?: string; nickname?: string; birthdate?: string }) => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/children/${childId}`, {
+        const res = await fetch(`${API_URL}/api/children/${childId}`, {
           method: 'PUT',
           headers,
           body: JSON.stringify({
@@ -247,7 +261,7 @@ export const api = {
     delete: async (childId: string) => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/children/${childId}`, {
+        const res = await fetch(`${API_URL}/api/children/${childId}`, {
           method: 'DELETE',
           headers,
         });
@@ -273,7 +287,7 @@ export const api = {
         formData.append('file', audioBlob, 'recording.webm');
         formData.append('child_id', childId);
 
-        const res = await fetch(`${API_URL}/voice/transcribe`, {
+        const res = await fetch(`${API_URL}/api/voice/transcribe`, {
           method: 'POST',
           headers: {
             ...headers,
@@ -297,7 +311,7 @@ export const api = {
     getTranscript: async (transcriptId: string) => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/voice/transcript/${transcriptId}`, {
+        const res = await fetch(`${API_URL}/api/voice/transcript/${transcriptId}`, {
           method: 'GET',
           headers,
         });
@@ -317,7 +331,7 @@ export const api = {
     getHistory: async (childId: string) => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/voice/history/${childId}`, {
+        const res = await fetch(`${API_URL}/api/voice/history/${childId}`, {
           method: 'GET',
           headers,
         });
@@ -341,7 +355,7 @@ export const api = {
       try {
         const headers = await getAuthHeaders();
         const url = childId 
-          ? `${API_URL}/voice/history/${childId}`
+          ? `${API_URL}/api/voice/history/${childId}`
           : `${API_URL}/conversations`;
         
         const res = await fetch(url, {
@@ -364,7 +378,7 @@ export const api = {
     get: async (conversationId: string) => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/voice/transcript/${conversationId}`, {
+        const res = await fetch(`${API_URL}/api/voice/transcript/${conversationId}`, {
           method: 'GET',
           headers,
         });
@@ -387,7 +401,7 @@ export const api = {
     generate: async (transcriptId: string) => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/voice/transcript/${transcriptId}`, {
+        const res = await fetch(`${API_URL}/api/voice/transcript/${transcriptId}`, {
           method: 'GET',
           headers,
         });
