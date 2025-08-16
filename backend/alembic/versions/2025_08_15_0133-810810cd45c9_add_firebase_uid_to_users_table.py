@@ -18,13 +18,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    """Upgrade schema."""
-    # firebase_uid column already exists from manual SQL
-    # This is a no-op migration for team sync
-    pass
+   """Upgrade schema: add firebase_uid column to users table"""
+   op.add_column(
+        'users',
+        sa.Column('firebase_uid', sa.String(), unique=True, nullable=True)
+    )
 
 
 def downgrade() -> None:
-    """Downgrade schema."""
-    # This migration doesn't change anything
-    pass
+    """Downgrade schema: remove firebase_uid column from users table"""
+    op.drop_column('users', 'firebase_uid')
