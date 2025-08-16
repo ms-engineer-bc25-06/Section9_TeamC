@@ -8,7 +8,7 @@ from app.schemas.child import ChildCreate, Child as ChildSchema
 from app.utils.auth import get_current_user
 from app.models.user import User
 
-router = APIRouter()
+router = APIRouter(prefix="/children")
 
 @router.get("/", response_model=List[ChildSchema])
 async def get_children(

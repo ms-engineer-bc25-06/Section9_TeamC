@@ -18,22 +18,17 @@ import { useState } from 'react';
 export default function ChildRegisterPage() {
   const [nickname, setNickname] = useState('');
   const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('handleSubmit発火');
+    console.log('✅ handleSubmit 発火');
 
     if (!birthDate) {
-      toast({
-        variant: 'destructive',
-        description: '誕生日を入力してください',
-      });
+      toast({ variant: 'destructive', description: '誕生日を入力してください' });
       return;
     }
 
@@ -41,30 +36,32 @@ export default function ChildRegisterPage() {
       setLoading(true);
 
       if (!user) {
-        throw new Error('ログインが必要です');
+        toast({ variant: 'destructive', description: 'ログインが必要です' });
+        return;
       }
 
-      // Firebase IDトークン取得
+      // Firebase IDトークン取得（必要なら getIdToken(true) で強制更新）
       const token = await user.getIdToken();
+      console.log('✅ 取得したIDトークン(先頭のみ):', token?.slice(0, 20), '...');
 
-      // API呼び出し（Authorizationヘッダー付き）
-      await createChild(
+      // API呼び出し
+      const res = await createChild(
         {
           nickname,
-          birthday: birthDate.toISOString().split('T')[0],
+          birthday: birthDate.toISOString().split('T')[0], // yyyy-MM-dd
         },
         token
       );
+      console.log('✅ API レスポンス:', res);
 
-      toast({
-        description: '子どもを登録しました',
-      });
+      toast({ description: '子どもを登録しました' });
       router.push('/children');
-    } catch (error: unknown) {
-      toast({
-        variant: 'destructive',
-        description: error instanceof Error ? error.message : '登録に失敗しました',
-      });
+    } catch (err: unknown) {
+      // unknown を Error に絞り込み
+      const message =
+        err instanceof Error ? err.message : typeof err === 'string' ? err : '登録に失敗しました';
+      console.error('❌ 登録エラー:', err);
+      toast({ variant: 'destructive', description: message });
     } finally {
       setLoading(false);
     }
@@ -80,12 +77,6 @@ export default function ChildRegisterPage() {
           <p className="mb-8 text-center text-gray-600 text-sm sm:text-base">
             たのしく遊べるように、少しだけ聞かせてね
           </p>
-
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -117,7 +108,8 @@ export default function ChildRegisterPage() {
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    variant={'outline'}
+                    type="button"
+                    variant="outline"
                     className={cn(
                       'w-full justify-start text-left font-normal rounded-lg border border-gray-300 p-3 text-base',
                       !birthDate && 'text-muted-foreground'
