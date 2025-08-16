@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from typing import Optional
-import jwt
+import jwt 
 from passlib.context import CryptContext
 from app.core.config import settings
 
