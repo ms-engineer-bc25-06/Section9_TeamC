@@ -45,23 +45,8 @@ export default function ChallengeDetailPage() {
         setError(null);
 
         // 音声認識結果をAPIから取得
-<<<<<<< HEAD
         const data = await api.voice.getTranscript(recordId);
-        
-=======
-        const response = await fetch(`/api/voice/transcript/${recordId}`);
 
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('指定されたチャレンジ記録が見つかりませんでした');
-          } else {
-            throw new Error('記録の取得に失敗しました');
-          }
-        }
-
-        const data = await response.json();
-
->>>>>>> origin/develop
         // child_idが一致するかチェック
         if (data.child_id !== childId) {
           throw new Error('指定されたチャレンジ記録が見つかりませんでした');
@@ -107,9 +92,10 @@ export default function ChallengeDetailPage() {
         advice: sentences.slice(midPoint).join('。') + '。',
       };
     } else {
+      // 固定アドバイスを削除し、コメント全体を praise として表示
       return {
         praise: comment,
-        advice: '引き続き頑張りましょう！',
+        advice: '', // 空文字列に変更
       };
     }
   };
@@ -192,10 +178,13 @@ export default function ChallengeDetailPage() {
               <h3 className="text-lg font-semibold text-green-700 mb-1">✨ いいね</h3>
               <p className="text-gray-700 text-base leading-relaxed">{record.aiFeedback.praise}</p>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-orange-700 mb-1">💡 アドバイス</h3>
-              <p className="text-gray-700 text-base leading-relaxed">{record.aiFeedback.advice}</p>
-            </div>
+            {/* アドバイスがある場合のみ表示 */}
+            {record.aiFeedback.advice && (
+              <div>
+                <h3 className="text-lg font-semibold text-orange-700 mb-1">💡 アドバイス</h3>
+                <p className="text-gray-700 text-base leading-relaxed">{record.aiFeedback.advice}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
