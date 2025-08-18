@@ -16,7 +16,6 @@ async def get_children(
     current_user: dict = Depends(get_current_user)
 ):
     try:
-        # Get or create user from Firebase auth
         result = db.execute(
             select(User).where(User.firebase_uid == current_user["user_id"])
         )
@@ -32,7 +31,6 @@ async def get_children(
             db.commit()
             db.refresh(user)
         
-        # Get children
         result = db.execute(
             select(ChildModel).where(ChildModel.user_id == user.id)
         )
@@ -48,7 +46,6 @@ async def create_child(
     current_user: dict = Depends(get_current_user)
 ):
     try:
-        # Get or create user from Firebase auth
         result = db.execute(
             select(User).where(User.firebase_uid == current_user["user_id"])
         )
@@ -64,8 +61,14 @@ async def create_child(
             db.commit()
             db.refresh(user)
         
-        # Create child
-        child = ChildModel(**child_data.dict(), user_id=user.id)
+        # シンプルなデータ変換（nicknameのみ）
+        child_dict = child_data.model_dump()
+        
+        # birth_date → birthdate に変換
+        if 'birth_date' in child_dict:
+            child_dict['birthdate'] = child_dict.pop('birth_date')
+        
+        child = ChildModel(**child_dict, user_id=user.id)
         db.add(child)
         db.commit()
         db.refresh(child)

@@ -23,7 +23,7 @@ CREATE TABLE users (
 -- メールアドレスの高速検索用インデックス
 CREATE INDEX idx_users_email ON users(email);
 
--- 子供テーブル
+-- 子供テーブル（nameカラム追加）
 CREATE TABLE children (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
