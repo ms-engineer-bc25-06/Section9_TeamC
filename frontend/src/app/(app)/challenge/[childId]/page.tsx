@@ -10,22 +10,23 @@ import {
 } from '@/components/ui/dialog';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { useChildren } from '@/hooks/useChildren'; // 追加
 import { HelpCircle, Mic, Save, Volume2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-// ダミーの子どもデータ（実際にはDBから取得）
-const childrenData = [
-  { id: '1', name: 'ひなた' },
-  { id: '2', name: 'さくら' },
-];
-
 export default function ChallengePage() {
   const params = useParams();
   const router = useRouter();
   const childId = params.childId as string;
-  const childName = childrenData.find((c) => c.id === childId)?.name || 'お子さま';
+  
+  // useChildrenフックを使用
+  const { children, isLoading } = useChildren();
+  
+  // 子供の名前を取得（UUIDで検索）
+  const child = children.find((c) => c.id === childId);
+  const childName = child?.nickname || child?.name || 'お子さま';
 
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -35,6 +36,28 @@ export default function ChallengePage() {
 
   const [showMamaPhraseDialog, setShowMamaPhraseDialog] = useState(false);
   const [showChildPhraseDialog, setShowChildPhraseDialog] = useState(false);
+
+  // ローディング表示
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
+        <p className="mt-4 text-gray-600">読み込み中...</p>
+      </div>
+    );
+  }
+
+  // 子供が見つからない場合
+  if (!child) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
+        <p className="text-gray-600 text-lg">お子さまが見つかりません</p>
+        <Link href="/children" className="mt-4 text-blue-500 hover:text-blue-600">
+          子供選択画面に戻る
+        </Link>
+      </div>
+    );
+  }
 
   // 録音開始
   const startRecording = async () => {

@@ -5,8 +5,30 @@ import { api } from '@/lib/api';
 import { Child, ChildSelectionState } from '@/types';
 import { useCallback, useEffect, useState } from 'react';
 
+// 年齢計算関数
+const calculateAge = (birthdate: string): number => {
+  const today = new Date();
+  const birth = new Date(birthdate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  
+  return age;
+};
+
+// 学年推定関数（オプション）
+const estimateGrade = (age: number): string => {
+  if (age >= 6 && age <= 12) {
+    return `小学${age - 5}年生`;
+  }
+  return '未就学';
+};
+
 export function useChildren() {
-  const { user, isAuthenticated, loading: authLoading } = useAuth(); // 追加
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
 
   const [state, setState] = useState<ChildSelectionState>({
     selectedChild: null,
@@ -31,14 +53,8 @@ export function useChildren() {
       console.log('🔍 useAuth isAuthenticated:', isAuthenticated);
 
       if (!isAuthenticated || !user) {
-        console.log('⚠️ 認証されていません、モックデータを使用');
-        // 認証されていない場合はモックデータ
-        const mockChildren: Child[] = [
-          { id: '1', name: 'ひなた', nickname: 'ひなたちゃん', age: 6, grade: '小学1年生' },
-          { id: '2', name: 'さくら', nickname: 'さくらちゃん', age: 8, grade: '小学3年生' },
-        ];
-
-        setChildren(mockChildren);
+        console.log('⚠️ 認証されていません、空のデータを使用');
+        setChildren([]);
         setState((prev) => ({ ...prev, isLoading: false }));
         return;
       }
@@ -49,38 +65,29 @@ export function useChildren() {
       const data = await api.children.list();
       console.log('✅ 実APIデータ:', data);
 
-      // レスポンス処理
-      if (Array.isArray(data) && data.length > 0) {
-        setChildren(data);
-      } else {
-        // データが空の場合はモックデータ
-        const mockChildren: Child[] = [
-          { id: '1', name: 'ひなた', nickname: 'ひなたちゃん', age: 6, grade: '小学1年生' },
-          { id: '2', name: 'さくら', nickname: 'さくらちゃん', age: 8, grade: '小学3年生' },
-        ];
-        setChildren(mockChildren);
-      }
+      // データ処理：年齢と学年を計算
+      const processedChildren = data.map((child: any) => ({
+        ...child,
+        age: child.birthdate ? calculateAge(child.birthdate) : undefined,
+        grade: child.birthdate ? estimateGrade(calculateAge(child.birthdate)) : undefined,
+      }));
 
+      setChildren(processedChildren);
       setState((prev) => ({ ...prev, isLoading: false }));
+      
     } catch (error) {
-      console.error('❌ API取得失敗、モックデータにフォールバック:', error);
-
-      // エラー時はモックデータ
-      const mockChildren: Child[] = [
-        { id: '1', name: 'ひなた', nickname: 'ひなたちゃん', age: 6, grade: '小学1年生' },
-        { id: '2', name: 'さくら', nickname: 'さくらちゃん', age: 8, grade: '小学3年生' },
-      ];
-
-      setChildren(mockChildren);
+      console.error('❌ API取得失敗:', error);
+      
+      // エラー時は空配列
+      setChildren([]);
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: null,
+        error: 'データの取得に失敗しました',
       }));
     }
-  }, [user, isAuthenticated, authLoading]); // 依存関係に追加
+  }, [user, isAuthenticated, authLoading]);
 
-  // 他のメソッドは同じ...
   const selectChild = useCallback((child: Child) => {
     setState((prev) => ({
       ...prev,
@@ -103,7 +110,8 @@ export function useChildren() {
 
   const getDisplayName = useCallback((child: Child): string => {
     const name = child.nickname || child.name;
-    return `${name}（${child.age}歳）`;
+    const age = child.age ? `（${child.age}歳）` : '';
+    return `${name}${age}`;
   }, []);
 
   useEffect(() => {
@@ -113,7 +121,7 @@ export function useChildren() {
   return {
     children,
     selectedChild: state.selectedChild,
-    isLoading: state.isLoading || authLoading, // 認証ローディングも考慮
+    isLoading: state.isLoading || authLoading,
     error: state.error,
     selectChild,
     clearSelection,
