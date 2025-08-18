@@ -1,44 +1,69 @@
-'use client'; // クライアントコンポーネントとしてマーク
+﻿'use client';
 
+import { createChild } from '@/app/(app)/children/childApi';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils'; // shadcn/uiのcnユーティリティ
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { api } from '@/lib/api';
 
 export default function ChildRegisterPage() {
   const [nickname, setNickname] = useState('');
   const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+    console.log('✅ handleSubmit 発火');
+
+    if (!birthDate) {
+      toast({ variant: 'destructive', description: '誕生日を入力してください' });
+      return;
+    }
 
     try {
-      await api.children.create({
-        name: nickname,
-        nickname: nickname,
-        birthdate: birthDate?.toISOString().split('T')[0], // YYYY-MM-DD形式
-      });
+      setLoading(true);
 
-      // 登録後、ユーザー選択画面にリダイレクト
+      if (!user) {
+        toast({ variant: 'destructive', description: 'ログインが必要です' });
+        return;
+      }
+
+      // Firebase IDトークン取得（必要なら getIdToken(true) で強制更新）
+      const token = await user.getIdToken();
+      console.log('✅ 取得したIDトークン(先頭のみ):', token?.slice(0, 20), '...');
+
+      // API呼び出し
+      const res = await createChild(
+        {
+          nickname,
+          birthday: birthDate.toISOString().split('T')[0], // yyyy-MM-dd
+        },
+        token
+      );
+      console.log('✅ API レスポンス:', res);
+
+      toast({ description: '子どもを登録しました' });
       router.push('/children');
-    } catch (error) {
-      console.error('子ども登録エラー:', error);
-      setError(error instanceof Error ? error.message : '登録に失敗しました');
+    } catch (err: unknown) {
+      // unknown を Error に絞り込み
+      const message =
+        err instanceof Error ? err.message : typeof err === 'string' ? err : '登録に失敗しました';
+      console.error('❌ 登録エラー:', err);
+      toast({ variant: 'destructive', description: message });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -52,12 +77,6 @@ export default function ChildRegisterPage() {
           <p className="mb-8 text-center text-gray-600 text-sm sm:text-base">
             たのしく遊べるように、少しだけ聞かせてね
           </p>
-
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -86,11 +105,11 @@ export default function ChildRegisterPage() {
               >
                 おたんじょう日🎂
               </Label>
-              <p className="text-sm text-gray-500 mb-2"></p>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    variant={'outline'}
+                    type="button"
+                    variant="outline"
                     className={cn(
                       'w-full justify-start text-left font-normal rounded-lg border border-gray-300 p-3 text-base',
                       !birthDate && 'text-muted-foreground'
@@ -106,20 +125,16 @@ export default function ChildRegisterPage() {
                     selected={birthDate}
                     onSelect={setBirthDate}
                     initialFocus
-                    captionLayout="dropdown" // 年と月のドロップダウンを追加
-                    fromYear={new Date().getFullYear() - 15} // 過去15年まで選択可能
-                    toYear={new Date().getFullYear()} // 今年まで選択可能
+                    captionLayout="dropdown"
+                    fromYear={new Date().getFullYear() - 15}
+                    toYear={new Date().getFullYear()}
                   />
                 </PopoverContent>
               </Popover>
             </div>
 
-            <Button
-              type="submit"
-              disabled={isLoading || !nickname.trim()}
-              className="w-full py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 bg-green-500 text-white hover:bg-green-600 mt-8 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              {isLoading ? '登録中...' : '登録する'}
+            <Button type="submit" disabled={loading}>
+              {loading ? '登録中...' : '登録する'}
             </Button>
           </form>
         </CardContent>
@@ -127,5 +142,3 @@ export default function ChildRegisterPage() {
     </div>
   );
 }
-
-// temp change to force update

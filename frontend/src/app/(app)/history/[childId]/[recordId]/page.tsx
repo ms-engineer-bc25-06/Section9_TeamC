@@ -8,7 +8,6 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
 
 // API連携用の型定義
 interface RecordDetail {
@@ -182,7 +181,9 @@ export default function ChallengeDetailPage() {
             {record.aiFeedback.advice && (
               <div>
                 <h3 className="text-lg font-semibold text-orange-700 mb-1">💡 アドバイス</h3>
-                <p className="text-gray-700 text-base leading-relaxed">{record.aiFeedback.advice}</p>
+                <p className="text-gray-700 text-base leading-relaxed">
+                  {record.aiFeedback.advice}
+                </p>
               </div>
             )}
           </CardContent>

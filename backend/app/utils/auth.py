@@ -18,7 +18,7 @@ if not firebase_admin._apps:
     # プロジェクトルートのパスを取得
     current_file = os.path.abspath(__file__)  # auth.pyの絶対パス
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_file))))
-    cred_path = os.path.join(project_root, "/app/serviceAccountKey.json")
+    cred_path = os.path.join(project_root, "app","serviceAccountKey.json")
     
     print(f"🔍 Firebase認証ファイルパス: {cred_path}")
     print(f"🔍 ファイル存在確認: {os.path.exists(cred_path)}")

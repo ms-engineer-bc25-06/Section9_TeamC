@@ -61,6 +61,7 @@ async def login(
         raise HTTPException(status_code=500, detail="ログイン処理に失敗しました")
 
 from app.api.routers import children
+
 app.include_router(children.router, prefix="/api/children", tags=["children"])
 
 # Voice Transcription API

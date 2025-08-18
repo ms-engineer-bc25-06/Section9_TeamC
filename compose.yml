@@ -9,9 +9,8 @@ services:
       - ./frontend:/app
       - /app/node_modules
       - /app/.next
-    environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+    env_file:
+      - ./frontend/.env.local
     depends_on:
       - backend
     networks:
@@ -37,7 +36,7 @@ services:
       - db
     networks:
       - app-network
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
 
   db:
     image: postgres:15-alpine
