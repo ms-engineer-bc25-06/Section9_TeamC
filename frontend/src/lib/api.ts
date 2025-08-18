@@ -283,17 +283,32 @@ export const api = {
     },
   },
 
-  // 音声文字起こしAPI
+  // 🎤 音声文字起こしAPI
   voice: {
+    // 音声ファイルを文字起こしするAPI（修正版：child_idをクエリパラメータとして送信）
     transcribe: async (audioBlob: Blob, childId: string) => {
       try {
+        console.log('🎤 音声文字起こし開始:', { childId, blobSize: audioBlob.size });
+        
+        // childIdが存在することを確認
+        if (!childId) {
+          throw new Error('child_idが指定されていません');
+        }
+        
+        // 認証ヘッダーを取得（Content-Typeは削除してFormDataに任せる）
         const headers = await getAuthHeaders();
         delete headers['Content-Type'];
+
+        // FormDataを作成して音声ファイルを追加
         const formData = new FormData();
         formData.append('file', audioBlob, 'recording.webm');
-        formData.append('child_id', childId);
 
-        const res = await fetch(`${API_URL}/api/voice/transcribe`, {
+        // child_idをクエリパラメータとして確実に追加
+        const url = `${API_URL}/api/voice/transcribe?child_id=${encodeURIComponent(childId)}`;
+        console.log('🎤 リクエストURL:', url);
+        console.log('🎤 child_id:', childId);
+
+        const res = await fetch(url, {
           method: 'POST',
           headers: {
             ...headers,
@@ -301,15 +316,19 @@ export const api = {
           body: formData,
         });
 
+        console.log('🎤 レスポンス受信:', res.status, res.statusText);
+
         if (!res.ok) {
           const errorData = await res.json();
-          console.error('バックエンドエラー詳細:', errorData);
+          console.error('❌ 文字起こしエラー詳細:', errorData);
           throw new Error(errorData.detail || `文字起こしに失敗しました(${res.status})`);
         }
 
-        return res.json();
+        const result = await res.json();
+        console.log('✅ 文字起こし成功:', result);
+        return result;
       } catch (error) {
-        console.error('文字起こしに失敗:', error);
+        console.error('❌ 文字起こしに失敗:', error);
         throw error;
       }
     },
@@ -355,7 +374,7 @@ export const api = {
     },
   },
 
-  // 会話履歴API
+  // 💬 会話履歴API
   conversations: {
     list: async (childId?: string) => {
       try {
@@ -402,7 +421,7 @@ export const api = {
     },
   },
 
-  // AIフィードバックAPI
+  // 🤖 AIフィードバックAPI
   feedback: {
     generate: async (transcriptId: string) => {
       try {
