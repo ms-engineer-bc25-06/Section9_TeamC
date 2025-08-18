@@ -47,8 +47,8 @@ export default function ChildRegisterPage() {
       // API呼び出し
       const res = await createChild(
         {
-          nickname,
-          birthday: birthDate.toISOString().split('T')[0], // yyyy-MM-dd
+          nickname: nickname,
+          birth_date: birthDate.toISOString().split('T')[0],
         },
         token
       );
