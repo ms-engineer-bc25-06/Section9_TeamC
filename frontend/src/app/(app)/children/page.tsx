@@ -11,8 +11,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/useAuth';
+import { useChildren } from '@/hooks/useChildren';
+import { api } from '@/lib/api';
 import { BookOpen, Calendar, Edit3, Plus, Rocket, Star, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface Child {
   id: number;
@@ -21,15 +26,79 @@ interface Child {
 }
 
 export default function ChildrenPage() {
-  const [children, setChildren] = useState<Child[]>([
-    { id: 1, name: '太郎', age: 7 },
-    { id: 2, name: '花子', age: 5 },
-  ]);
+  const { user, logout, loading } = useAuth();
+  const {
+    children: apiChildren,
+    isLoading: childrenLoading,
+    error,
+    getDisplayName,
+  } = useChildren();
+  const router = useRouter();
+  const [backendUserName, setBackendUserName] = useState<string>('');
 
+  // ローカル状態（編集・追加用）
+  const [children, setChildren] = useState<Child[]>([]);
   const [newChild, setNewChild] = useState({ name: '', age: '' });
   const [editingChild, setEditingChild] = useState<Child | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  // バックエンドから正式な名前を取得
+  useEffect(() => {
+    const fetchUserName = async () => {
+      if (user && !backendUserName) {
+        try {
+          console.log('🔍 バックエンドから名前を取得中...');
+          const authTest = await api.auth.test();
+          console.log('✅ バックエンドレスポンス:', authTest);
+
+          if (authTest.name) {
+            setBackendUserName(authTest.name);
+            console.log('💾 名前を設定:', authTest.name);
+          }
+        } catch (error) {
+          console.error('❌ 名前取得エラー:', error);
+          // エラーの場合はFirebaseの情報にフォールバック
+          console.log('🔄 Firebaseの情報にフォールバック');
+        }
+      }
+    };
+
+    fetchUserName();
+  }, [user, backendUserName]);
+
+  // API子どもデータを変換
+  useEffect(() => {
+    if (apiChildren) {
+      const transformedChildren = apiChildren.map((child) => ({
+        id: child.id,
+        name: child.nickname || child.name,
+        age: child.birth_date
+          ? new Date().getFullYear() - new Date(child.birth_date).getFullYear()
+          : 0,
+      }));
+      setChildren(transformedChildren);
+    }
+  }, [apiChildren]);
+
+  const handleLogout = async () => {
+    const result = await logout();
+    if (result.success) router.push('/');
+  };
+
+  // 表示名を決定する関数
+  const getDisplayUserName = () => {
+    if (backendUserName) {
+      return backendUserName;
+    }
+    if (user?.displayName) {
+      return user.displayName;
+    }
+    if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    return 'ユーザー';
+  };
 
   const addChild = () => {
     if (newChild.name && newChild.age) {
@@ -61,8 +130,13 @@ export default function ChildrenPage() {
     setChildren(children.filter((child) => child.id !== id));
   };
 
-  // ダミーユーザー情報
-  const user = { displayName: 'ユーザー' };
+  if (loading || childrenLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div>🔄 読み込み中...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-3 sm:p-6 lg:p-8">
@@ -70,12 +144,31 @@ export default function ChildrenPage() {
         {/* ヘッダー */}
         <header className="w-full max-w-4xl flex justify-between items-center mb-4 px-2 sm:px-0">
           <div>
-            <p className="text-gray-600 text-sm sm:text-lg">Hello, {user.displayName}! 👋</p>
+            <p className="text-gray-600 text-sm sm:text-lg">Hello, {getDisplayUserName()}! 👋</p>
+
+            {/* デバッグ用（後で削除可能） */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="text-xs text-gray-400 mt-1">
+                <p>Backend Name: {backendUserName || 'loading...'}</p>
+                <p>Firebase Name: {user?.displayName || 'undefined'}</p>
+                <p>Email: {user?.email || 'undefined'}</p>
+              </div>
+            )}
           </div>
-          <button className="px-3 py-1.5 sm:px-4 sm:py-2 bg-red-500 text-white text-sm sm:text-base rounded-md hover:bg-red-600">
+          <button
+            onClick={handleLogout}
+            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-red-500 text-white text-sm sm:text-base rounded-md hover:bg-red-600"
+          >
             Logout
           </button>
         </header>
+
+        {/* エラー表示 */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            エラー: {error}
+          </div>
+        )}
 
         {/* メインコンテンツ */}
         <main className="flex w-full max-w-xl flex-1 flex-col items-center justify-center py-4 sm:py-8 px-2 sm:px-0">

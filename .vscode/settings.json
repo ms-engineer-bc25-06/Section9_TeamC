@@ -20,5 +20,11 @@
   "files.autoGuessEncoding": false, // 自動判別を無効化
   "files.eol": "\n", // 改行はLF
   "editor.insertFinalNewline": true, // 最終行に改行追加
-  "editor.detectIndentation": false // 自動インデント判別を無効化
+  "editor.detectIndentation": false, // 自動インデント判別を無効化
+
+  // ▼ TypeScript設定
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.preferences.importModuleSpecifier": "relative"
 }

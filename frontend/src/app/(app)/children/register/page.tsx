@@ -133,7 +133,11 @@ export default function ChildRegisterPage() {
               </Popover>
             </div>
 
-            <Button type="submit" disabled={loading}>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 text-base sm:text-lg font-bold rounded-full bg-green-500 hover:bg-green-600 text-white disabled:opacity-70 disabled:cursor-not-allowed transition-colors mt-8"
+            >
               {loading ? '登録中...' : '登録する'}
             </Button>
           </form>

@@ -83,6 +83,13 @@ async def process_voice_transcription(
             db.commit()
         
     except Exception as e:
+        # より詳細なエラーログを出力
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"❌ 音声処理エラー: {str(e)}")
+        print(f"❌ エラー詳細: {error_details}")
+        print(f"❌ エラータイプ: {type(e).__name__}")
+    
         # エラーの場合もログを残す
         transcript_uuid = UUID(transcript_id)  # UUID変換を追加
         challenge = db.query(Challenge).filter(Challenge.id == transcript_uuid).first()
