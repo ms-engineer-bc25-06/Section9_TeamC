@@ -10,7 +10,7 @@ from app.models.user import User
 
 router = APIRouter()
 
-# 子どもリスト取得API
+# backend/app/routers/children.py - 子どもリスト取得API
 @router.get("/", response_model=List[ChildSchema])
 async def get_children(
     db: Session = Depends(get_db),  # データベース接続
@@ -56,6 +56,8 @@ async def get_children(
         return children_response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+<<<<<<< HEAD
+=======
 
 # 特定の子ども情報取得API（新規追加）
 @router.get("/{child_id}", response_model=ChildSchema)
@@ -104,7 +106,7 @@ async def get_child(
         # その他のエラーは500エラーとして処理
         raise HTTPException(status_code=500, detail=str(e))
 
-# 子ども作成API
+
 @router.post("/", response_model=ChildSchema)
 async def create_child(
     child_data: ChildCreate,  # リクエストボディから子どもデータを取得

@@ -2,24 +2,46 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useChildren } from '@/hooks/useChildren';
 import { api } from '@/lib/api';
-import { BarChart, Plus, Star } from 'lucide-react';
+import { BookOpen, Calendar, Edit3, Plus, Rocket, Star, Trash2 } from 'lucide-react';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+interface Child {
+  id: number;
+  name: string;
+  age: number;
+}
+
 export default function ChildrenPage() {
   const { user, logout, loading } = useAuth();
-  const { children, isLoading: childrenLoading, error, getDisplayName } = useChildren();
+  const {
+    children: apiChildren,
+    isLoading: childrenLoading,
+    error,
+    getDisplayName,
+  } = useChildren();
   const router = useRouter();
   const [backendUserName, setBackendUserName] = useState<string>('');
 
-  useEffect(() => {
-    if (!loading && !user) router.push('/');
-  }, [user, loading, router]);
+  // ローカル状態（編集・追加用）
+  const [children, setChildren] = useState<Child[]>([]);
+  const [newChild, setNewChild] = useState({ name: '', age: '' });
+  const [editingChild, setEditingChild] = useState<Child | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   // バックエンドから正式な名前を取得
   useEffect(() => {
@@ -45,6 +67,20 @@ export default function ChildrenPage() {
     fetchUserName();
   }, [user, backendUserName]);
 
+  // API子どもデータを変換
+  useEffect(() => {
+    if (apiChildren) {
+      const transformedChildren = apiChildren.map((child) => ({
+        id: child.id,
+        name: child.nickname || child.name,
+        age: child.birth_date
+          ? new Date().getFullYear() - new Date(child.birth_date).getFullYear()
+          : 0,
+      }));
+      setChildren(transformedChildren);
+    }
+  }, [apiChildren]);
+
   const handleLogout = async () => {
     const result = await logout();
     if (result.success) router.push('/');
@@ -53,15 +89,45 @@ export default function ChildrenPage() {
   // 表示名を決定する関数
   const getDisplayUserName = () => {
     if (backendUserName) {
-      return backendUserName; // 'ryoko sasagawa'
+      return backendUserName;
     }
     if (user?.displayName) {
       return user.displayName;
     }
     if (user?.email) {
-      return user.email.split('@')[0]; // 'sasaryo0929'
+      return user.email.split('@')[0];
     }
     return 'ユーザー';
+  };
+
+  const addChild = () => {
+    if (newChild.name && newChild.age) {
+      const child: Child = {
+        id: Date.now(),
+        name: newChild.name,
+        age: parseInt(newChild.age),
+      };
+      setChildren([...children, child]);
+      setNewChild({ name: '', age: '' });
+      setIsAddDialogOpen(false);
+    }
+  };
+
+  const editChild = (child: Child) => {
+    setEditingChild(child);
+    setIsEditDialogOpen(true);
+  };
+
+  const saveEdit = () => {
+    if (editingChild) {
+      setChildren(children.map((child) => (child.id === editingChild.id ? editingChild : child)));
+      setEditingChild(null);
+      setIsEditDialogOpen(false);
+    }
+  };
+
+  const deleteChild = (id: number) => {
+    setChildren(children.filter((child) => child.id !== id));
   };
 
   if (loading || childrenLoading) {
@@ -72,103 +138,210 @@ export default function ChildrenPage() {
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8">
-      <header className="w-full max-w-4xl flex justify-between items-center mb-4">
-        <div>
-          {/* バックエンドの正式名前を表示 */}
-          <p className="text-gray-600 text-lg">こんにちは、{getDisplayUserName()}さん</p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-3 sm:p-6 lg:p-8">
+      <div className="max-w-md mx-auto space-y-6">
+        {/* ヘッダー */}
+        <header className="w-full max-w-4xl flex justify-between items-center mb-4 px-2 sm:px-0">
+          <div>
+            <p className="text-gray-600 text-sm sm:text-lg">Hello, {getDisplayUserName()}! 👋</p>
 
-          {/* デバッグ用（後で削除可能） */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="text-xs text-gray-400 mt-1">
-              <p>Backend Name: {backendUserName || 'loading...'}</p>
-              <p>Firebase Name: {user?.displayName || 'undefined'}</p>
-              <p>Email: {user?.email || 'undefined'}</p>
-            </div>
-          )}
-        </div>
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-        >
-          ログアウト
-        </button>
-      </header>
+            {/* デバッグ用（後で削除可能） */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="text-xs text-gray-400 mt-1">
+                <p>Backend Name: {backendUserName || 'loading...'}</p>
+                <p>Firebase Name: {user?.displayName || 'undefined'}</p>
+                <p>Email: {user?.email || 'undefined'}</p>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={handleLogout}
+            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-red-500 text-white text-sm sm:text-base rounded-md hover:bg-red-600"
+          >
+            Logout
+          </button>
+        </header>
 
-      <main className="flex w-full max-w-xl flex-1 flex-col items-center justify-center py-8">
-        <h2 className="mb-8 text-center text-3xl font-bold text-gray-800 sm:text-4xl md:text-5xl">
-          今日は誰がする？
-        </h2>
-
+        {/* エラー表示 */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             エラー: {error}
           </div>
         )}
 
-        {children.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-6 text-center">
-            <h2 className="text-xl font-semibold mb-4">子ども一覧</h2>
-            <p className="text-gray-500">まだ子どもが登録されていません</p>
-            <Link href="/children/register">
-              <button className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-                子どもを追加
-              </button>
-            </Link>
-          </div>
-        ) : (
-          <div className="grid w-full grid-cols-1 gap-4">
+        {/* メインコンテンツ */}
+        <main className="flex w-full max-w-xl flex-1 flex-col items-center justify-center py-4 sm:py-8 px-2 sm:px-0">
+          <h2 className="mb-6 sm:mb-8 text-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800">
+            Who's Ready for Today? 🚀
+          </h2>
+
+          {/* 子ども一覧 */}
+          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
             {children.map((child) => (
               <div key={child.id} className="relative">
-                <Link href={`/children/confirm?childId=${child.id}`} className="block">
-                  <Card className="flex h-full cursor-pointer flex-col justify-center rounded-xl bg-white/70 backdrop-blur-md p-6 shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg border border-white/50">
-                    <CardContent className="flex flex-col p-0">
-                      <p className="text-xl font-bold text-gray-700">
-                        {child.nickname || child.name}ちゃん
-                      </p>
-                      <p className="text-md text-gray-500">{getDisplayName(child)}</p>
-                    </CardContent>
-                  </Card>
-                </Link>
-                <Link
-                  href={`/children/edit/${child.id}`}
-                  className="absolute top-2 right-2 bg-white/80 hover:bg-white text-gray-600 hover:text-gray-800 rounded-full p-2 shadow-md transition-all"
-                >
-                  ✏️
-                </Link>
+                <Card className="flex h-full cursor-pointer flex-col justify-center rounded-xl bg-white/70 backdrop-blur-md p-4 sm:p-6 shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg border border-white/50">
+                  <CardContent className="flex flex-col p-0 space-y-4">
+                    {/* 子ども情報表示 */}
+                    <div className="text-center">
+                      <p className="text-lg sm:text-xl font-bold text-gray-700">{child.name}</p>
+                      <div className="flex items-center justify-center space-x-2 mt-1">
+                        <Calendar className="w-4 h-4 text-gray-500" />
+                        <span className="text-black font-medium">{child.age}歳</span>
+                      </div>
+                    </div>
+
+                    {/* チャレンジボタン */}
+                    <Button
+                      className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg py-3"
+                      onClick={() => {
+                        // チャレンジ画面への遷移処理
+                        console.log(`${child.name} がチャレンジ開始！`);
+                      }}
+                    >
+                      <Star className="w-4 h-4 mr-2" />
+                      I'm Ready! ⭐
+                    </Button>
+
+                    {/* 編集・削除ボタン */}
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => editChild(child)}
+                        className="flex-1"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => deleteChild(child.id)}
+                        className="flex-1"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             ))}
           </div>
-        )}
-      </main>
+        </main>
 
-      <footer className="sticky bottom-0 z-10 mt-8 w-full max-w-4xl rounded-t-xl bg-white/90 p-4 shadow-lg backdrop-blur-sm sm:p-6">
-        <div className="flex flex-row justify-around gap-2">
-          <Link href="/children/register">
-            <Button className="w-full bg-green-300 text-white hover:bg-green-400">
-              <Plus className="mr-2 h-5 w-5" />
-              <span className="hidden sm:inline">なまえをふやす</span>
+        {/* フッターボタン群 */}
+        <footer className="sticky bottom-0 z-10 mt-4 sm:mt-8 w-full max-w-4xl rounded-t-xl bg-white/90 p-2 sm:p-4 shadow-lg backdrop-blur-sm">
+          <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:justify-around sm:gap-2">
+            {/* 新しいチャレンジャー追加 */}
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-2 text-sm">
+                  <Plus className="h-4 w-4 mr-1" />
+                  New Challenger! 🎉
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-xl font-bold text-center">
+                    Add New Challenger! 🎉
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div>
+                    <Label htmlFor="name" className="text-sm font-medium">
+                      お名前
+                    </Label>
+                    <Input
+                      id="name"
+                      value={newChild.name}
+                      onChange={(e) => setNewChild({ ...newChild, name: e.target.value })}
+                      placeholder="例：太郎"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="age" className="text-sm font-medium">
+                      年齢
+                    </Label>
+                    <Input
+                      id="age"
+                      type="number"
+                      value={newChild.age}
+                      onChange={(e) => setNewChild({ ...newChild, age: e.target.value })}
+                      placeholder="例：7"
+                      className="mt-1"
+                    />
+                  </div>
+                  <Button onClick={addChild} className="w-full mt-6 h-11">
+                    追加する
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* 学習進捗 */}
+            <Button
+              variant="outline"
+              className="w-full bg-white border-2 border-blue-300 hover:bg-blue-50 text-blue-700 font-semibold py-2 text-sm"
+            >
+              <BookOpen className="h-4 w-4 mr-1" />
+              My Progress 📈
             </Button>
-          </Link>
-          <Link href="/history">
-            <Button className="w-full bg-blue-300 text-white hover:bg-blue-400">
-              <BarChart className="hidden sm:inline" />
-              <span className="hidden sm:inline">ふりかえり</span>
+
+            {/* アドバンスラーニング */}
+            <Button
+              variant="outline"
+              className="w-full bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 hover:bg-gradient-to-r hover:from-amber-100 hover:to-yellow-100 text-amber-700 font-semibold py-2 text-sm"
+            >
+              <Rocket className="h-4 w-4 mr-1 text-amber-500" />
+              Advanced Learning 🚀
             </Button>
-          </Link>
-          <Link href="/upgrade">
-            <Button className="w-full bg-yellow-300 text-white hover:bg-yellow-400">
-              <Star className="mr-2 h-5 w-5" />
-              <span className="hidden sm:inline">プレミアムプラン</span>
-            </Button>
-          </Link>
-        </div>
-      </footer>
+          </div>
+        </footer>
+
+        {/* 編集ダイアログ */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-center">
+                Edit Challenger Info
+              </DialogTitle>
+            </DialogHeader>
+            {editingChild && (
+              <div className="space-y-4 pt-4">
+                <div>
+                  <Label htmlFor="edit-name" className="text-sm font-medium">
+                    お名前
+                  </Label>
+                  <Input
+                    id="edit-name"
+                    value={editingChild.name}
+                    onChange={(e) => setEditingChild({ ...editingChild, name: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-age" className="text-sm font-medium">
+                    年齢
+                  </Label>
+                  <Input
+                    id="edit-age"
+                    type="number"
+                    value={editingChild.age.toString()}
+                    onChange={(e) =>
+                      setEditingChild({ ...editingChild, age: parseInt(e.target.value) || 0 })
+                    }
+                    className="mt-1"
+                  />
+                </div>
+                <Button onClick={saveEdit} className="w-full mt-6 h-11">
+                  変更を保存
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }

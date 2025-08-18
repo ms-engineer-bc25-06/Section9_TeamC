@@ -210,7 +210,7 @@ export const api = {
           headers,
           body: JSON.stringify({
             nickname: data.name, // nameをnicknameとして送信
-            birthdate: data.birthdate,
+            birth_date: data.birthdate,  // birthdateをbirth_dateとして送信
           }),
         });
         if (!res.ok) {
@@ -250,7 +250,7 @@ export const api = {
           headers,
           body: JSON.stringify({
             nickname: data.name || data.nickname,
-            birthdate: data.birthdate,
+            birth_date: data.birthdate,  // birthdateをbirth_dateとして送信
           }),
         });
         if (!res.ok) {
