@@ -1,421 +1,444 @@
-# BUD - 開発環境構築ガイド
+# 環境セットアップガイド
 
-このガイドに従って、BUD プロジェクトのローカル開発環境を構築してください。
+このガイドでは、プロジェクトの開発環境を構築する手順を説明します。
 
-## 📋 前提条件
+## 📋 必要な前提条件
 
-開発を始める前に、以下のツールがインストールされていることを確認してください：
+開発を始める前に、以下のツールがインストールされていることを確認してください。
 
 ### 必須ツール
 
-- **Node.js**: `20.x` 以上 ([公式サイト](https://nodejs.org/))
-- **Python**: `3.11` 以上 ([公式サイト](https://www.python.org/))
-- **Docker**: 最新版 ([公式サイト](https://www.docker.com/))
-- **Docker Compose**: Docker Desktop に含まれています
-- **Git**: 最新版
+- **Docker Desktop** (v4.0 以上)
 
-### バージョン確認
+  - [公式サイト](https://www.docker.com/products/docker-desktop/)からダウンロード
+  - Windows/Mac/Linux 対応版を選択
+  - インストール後、Docker Desktop を起動して動作確認
 
-```bash
-node --version    # v20.x.x
-python --version  # Python 3.11.x
-docker --version  # Docker version 24.x.x
-git --version     # git version 2.x.x
-```
+- **Git** (v2.30 以上)
 
-## 🚀 クイックスタート
+  - [公式サイト](https://git-scm.com/)からダウンロード
+  - インストール確認: `git --version`
+
+- **Visual Studio Code** (推奨)
+  - [公式サイト](https://code.visualstudio.com/)からダウンロード
+  - 推奨拡張機能:
+    - Docker
+    - ESLint
+    - Prettier
+    - Python
+    - TypeScript/JavaScript
+
+### 推奨環境
+
+- **OS**: macOS 11 以上 / Windows 10 以上 / Ubuntu 20.04 以上
+- **メモリ**: 8GB 以上（Docker 用に 4GB 以上割り当て推奨）
+- **ストレージ**: 10GB 以上の空き容量
+
+## 🚀 環境構築手順
 
 ### 1. リポジトリのクローン
 
 ```bash
+# HTTPSを使用する場合
 git clone https://github.com/ms-engineer-bc25-06/Section9_TeamC.git
+
+# SSHを使用する場合（推奨）
+git clone git@github.com:ms-engineer-bc25-06/Section9_TeamC.git
+
+# プロジェクトディレクトリへ移動
 cd Section9_TeamC
 ```
 
 ### 2. 環境変数の設定
 
+#### バックエンド環境変数（必須）
+
 ```bash
-# ルートディレクトリで環境変数ファイルをコピー
-cp .env.example .env
-
-# フロントエンド用
-cp frontend/.env.example frontend/.env.local
-
-# バックエンド用
+# backend/.env.exampleをコピー
 cp backend/.env.example backend/.env
 ```
 
-### 3. Docker 環境の立ち上げ
-
-```bash
-# すべてのサービスを一括起動
-docker-compose up -d
-
-# 初回のみ：データベースマイグレーション実行
-docker-compose exec backend python -m alembic upgrade head
-```
-
-### 4. 動作確認
-
-- **フロントエンド**: http://localhost:3000
-- **バックエンド API**: http://localhost:8000
-- **API 仕様書**: http://localhost:8000/docs
-- **PostgreSQL**: localhost:5432
-
----
-
-## 🔧 詳細セットアップ手順
-
-### フロントエンド環境構築
-
-#### 1. 依存関係のインストール
-
-```bash
-cd frontend
-npm install
-```
-
-#### 2. 環境変数設定 (`frontend/.env.local`)
-
-```env
-# Next.js設定
-NEXT_PUBLIC_API_URL=http://localhost:8000
-
-# Firebase設定（開発用）
-NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key_here
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-
-# 音声機能設定
-NEXT_PUBLIC_VOICE_FEATURE_ENABLED=true
-NEXT_PUBLIC_WHISPER_API_KEY=your_openai_api_key  # A案採用時
-```
-
-#### 3. 開発サーバー起動
-
-```bash
-npm run dev
-```
-
-### バックエンド環境構築
-
-#### 1. 仮想環境の作成（任意・Docker 使用時は不要）
-
-```bash
-cd backend
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# macOS/Linux
-source venv/bin/activate
-```
-
-#### 2. 依存関係のインストール
-
-```bash
-pip install -r requirements.txt
-```
-
-#### 3. 環境変数設定 (`backend/.env`)
+`backend/.env`を編集して、以下の値を設定：
 
 ```env
 # データベース設定
-DATABASE_URL=postgresql://bud_user:bud_password@localhost:5432/bud_db
+DB_HOST=db
+DB_PORT=5432
+DB_NAME=your_database_name
+DB_USER=your_database_user
+DB_PASSWORD=your_secure_password
 
-# Firebase Admin SDK
-FIREBASE_ADMIN_SDK_PATH=./config/firebase-admin-sdk.json
+# アプリケーション設定
+PORT=8000
+NODE_ENV=development
 
-# 音声機能設定
-OPENAI_API_KEY=your_openai_api_key  # Whisper API用
+# JWT設定（本番環境では必ず変更）
+JWT_SECRET=your_jwt_secret_key_here
+JWT_EXPIRES_IN=7d
 
-# セキュリティ設定
-SECRET_KEY=your_super_secret_key_here
-CORS_ORIGINS=http://localhost:3000
-
-# 開発モード
-DEBUG=true
-ENVIRONMENT=development
+# その他の設定
+CORS_ORIGIN=http://localhost:3000
 ```
 
-#### 4. データベースマイグレーション
+#### フロントエンド環境変数（必要に応じて）
 
 ```bash
-# マイグレーションファイル生成
-python -m alembic revision --autogenerate -m "初期テーブル作成"
-
-# マイグレーション実行
-python -m alembic upgrade head
+# frontend/.env.localを作成
+touch frontend/.env.local
 ```
 
-#### 5. 開発サーバー起動
+`frontend/.env.local`に以下を設定：
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+### 3. Docker コンテナの起動
 
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
+# Docker Desktopが起動していることを確認
 
----
-
-## 🐳 Docker 環境の詳細
-
-### Docker Compose 構成
-
-```yaml
-# docker-compose.yml の主要サービス
-services:
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-
-  backend:
-    build: ./backend
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-
-  db:
-    image: postgres:15
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: bud_db
-      POSTGRES_USER: bud_user
-      POSTGRES_PASSWORD: bud_password
-```
-
-### よく使う Docker コマンド
-
-```bash
-# サービス一括起動
+# 開発環境の起動（初回はイメージのビルドに時間がかかります）
 docker-compose up -d
 
-# ログ確認
-docker-compose logs frontend  # フロントエンドのログ
-docker-compose logs backend   # バックエンドのログ
-docker-compose logs db        # データベースのログ
+# ログを確認しながら起動したい場合
+docker-compose up
+```
 
-# サービス再起動
-docker-compose restart frontend
+### 4. データベースの初期化
+
+```bash
+# データベースマイグレーションの実行
+docker-compose exec backend npm run migrate
+
+# 初期データの投入（必要に応じて）
+docker-compose exec backend npm run seed
+```
+
+## ✅ 動作確認方法
+
+### 1. ブラウザでのアクセス確認
+
+以下の URL にアクセスして、各サービスが正常に動作していることを確認：
+
+- **フロントエンド**: http://localhost:3000
+  - トップページが表示されることを確認
+- **バックエンド API**: http://localhost:8000
+  - API のヘルスチェック: http://localhost:8000/health
+  - レスポンス例: `{"status": "healthy", "timestamp": "2024-01-01T00:00:00Z"}`
+
+### 2. API 動作確認
+
+```bash
+# ヘルスチェックAPI
+curl http://localhost:8000/health
+
+# APIバージョン確認
+curl http://localhost:8000/api/version
+```
+
+### 3. データベース接続確認
+
+```bash
+# PostgreSQLコンテナに接続
+docker-compose exec db psql -U your_database_user -d your_database_name
+
+# テーブル一覧を表示
+\dt
+
+# 接続を終了
+\q
+```
+
+### 4. ログの確認
+
+```bash
+# 全サービスのログ
+docker-compose logs
+
+# 特定サービスのログ（例：backend）
+docker-compose logs backend
+
+# リアルタイムでログを確認
+docker-compose logs -f
+```
+
+## 💻 日常の開発フロー
+
+### サービスの起動・停止
+
+```bash
+# すべてのサービスを起動
+docker-compose up -d
+
+# すべてのサービスを停止
+docker-compose down
+
+# 特定のサービスのみ再起動（例：backend）
 docker-compose restart backend
 
-# データベースに接続
-docker-compose exec db psql -U bud_user -d bud_db
-
-# バックエンドコンテナに入る
-docker-compose exec backend bash
-
-# 環境をクリーンアップ
-docker-compose down -v  # ボリュームも削除
-```
-
----
-
-## 🛠️ 開発ツールの設定
-
-### ESLint / Prettier 設定
-
-#### フロントエンド
-
-```bash
-cd frontend
-
-# ESLint実行
-npm run lint
-
-# Prettier実行
-npm run format
-
-# 型チェック
-npm run type-check
-```
-
-#### バックエンド
-
-```bash
-cd backend
-
-# ruff（静的解析）
-ruff check .
-
-# black（フォーマット）
-black .
-
-# 型チェック
-mypy .
-```
-
-### Husky + lint-staged 設定
-
-プリコミットフックが自動で設定されます：
-
-```bash
-# 初回のみ実行（package.jsonのpostinstallで自動実行済み）
-npx husky install
-```
-
-### Git 設定
-
-```bash
-# Conventional Commits用のコミットテンプレート設定
-git config commit.template .gitmessage
-```
-
----
-
-## 🔥 Firebase 設定
-
-### 1. Firebase プロジェクト作成
-
-1. [Firebase Console](https://console.firebase.google.com/) でプロジェクト作成
-2. Authentication を有効化
-3. Google 認証プロバイダーを設定
-
-### 2. 設定ファイル取得
-
-```bash
-# フロントエンド用設定（Web）
-# Firebase Console → プロジェクト設定 → アプリ追加 → Web
-
-# バックエンド用設定（Admin SDK）
-# Firebase Console → プロジェクト設定 → サービスアカウント
-# 「新しい秘密鍵の生成」→ backend/config/ に保存
-```
-
----
-
-## 🧪 テスト環境設定
-
-### フロントエンドテスト
-
-```bash
-cd frontend
-
-# Vitest実行
-npm run test
-
-# Playwright E2Eテスト
-npm run test:e2e
-
-# テストカバレッジ
-npm run test:coverage
-```
-
-### バックエンドテスト
-
-```bash
-cd backend
-
-# pytest実行
-pytest
-
-# カバレッジ付きテスト
-pytest --cov=app --cov-report=html
-```
-
----
-
-## 🎤 音声機能の設定
-
-### Web Speech API（B 案）
-
-- ブラウザの音声認識機能を使用
-- Chrome/Edge で最適な動作
-- 追加設定不要
-
-### Whisper API（A 案）
-
-```bash
-# OpenAI APIキーを環境変数に設定
-export OPENAI_API_KEY=your_openai_api_key
-
-# バックエンドで音声ファイル処理
-pip install openai-whisper
-```
-
----
-
-## ❗ トラブルシューティング
-
-### よくある問題と解決方法
-
-#### 1. Docker 関連
-
-```bash
-# ポートが既に使用されている
-docker-compose down
-sudo lsof -ti:3000 | xargs kill -9  # macOS/Linux
-netstat -ano | findstr :3000        # Windows
-
-# データベース接続エラー
-docker-compose restart db
-docker-compose logs db
-```
-
-#### 2. Node.js 関連
-
-```bash
-# node_modules関連のエラー
-rm -rf node_modules package-lock.json
-npm install
-
-# 型エラー
-npm run type-check
-```
-
-#### 3. Python 関連
-
-```bash
-# 依存関係エラー
-pip install --upgrade pip
-pip install -r requirements.txt --force-reinstall
-
-# マイグレーションエラー
-python -m alembic stamp head
-python -m alembic revision --autogenerate -m "fix"
-```
-
-#### 4. 環境変数エラー
-
-```bash
-# 設定確認
-docker-compose config
-cat .env
-```
-
-### デバッグ情報収集
-
-```bash
-# システム情報
-node --version
-python --version
-docker --version
-
-# サービス状態確認
+# コンテナの状態確認
 docker-compose ps
-docker-compose logs --tail=50
 ```
 
----
+### コードの変更と反映
 
-## 📞 ヘルプ・質問
+- **フロントエンド**: ファイル保存時に自動的にホットリロード
+- **バックエンド**: ファイル保存時に nodemon が自動的に再起動
 
-環境構築で困った場合：
+### データベース操作
 
-1. **このガイドの手順を再確認**
-2. **トラブルシューティングセクションを確認**
-3. **GitHub Issues で質問** - [Issue 作成](https://github.com/ms-engineer-bc25-06/Section9_TeamC/issues/new)
-4. **チーム Slack で相談**
+```bash
+# マイグレーションの作成
+docker-compose exec backend npm run migrate:create -- migration_name
 
-### 有用なリソース
+# マイグレーションの実行
+docker-compose exec backend npm run migrate
 
-- [Next.js 公式ドキュメント](https://nextjs.org/docs)
-- [FastAPI 公式ドキュメント](https://fastapi.tiangolo.com/)
+# マイグレーションのロールバック
+docker-compose exec backend npm run migrate:rollback
+```
+
+### テストの実行
+
+```bash
+# バックエンドのテスト
+docker-compose exec backend npm test
+
+# フロントエンドのテスト
+docker-compose exec frontend npm test
+
+# E2Eテスト
+docker-compose exec frontend npm run test:e2e
+```
+
+### ビルドとデプロイ準備
+
+```bash
+# プロダクションビルド
+docker-compose -f docker-compose.prod.yml build
+
+# ビルドしたイメージの確認
+docker images
+```
+
+## 🔧 トラブルシューティング
+
+### よくある問題と解決法
+
+#### 1. Docker コンテナが起動しない
+
+**症状**: `docker-compose up`実行時にエラーが発生
+
+**解決方法**:
+
+```bash
+# Docker Desktopが起動していることを確認
+docker version
+
+# 古いコンテナとボリュームを削除
+docker-compose down -v
+
+# イメージを再ビルド
+docker-compose build --no-cache
+
+# 再度起動
+docker-compose up -d
+```
+
+#### 2. ポートが既に使用されている
+
+**症状**: `bind: address already in use`エラー
+
+**解決方法**:
+
+```bash
+# 使用中のポートを確認（例：3000番ポート）
+lsof -i :3000  # Mac/Linux
+netstat -ano | findstr :3000  # Windows
+
+# プロセスを終了するか、docker-compose.ymlでポート番号を変更
+```
+
+#### 3. データベース接続エラー
+
+**症状**: `ECONNREFUSED`または`connection refused`エラー
+
+**解決方法**:
+
+```bash
+# データベースコンテナのログを確認
+docker-compose logs db
+
+# .envファイルの設定を確認
+cat backend/.env
+
+# データベースコンテナを再起動
+docker-compose restart db
+```
+
+#### 4. npm install が失敗する
+
+**症状**: パッケージのインストール中にエラー
+
+**解決方法**:
+
+```bash
+# node_modulesとpackage-lock.jsonを削除
+docker-compose exec backend rm -rf node_modules package-lock.json
+
+# キャッシュをクリア
+docker-compose exec backend npm cache clean --force
+
+# 再インストール
+docker-compose exec backend npm install
+```
+
+#### 5. メモリ不足エラー
+
+**症状**: `JavaScript heap out of memory`エラー
+
+**解決方法**:
+
+- Docker Desktop の設定でメモリ割り当てを増やす
+  - Settings → Resources → Memory を 4GB 以上に設定
+- 不要なコンテナを停止：`docker system prune -a`
+
+### ログファイルの場所
+
+- **Docker ログ**: `docker-compose logs [service_name]`
+- **アプリケーションログ**:
+  - Backend: `backend/logs/`
+  - Frontend: ブラウザのコンソール
+
+### デバッグモードの有効化
+
+```bash
+# バックエンドのデバッグモード
+docker-compose exec backend npm run dev:debug
+
+# VS Codeでのリモートデバッグ設定は.vscode/launch.jsonを参照
+```
+
+## 🔒 セキュリティ注意事項
+
+### 環境変数の管理
+
+#### ⚠️ 重要な注意点
+
+1. **`.env`ファイルは絶対に Git にコミットしない**
+
+   - `.gitignore`に含まれていることを確認
+   - 誤ってコミットした場合は、すぐに履歴から削除
+
+2. **環境ごとに異なる設定を使用**
+
+   ```bash
+   # 開発環境
+   cp .env.development .env
+
+   # ステージング環境
+   cp .env.staging .env
+
+   # 本番環境（別途管理）
+   ```
+
+3. **シークレットキーの生成**
+   ```bash
+   # 安全なランダムキーの生成
+   openssl rand -hex 32
+   ```
+
+### 本番環境での変更点
+
+#### 1. 環境変数の設定
+
+本番環境では以下の設定を必ず変更：
+
+```env
+# 本番環境の.env例
+NODE_ENV=production
+JWT_SECRET=[強力なランダム文字列]
+DB_PASSWORD=[複雑なパスワード]
+CORS_ORIGIN=https://your-production-domain.com
+```
+
+#### 2. SSL/TLS 証明書の設定
+
+```yaml
+# docker-compose.prod.ymlでHTTPS設定
+services:
+  nginx:
+    volumes:
+      - ./ssl/cert.pem:/etc/nginx/ssl/cert.pem
+      - ./ssl/key.pem:/etc/nginx/ssl/key.pem
+```
+
+#### 3. セキュリティヘッダーの設定
+
+```javascript
+// バックエンドでのセキュリティヘッダー設定
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  })
+);
+```
+
+#### 4. データベースのセキュリティ
+
+- 本番環境では別のデータベースサーバーを使用
+- 接続は SSL/TLS で暗号化
+- 定期的なバックアップの実施
+- 最小権限の原則に基づくユーザー設定
+
+#### 5. ログとモニタリング
+
+```bash
+# ログの収集と監視
+docker-compose logs -f | grep ERROR
+
+# アクセスログの監視
+tail -f /var/log/nginx/access.log
+```
+
+### セキュリティチェックリスト
+
+- [ ] すべての環境変数が適切に設定されている
+- [ ] `.env`ファイルが Gitignore に含まれている
+- [ ] 本番環境のパスワードが十分に強力
+- [ ] HTTPS が有効になっている（本番環境）
+- [ ] セキュリティヘッダーが設定されている
+- [ ] 不要なポートが閉じられている
+- [ ] 定期的なセキュリティアップデートの適用
+- [ ] ログの監視体制が整っている
+
+## 📚 参考リンク
+
 - [Docker 公式ドキュメント](https://docs.docker.com/)
-- [PostgreSQL 公式ドキュメント](https://www.postgresql.org/docs/)
+- [Docker Compose リファレンス](https://docs.docker.com/compose/)
+- [PostgreSQL ドキュメント](https://www.postgresql.org/docs/)
+- [Node.js ベストプラクティス](https://github.com/goldbergyoni/nodebestpractices)
+- [Next.js ドキュメント](https://nextjs.org/docs)
+
+## 🤝 サポート
+
+問題が解決しない場合は、以下の方法でサポートを受けられます：
+
+GitHub の Issues: [Issues](https://github.com/ms-engineer-bc25-06/Section9_TeamC/issues)
 
 ---
 
-**🎉 環境構築完了後、`http://localhost:3000` で BUD アプリが表示されれば成功です！**
+最終更新日: 2025 年 8 月
