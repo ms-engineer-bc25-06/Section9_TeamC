@@ -60,12 +60,9 @@ async def login(
         print(f"Firebase認証統合エラー: {e}")
         raise HTTPException(status_code=500, detail="ログイン処理に失敗しました")
 
-# API ルーター
 from app.api.routers import children
-from app.api.routers import auth
 
 app.include_router(children.router, prefix="/api/children", tags=["children"])
-app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 
 # Voice Transcription API
 from app.api.voice.transcription import router as voice_router

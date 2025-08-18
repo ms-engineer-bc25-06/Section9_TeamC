@@ -15,6 +15,7 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
     google_id VARCHAR(255) UNIQUE,
+    firebase_uid VARCHAR(255) UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -80,9 +81,9 @@ ALTER TABLE users ADD CONSTRAINT check_name_length
 
 -- 開発・テスト用のサンプルデータを挿入
 -- UUIDを明示的に指定してリレーションを管理
-INSERT INTO users (id, email, name) VALUES 
-    ('550e8400-e29b-41d4-a716-446655440001', 'parent1@example.com', '田中太郎'),
-    ('550e8400-e29b-41d4-a716-446655440002', 'parent2@example.com', '佐藤花子');
+INSERT INTO users (id, email, name, firebase_uid) VALUES 
+    ('550e8400-e29b-41d4-a716-446655440001', 'parent1@example.com', '田中太郎', 'firebase_uid_1'),
+    ('550e8400-e29b-41d4-a716-446655440002', 'parent2@example.com', '佐藤花子', 'firebase_uid_2');
 
 INSERT INTO children (id, user_id, nickname, birthdate) VALUES 
     ('660e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440001', 'ゆうくん', '2016-04-15'),
