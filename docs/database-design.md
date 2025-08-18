@@ -19,14 +19,15 @@ BUD アプリケーションのデータベース設計をまとめたもので�
 
 ### 3.1 users（親ユーザー）
 
-| カラム名   | 型           | 制約             | 説明                         |
-| ---------- | ------------ | ---------------- | ---------------------------- |
-| id         | UUID         | PRIMARY KEY      | ユーザー ID                  |
-| email      | VARCHAR(255) | UNIQUE, NOT NULL | メールアドレス               |
-| name       | VARCHAR(100) | NOT NULL         | ユーザー名                   |
-| google_id  | VARCHAR(255) | UNIQUE           | Google 連携用 ID             |
-| created_at | TIMESTAMP    | DEFAULT now()    | 登録日時                     |
-| updated_at | TIMESTAMP    | DEFAULT now()    | 更新日時（更新時に明示更新） |
+| カラム名     | 型                     | 制約                | 説明                                    |
+| ------------ | ---------------------- | ------------------- | --------------------------------------- |
+| id           | UUID                   | PRIMARY KEY         | ユーザー ID                             |
+| email        | VARCHAR(255)           | UNIQUE, NOT NULL    | メールアドレス                          |
+| name         | VARCHAR(100)           | NOT NULL            | ユーザー名                              |
+| google_id    | VARCHAR(255)           | UNIQUE              | Google 連携用 ID                        |
+| created_at   | TIMESTAMP              | DEFAULT now()       | 登録日時                                |
+| updated_at   | TIMESTAMP              | DEFAULT now()       | 更新日時（更新時に明示更新）            |
+| firebase_uid | character varying(255) | UNIQUE, NOT NULL 　 | FirebaseAuthentication のユーザー識別子 |
 
 ---
 
