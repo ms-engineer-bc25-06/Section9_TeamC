@@ -57,11 +57,26 @@ export function useChildren() {
       const data = await api.children.list();
       console.log('✅ 実APIデータ:', data);
 
-      // データ処理：年齢を計算（birth_date フィールドを使用）
-      const processedChildren = data.map((child: any) => ({
-        ...child,
-        age: child.birth_date ? calculateAge(child.birth_date) : undefined,
-      }));
+      // データ処理：年齢を計算（birth_date フィールドを使用 - APIが返すフィールド名）
+      const processedChildren = data.map((child: any, index: number) => {
+        console.log(`🔍 子ども${index + 1}の生データ:`, {
+          birth_date: child.birth_date,
+          型: typeof child.birth_date,
+          値: child.birth_date
+        });
+        
+        const age = child.birth_date ? calculateAge(child.birth_date) : undefined;
+        console.log(`📅 年齢計算結果: birth_date=${child.birth_date} → age=${age}`);
+        
+        return {
+          ...child,
+          birthdate: child.birth_date, // APIのbirth_dateをbirthdateに正規化
+          age,
+        };
+      });
+      
+      // デバッグ用ログ
+      console.log('📊 処理済みデータ:', processedChildren);
 
       setChildren(processedChildren);
       setState((prev) => ({ ...prev, isLoading: false }));
@@ -100,9 +115,7 @@ export function useChildren() {
   }, [fetchChildren]);
 
   const getDisplayName = useCallback((child: Child): string => {
-    const name = child.nickname || 'ニックネーム未設定';
-    const age = child.age ? `（${child.age}歳）` : '';
-    return `${name}${age}`;
+    return child.age ? `${child.age}歳` : '年齢未設定';
   }, []);
 
   useEffect(() => {

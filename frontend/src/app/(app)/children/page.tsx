@@ -37,21 +37,21 @@ export default function ChildrenPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8">
-      <header className="w-full max-w-4xl flex justify-between items-center mb-4">
+    <div className="flex min-h-screen flex-col items-center justify-between bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-3 sm:p-6 lg:p-8">
+      <header className="w-full max-w-4xl flex justify-between items-center mb-4 px-2 sm:px-0">
         <div>
-          <p className="text-gray-600 text-lg">こんにちは、{user.displayName}さん</p>
+          <p className="text-gray-600 text-sm sm:text-lg">こんにちは、{user.displayName}さん</p>
         </div>
         <button
           onClick={handleLogout}
-          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+          className="px-3 py-1.5 sm:px-4 sm:py-2 bg-red-500 text-white text-sm sm:text-base rounded-md hover:bg-red-600"
         >
           ログアウト
         </button>
       </header>
 
-      <main className="flex w-full max-w-xl flex-1 flex-col items-center justify-center py-8">
-        <h2 className="mb-8 text-center text-3xl font-bold text-gray-800 sm:text-4xl md:text-5xl">
+      <main className="flex w-full max-w-xl flex-1 flex-col items-center justify-center py-4 sm:py-8 px-2 sm:px-0">
+        <h2 className="mb-6 sm:mb-8 text-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800">
           今日は誰がする？
         </h2>
 
@@ -76,12 +76,12 @@ export default function ChildrenPage() {
             {children.map((child) => (
               <div key={child.id} className="relative">
                 <Link href={`/children/confirm?childId=${child.id}`} className="block">
-                  <Card className="flex h-full cursor-pointer flex-col justify-center rounded-xl bg-white/70 backdrop-blur-md p-6 shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg border border-white/50">
+                  <Card className="flex h-full cursor-pointer flex-col justify-center rounded-xl bg-white/70 backdrop-blur-md p-4 sm:p-6 shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg border border-white/50">
                     <CardContent className="flex flex-col p-0">
-                      <p className="text-xl font-bold text-gray-700">
-                        {child.nickname || child.name}ちゃん
+                      <p className="text-lg sm:text-xl font-bold text-gray-700">
+                        {child.nickname || child.name}
                       </p>
-                      <p className="text-md text-gray-500">{getDisplayName(child)}</p>
+                      <p className="text-sm sm:text-md text-gray-500">{getDisplayName(child)}</p>
                     </CardContent>
                   </Card>
                 </Link>
@@ -97,24 +97,24 @@ export default function ChildrenPage() {
         )}
       </main>
 
-      <footer className="sticky bottom-0 z-10 mt-8 w-full max-w-4xl rounded-t-xl bg-white/90 p-4 shadow-lg backdrop-blur-sm sm:p-6">
-        <div className="flex flex-row justify-around gap-2">
-          <Link href="/children/register">
-            <Button className="w-full bg-green-300 text-white hover:bg-green-400">
-              <Plus className="mr-2 h-5 w-5" />
-              <span className="hidden sm:inline">なまえをふやす</span>
+      <footer className="sticky bottom-0 z-10 mt-4 sm:mt-8 w-full max-w-4xl rounded-t-xl bg-white/90 p-3 sm:p-4 shadow-lg backdrop-blur-sm">
+        <div className="flex flex-row justify-around gap-1 sm:gap-2">
+          <Link href="/children/register" className="flex-1">
+            <Button className="w-full bg-green-300 text-white hover:bg-green-400 px-2 sm:px-4 py-2 sm:py-2.5">
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-2" />
+              <span className="text-xs sm:text-base">なまえをふやす</span>
             </Button>
           </Link>
-          <Link href="/history">
-            <Button className="w-full bg-blue-300 text-white hover:bg-blue-400">
-              <BarChart className="hidden sm:inline" />
-              <span className="hidden sm:inline">ふりかえり</span>
+          <Link href="/history" className="flex-1">
+            <Button className="w-full bg-blue-300 text-white hover:bg-blue-400 px-2 sm:px-4 py-2 sm:py-2.5">
+              <BarChart className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-2" />
+              <span className="text-xs sm:text-base">ふりかえり</span>
             </Button>
           </Link>
-          <Link href="/upgrade">
-            <Button className="w-full bg-yellow-300 text-white hover:bg-yellow-400">
-              <Star className="mr-2 h-5 w-5" />
-              <span className="hidden sm:inline">プレミアムプラン</span>
+          <Link href="/upgrade" className="flex-1">
+            <Button className="w-full bg-yellow-300 text-white hover:bg-yellow-400 px-2 sm:px-4 py-2 sm:py-2.5">
+              <Star className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-2" />
+              <span className="text-xs sm:text-base">プレミアム</span>
             </Button>
           </Link>
         </div>
