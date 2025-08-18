@@ -39,9 +39,14 @@ export default function Home() {
             console.warn('⚠️ 認証テストは失敗しましたが、ログインは成功しています:', testError);
           }
 
-          // Step 4: 成功メッセージ表示
+          // Step 4: 成功メッセージ表示（修正版）
+          const userName =
+            result.user?.displayName || result.user?.email?.split('@')[0] || 'ユーザー';
+          const backendMessage =
+            backendResult.user?.name || backendResult.message || 'ログイン成功';
+
           alert(
-            `🎊 ログイン完了！\n\nFirebase: ${result.user?.displayName}\nバックエンド: ${backendResult.message}`
+            `🎊 ログイン完了！\n\n${userName}さんでログインしました\n\nバックエンド連携: ${backendMessage}`
           );
         } catch (backendError) {
           console.error('❌ バックエンド連携失敗:', backendError);

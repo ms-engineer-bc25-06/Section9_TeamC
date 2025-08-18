@@ -35,7 +35,20 @@ async def get_children(
             select(ChildModel).where(ChildModel.user_id == user.id)
         )
         children = result.scalars().all()
-        return children
+        
+        # 手動でデータ変換（birthdate → birth_date）
+        children_response = []
+        for child in children:
+            child_dict = {
+                'id': child.id,
+                'user_id': child.user_id,
+                'nickname': child.nickname,
+                'birth_date': child.birthdate,  # birthdate → birth_date に変換
+                'created_at': child.created_at,
+            }
+            children_response.append(ChildSchema(**child_dict))
+        
+        return children_response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -61,7 +74,6 @@ async def create_child(
             db.commit()
             db.refresh(user)
         
-        # シンプルなデータ変換（nicknameのみ）
         child_dict = child_data.model_dump()
         
         # birth_date → birthdate に変換
@@ -72,7 +84,16 @@ async def create_child(
         db.add(child)
         db.commit()
         db.refresh(child)
-        return child
+        
+        # レスポンス用にデータ変換（birthdate → birth_date）
+        response_data = {
+            'id': child.id,
+            'user_id': child.user_id,
+            'nickname': child.nickname,
+            'birth_date': child.birthdate,  # birthdate → birth_date に変換
+            'created_at': child.created_at,
+        }
+        return ChildSchema(**response_data)
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))

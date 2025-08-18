@@ -4,24 +4,64 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useChildren } from '@/hooks/useChildren';
+import { api } from '@/lib/api';
 import { BarChart, Plus, Star } from 'lucide-react';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ChildrenPage() {
   const { user, logout, loading } = useAuth();
   const { children, isLoading: childrenLoading, error, getDisplayName } = useChildren();
   const router = useRouter();
+  const [backendUserName, setBackendUserName] = useState<string>('');
 
   useEffect(() => {
     if (!loading && !user) router.push('/');
   }, [user, loading, router]);
 
+  // バックエンドから正式な名前を取得
+  useEffect(() => {
+    const fetchUserName = async () => {
+      if (user && !backendUserName) {
+        try {
+          console.log('🔍 バックエンドから名前を取得中...');
+          const authTest = await api.auth.test();
+          console.log('✅ バックエンドレスポンス:', authTest);
+
+          if (authTest.name) {
+            setBackendUserName(authTest.name);
+            console.log('💾 名前を設定:', authTest.name);
+          }
+        } catch (error) {
+          console.error('❌ 名前取得エラー:', error);
+          // エラーの場合はFirebaseの情報にフォールバック
+          console.log('🔄 Firebaseの情報にフォールバック');
+        }
+      }
+    };
+
+    fetchUserName();
+  }, [user, backendUserName]);
+
   const handleLogout = async () => {
     const result = await logout();
     if (result.success) router.push('/');
+  };
+
+  // 表示名を決定する関数
+  const getDisplayUserName = () => {
+    if (backendUserName) {
+      return backendUserName; // 'ryoko sasagawa'
+    }
+    if (user?.displayName) {
+      return user.displayName;
+    }
+    if (user?.email) {
+      return user.email.split('@')[0]; // 'sasaryo0929'
+    }
+    return 'ユーザー';
   };
 
   if (loading || childrenLoading) {
@@ -40,7 +80,17 @@ export default function ChildrenPage() {
     <div className="flex min-h-screen flex-col items-center justify-between bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8">
       <header className="w-full max-w-4xl flex justify-between items-center mb-4">
         <div>
-          <p className="text-gray-600 text-lg">こんにちは、{user.displayName}さん</p>
+          {/* バックエンドの正式名前を表示 */}
+          <p className="text-gray-600 text-lg">こんにちは、{getDisplayUserName()}さん</p>
+
+          {/* デバッグ用（後で削除可能） */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="text-xs text-gray-400 mt-1">
+              <p>Backend Name: {backendUserName || 'loading...'}</p>
+              <p>Firebase Name: {user?.displayName || 'undefined'}</p>
+              <p>Email: {user?.email || 'undefined'}</p>
+            </div>
+          )}
         </div>
         <button
           onClick={handleLogout}

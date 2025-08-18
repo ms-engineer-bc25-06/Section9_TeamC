@@ -4,7 +4,7 @@ from datetime import datetime, date
 import uuid
 
 class ChildBase(BaseModel):
-    nickname: str  # ニックネームを必須フィールドに
+    nickname: str
     birth_date: Optional[date] = None
 
     @field_validator('nickname')
@@ -17,7 +17,7 @@ class ChildBase(BaseModel):
 class ChildCreate(ChildBase):
     pass
 
-class Child(ChildBase):
+class Child(ChildBase):  # ChildBaseを継承するので birth_date も含まれる
     id: uuid.UUID
     user_id: uuid.UUID
     created_at: datetime
