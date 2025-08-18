@@ -19,14 +19,6 @@ const calculateAge = (birthdate: string): number => {
   return age;
 };
 
-// 学年推定関数（オプション）
-const estimateGrade = (age: number): string => {
-  if (age >= 6 && age <= 12) {
-    return `小学${age - 5}年生`;
-  }
-  return '未就学';
-};
-
 export function useChildren() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
 
@@ -65,11 +57,10 @@ export function useChildren() {
       const data = await api.children.list();
       console.log('✅ 実APIデータ:', data);
 
-      // データ処理：年齢と学年を計算
+      // データ処理：年齢を計算（birth_date フィールドを使用）
       const processedChildren = data.map((child: any) => ({
         ...child,
-        age: child.birthdate ? calculateAge(child.birthdate) : undefined,
-        grade: child.birthdate ? estimateGrade(calculateAge(child.birthdate)) : undefined,
+        age: child.birth_date ? calculateAge(child.birth_date) : undefined,
       }));
 
       setChildren(processedChildren);
@@ -109,7 +100,7 @@ export function useChildren() {
   }, [fetchChildren]);
 
   const getDisplayName = useCallback((child: Child): string => {
-    const name = child.nickname || child.name;
+    const name = child.nickname || 'ニックネーム未設定';
     const age = child.age ? `（${child.age}歳）` : '';
     return `${name}${age}`;
   }, []);
