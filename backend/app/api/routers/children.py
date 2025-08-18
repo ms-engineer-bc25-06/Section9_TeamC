@@ -10,6 +10,8 @@ from app.models.user import User
 
 router = APIRouter()
 
+# backend/app/routers/children.py - クリーンアップ版
+
 @router.get("/", response_model=List[ChildSchema])
 async def get_children(
     db: Session = Depends(get_db),
@@ -51,7 +53,6 @@ async def get_children(
         return children_response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 @router.post("/", response_model=ChildSchema)
 async def create_child(
     child_data: ChildCreate,
