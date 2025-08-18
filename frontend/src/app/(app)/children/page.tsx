@@ -20,7 +20,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 interface Child {
-  id: number;
+  id: string;
   name: string;
   age: number;
 }
@@ -71,10 +71,10 @@ export default function ChildrenPage() {
   useEffect(() => {
     if (apiChildren) {
       const transformedChildren = apiChildren.map((child) => ({
-        id: child.id,
+        id: child.id.toString(), // string変換を追加
         name: child.nickname || child.name,
-        age: child.birth_date
-          ? new Date().getFullYear() - new Date(child.birth_date).getFullYear()
+        age: child.birthdate // birth_date → birthdate に修正
+          ? new Date().getFullYear() - new Date(child.birthdate).getFullYear()
           : 0,
       }));
       setChildren(transformedChildren);
@@ -103,7 +103,7 @@ export default function ChildrenPage() {
   const addChild = () => {
     if (newChild.name && newChild.age) {
       const child: Child = {
-        id: Date.now(),
+        id: Date.now().toString(), // .toString()を追加
         name: newChild.name,
         age: parseInt(newChild.age),
       };
@@ -126,7 +126,7 @@ export default function ChildrenPage() {
     }
   };
 
-  const deleteChild = (id: number) => {
+  const deleteChild = (id: string) => {
     setChildren(children.filter((child) => child.id !== id));
   };
 
