@@ -145,15 +145,6 @@ export default function ChildrenPage() {
         <header className="w-full max-w-4xl flex justify-between items-center mb-4 px-2 sm:px-0">
           <div>
             <p className="text-gray-600 text-sm sm:text-lg">Hello, {getDisplayUserName()}! 👋</p>
-
-            {/* デバッグ用（後で削除可能） */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="text-xs text-gray-400 mt-1">
-                <p>Backend Name: {backendUserName || 'loading...'}</p>
-                <p>Firebase Name: {user?.displayName || 'undefined'}</p>
-                <p>Email: {user?.email || 'undefined'}</p>
-              </div>
-            )}
           </div>
           <button
             onClick={handleLogout}
