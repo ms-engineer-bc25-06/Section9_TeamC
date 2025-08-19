@@ -2,12 +2,12 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { api } from '@/lib/api';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale'; // 日本語ロケールをインポート
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
 
 // API連携用の型定義
 interface RecordData {
@@ -116,7 +116,7 @@ export default function RecordCompletionPage() {
         <Card className="w-full rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm mb-8">
           <CardHeader className="p-0 pb-4">
             <CardTitle className="text-xl font-bold text-gray-800 sm:text-2xl">
-              {record.childName}ちゃんへのメッセージ
+              {record.childName}へのメッセージ
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 text-left">

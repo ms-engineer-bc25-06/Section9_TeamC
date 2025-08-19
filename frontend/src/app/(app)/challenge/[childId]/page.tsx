@@ -10,9 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useChildren } from '@/hooks/useChildren';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { useChildren } from '@/hooks/useChildren';
 import { HelpCircle, Mic, Save, Volume2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -22,20 +22,20 @@ export default function ChallengePage() {
   const params = useParams();
   const router = useRouter();
   const childId = params.childId as string;
-  
+
   // ★ 重要：すべてのHooksをコンポーネントの最上部で呼び出す
   // Reactの「Hooksの規則」に従い、条件分岐の前に全てのHooksを配置
-  
+
   // カスタムHooks
   const { children, isLoading } = useChildren();
-  
+
   // state管理用のHooks
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showMamaPhraseDialog, setShowMamaPhraseDialog] = useState(false);
   const [showChildPhraseDialog, setShowChildPhraseDialog] = useState(false);
-  
+
   // ref用のHooks
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -52,7 +52,7 @@ export default function ChallengePage() {
 
   // ★ 全てのHooksを呼び出した後で、条件分岐による表示制御を行う
   // これにより、毎回同じ順序・同じ数のHooksが呼ばれることを保証
-  
+
   // 子供の名前を取得（UUIDで検索）
   const child = children.find((c) => c.id === childId);
   const childName = child?.nickname || child?.name || 'お子さま';
@@ -148,7 +148,7 @@ export default function ChallengePage() {
           <span className="text-sm sm:text-base font-medium">やめる</span>
         </Link>
         <h1 className="flex-1 text-center text-lg font-bold text-gray-800 sm:text-xl">
-          <span className="font-extrabold text-2xl sm:text-3xl">{childName}</span>ちゃん
+          <span className="font-extrabold text-2xl sm:text-3xl">{childName}</span>
           <br className="sm:hidden" />
           チャレンジ中！
         </h1>

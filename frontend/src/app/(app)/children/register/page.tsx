@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { ArrowLeft, CalendarIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -48,7 +48,7 @@ export default function ChildRegisterPage() {
       const res = await createChild(
         {
           nickname: nickname,
-          birth_date: birthDate.toISOString().split('T')[0],  // APIが期待するフィールド名
+          birth_date: birthDate.toISOString().split('T')[0], // APIが期待するフィールド名
         },
         token
       );
@@ -69,6 +69,18 @@ export default function ChildRegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8">
+      <div className="absolute top-4 left-4">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+          onClick={() => router.push('/children')}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          もどる
+        </Button>
+      </div>
       <Card className="w-full max-w-md rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm sm:p-8 md:p-10">
         <CardContent className="p-0">
           <h1 className="mb-6 text-center text-2xl font-bold text-gray-800 sm:text-3xl">

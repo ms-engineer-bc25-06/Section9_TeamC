@@ -6,13 +6,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { Child } from '@/types';
 import { format, parseISO } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import { useRouter, useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function ChildEditPage() {
   const [nickname, setNickname] = useState('');
@@ -120,7 +120,7 @@ export default function ChildEditPage() {
             なまえを変更する
           </h1>
           <p className="mb-8 text-center text-gray-600 text-sm sm:text-base">
-            {child.nickname || child.name}ちゃんの情報を変更できます
+            {child.nickname || child.name}の情報を変更できます
           </p>
 
           {error && (
