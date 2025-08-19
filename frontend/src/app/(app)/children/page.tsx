@@ -2,15 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useChildren } from '@/hooks/useChildren';
 import { api } from '@/lib/api';
@@ -31,17 +22,12 @@ export default function ChildrenPage() {
     children: apiChildren,
     isLoading: childrenLoading,
     error,
-    getDisplayName,
   } = useChildren();
   const router = useRouter();
   const [backendUserName, setBackendUserName] = useState<string>('');
 
   // ローカル状態（編集・追加用）
   const [children, setChildren] = useState<Child[]>([]);
-  const [newChild, setNewChild] = useState({ name: '', age: '' });
-  const [editingChild, setEditingChild] = useState<Child | null>(null);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   // バックエンドから正式な名前を取得
   useEffect(() => {
@@ -100,35 +86,6 @@ export default function ChildrenPage() {
     return 'ユーザー';
   };
 
-  const addChild = () => {
-    if (newChild.name && newChild.age) {
-      const child: Child = {
-        id: Date.now().toString(), // .toString()を追加
-        name: newChild.name,
-        age: parseInt(newChild.age),
-      };
-      setChildren([...children, child]);
-      setNewChild({ name: '', age: '' });
-      setIsAddDialogOpen(false);
-    }
-  };
-
-  const editChild = (child: Child) => {
-    setEditingChild(child);
-    setIsEditDialogOpen(true);
-  };
-
-  const saveEdit = () => {
-    if (editingChild) {
-      setChildren(children.map((child) => (child.id === editingChild.id ? editingChild : child)));
-      setEditingChild(null);
-      setIsEditDialogOpen(false);
-    }
-  };
-
-  const deleteChild = (id: string) => {
-    setChildren(children.filter((child) => child.id !== id));
-  };
 
   if (loading || childrenLoading) {
     return (
@@ -186,8 +143,8 @@ export default function ChildrenPage() {
                     <Button
                       className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg py-3"
                       onClick={() => {
-                        // チャレンジ画面への遷移処理
-                        console.log(`${child.name} がチャレンジ開始！`);
+                        // チャレンジ画面への遷移
+                        router.push(`/children/confirm?childId=${child.id}`);
                       }}
                     >
                       <Star className="w-4 h-4 mr-2" />
@@ -199,7 +156,7 @@ export default function ChildrenPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => editChild(child)}
+                        onClick={() => router.push(`/children/edit/${child.id}`)}
                         className="flex-1"
                       >
                         <Edit3 className="w-4 h-4" />
@@ -207,7 +164,17 @@ export default function ChildrenPage() {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => deleteChild(child.id)}
+                        onClick={async () => {
+                          if (confirm(`${child.name}を削除しますか？`)) {
+                            try {
+                              await api.children.delete(child.id);
+                              window.location.reload(); // 削除後にリロード
+                            } catch (error) {
+                              console.error('削除エラー:', error);
+                              alert('削除に失敗しました');
+                            }
+                          }
+                        }}
                         className="flex-1"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -224,51 +191,13 @@ export default function ChildrenPage() {
         <footer className="sticky bottom-0 z-10 mt-4 sm:mt-8 w-full max-w-4xl rounded-t-xl bg-white/90 p-2 sm:p-4 shadow-lg backdrop-blur-sm">
           <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:justify-around sm:gap-2">
             {/* 新しいチャレンジャー追加 */}
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-2 text-sm">
-                  <Plus className="h-4 w-4 mr-1" />
-                  New Challenger! 🎉
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-xl font-bold text-center">
-                    Add New Challenger! 🎉
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 pt-4">
-                  <div>
-                    <Label htmlFor="name" className="text-sm font-medium">
-                      お名前
-                    </Label>
-                    <Input
-                      id="name"
-                      value={newChild.name}
-                      onChange={(e) => setNewChild({ ...newChild, name: e.target.value })}
-                      placeholder="例：太郎"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="age" className="text-sm font-medium">
-                      年齢
-                    </Label>
-                    <Input
-                      id="age"
-                      type="number"
-                      value={newChild.age}
-                      onChange={(e) => setNewChild({ ...newChild, age: e.target.value })}
-                      placeholder="例：7"
-                      className="mt-1"
-                    />
-                  </div>
-                  <Button onClick={addChild} className="w-full mt-6 h-11">
-                    追加する
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button
+              onClick={() => router.push("/children/register")}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-2 text-sm"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              New Challenger! 🎉
+            </Button>
 
             {/* 学習進捗 */}
             <Button
@@ -290,48 +219,6 @@ export default function ChildrenPage() {
           </div>
         </footer>
 
-        {/* 編集ダイアログ */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold text-center">
-                Edit Challenger Info
-              </DialogTitle>
-            </DialogHeader>
-            {editingChild && (
-              <div className="space-y-4 pt-4">
-                <div>
-                  <Label htmlFor="edit-name" className="text-sm font-medium">
-                    お名前
-                  </Label>
-                  <Input
-                    id="edit-name"
-                    value={editingChild.name}
-                    onChange={(e) => setEditingChild({ ...editingChild, name: e.target.value })}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-age" className="text-sm font-medium">
-                    年齢
-                  </Label>
-                  <Input
-                    id="edit-age"
-                    type="number"
-                    value={editingChild.age.toString()}
-                    onChange={(e) =>
-                      setEditingChild({ ...editingChild, age: parseInt(e.target.value) || 0 })
-                    }
-                    className="mt-1"
-                  />
-                </div>
-                <Button onClick={saveEdit} className="w-full mt-6 h-11">
-                  変更を保存
-                </Button>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );
