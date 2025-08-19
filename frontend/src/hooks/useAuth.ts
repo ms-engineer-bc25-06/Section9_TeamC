@@ -34,6 +34,22 @@ export function useAuth() {
     }
   };
 
+  // 🆕 アカウント切り替え用ログイン関数
+  const loginWithAccountSelection = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      // 🔑 強制的にアカウント選択画面を表示
+      provider.setCustomParameters({
+        prompt: 'select_account',
+      });
+      const result = await signInWithPopup(auth, provider);
+      return { success: true, user: result.user };
+    } catch (error) {
+      console.error('Account selection login failed:', error);
+      return { success: false, error };
+    }
+  };
+
   const logout = async () => {
     try {
       await signOut(auth);
@@ -48,6 +64,7 @@ export function useAuth() {
     user,
     loading,
     loginWithGoogle,
+    loginWithAccountSelection, // 🆕 新しい関数を追加
     logout,
     isAuthenticated: !!user,
   };
