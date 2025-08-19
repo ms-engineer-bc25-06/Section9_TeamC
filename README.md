@@ -42,7 +42,13 @@
 
 ### 画面設計
 
-※別途まとめる想定（TODO）
+### v1（初期案）
+
+![画面設計 v1](docs/images/screen-design-v1.png)
+
+### v2（最終版）
+
+（完成後に追加予定）
 
 ### DB 設計
 
@@ -51,7 +57,18 @@
 
 ### API 設計
 
-※別途まとめる想定（TODO）
+本アプリの API 仕様は **OpenAPI (Swagger)** で管理しています。
+
+### 仕様ファイル
+
+- [openapi/bud-api.yaml](openapi/bud-api.yaml)
+
+---
+
+### Swagger Editor で確認
+
+1. [Swagger Editor](https://editor.swagger.io/) にアクセス
+2. `File > Import File` から `openapi/bud-api.yaml` を読み込む
 
 ### テスト設計
 
