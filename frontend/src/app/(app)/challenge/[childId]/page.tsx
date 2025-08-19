@@ -1,6 +1,4 @@
-﻿// @ts-nocheck
-
-'use client';
+﻿'use client';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -13,7 +11,18 @@ import {
 import { useChildren } from '@/hooks/useChildren';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { HelpCircle, Mic, Save, Volume2, XCircle } from 'lucide-react';
+import {
+  ArrowRight,
+  // 新しく追加するアイコン
+  Droplets,
+  Flower,
+  HelpCircle,
+  Mic,
+  Save,
+  Sprout,
+  Volume2,
+  XCircle,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -139,7 +148,7 @@ export default function ChallengePage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-start bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
       {/* ヘッダー部分 */}
-      <header className="w-full max-w-xl flex justify-between items-center mb-4">
+      <header className="w-full max-w-xl flex justify-between items-center mb-2">
         <Link
           href="/children"
           className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
@@ -147,16 +156,36 @@ export default function ChallengePage() {
           <XCircle className="h-5 w-5 sm:h-6 sm:w-6 mr-1" />
           <span className="text-sm sm:text-base font-medium">やめる</span>
         </Link>
-        <h1 className="flex-1 text-center text-lg font-bold text-gray-800 sm:text-xl">
-          <span className="font-extrabold text-2xl sm:text-3xl">{childName}</span>
-          <br className="sm:hidden" />
-          チャレンジ中！
-        </h1>
-        <div className="w-20 sm:w-24"></div>
       </header>
 
       {/* メインコンテンツ */}
-      <main className="flex flex-1 flex-col items-center justify-center w-full max-w-xl py-4">
+      <main className="flex flex-1 flex-col items-center justify-center w-full max-w-xl pt-2 pb-4">
+        <div className="mb-8 flex flex-col items-center">
+          {/* チャレンジ中テキスト */}
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 text-center">
+            {isRecording
+              ? 'チャレンジ中・・・'
+              : audioBlob
+                ? 'お疲れさま！保存するをおしてね'
+                : `${childName} がんばってね！`}
+          </h2>
+
+          {/* アニメーションアイコン */}
+          <div className="flex items-center space-x-6">
+            <div className="animate-bounce">
+              <Droplets className="h-10 w-10 text-blue-400" />
+            </div>
+            <ArrowRight className="h-6 w-6 text-gray-400 animate-pulse" />
+            <div className="animate-pulse">
+              <Sprout className="h-12 w-12 text-green-500" />
+            </div>
+            <ArrowRight className="h-6 w-6 text-gray-400 animate-pulse delay-200" />
+            <div className="animate-bounce delay-300">
+              <Flower className="h-10 w-10 text-pink-500" />
+            </div>
+          </div>
+        </div>
+
         {/* 録音ボタン */}
         <div className="flex flex-col items-center">
           {!audioBlob && (
@@ -219,16 +248,16 @@ export default function ChallengePage() {
         <div className="flex flex-col sm:flex-row gap-4 w-full max-w-xs mt-12">
           <Button
             onClick={() => setShowMamaPhraseDialog(true)}
-            className="flex-1 py-3 text-sm sm:text-base font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 bg-purple-300 text-white hover:bg-purple-400"
+            className="flex-1 py-4 text-lg font-bold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 bg-purple-300 text-white hover:bg-purple-400"
           >
-            <Volume2 className="mr-2 h-4 w-4" />
+            <Volume2 className="mr-3 h-6 w-6" />
             おねがい
           </Button>
           <Button
             onClick={() => setShowChildPhraseDialog(true)}
-            className="flex-1 py-3 text-sm sm:text-base font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 bg-yellow-300 text-white hover:bg-yellow-400"
+            className="flex-1 py-4 text-lg font-bold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 bg-yellow-300 text-white hover:bg-yellow-400"
           >
-            <HelpCircle className="mr-2 h-4 w-4" />
+            <HelpCircle className="mr-3 h-6 w-6" />
             たすけて
           </Button>
         </div>
@@ -272,7 +301,7 @@ export default function ChallengePage() {
             <p className="text-sm text-gray-500">（もう一回いって）</p>
             <p className="font-semibold">Slowly, please.</p>
             <p className="text-sm text-gray-500">（ゆっくりいって）</p>
-            <p className="font-semibold">Sorry, I don't understand.</p>
+            <p className="font-semibold">Sorry, I do not understand.</p>
             <p className="text-sm text-gray-500">（ごめんね、わからなかった）</p>
             <p className="font-semibold">Thank you! Bye-bye.</p>
             <p className="text-sm text-gray-500">（ありがとう！バイバイ。）</p>

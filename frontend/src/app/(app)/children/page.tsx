@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useChildren } from '@/hooks/useChildren';
 import { api } from '@/lib/api';
-import { BookOpen, Calendar, Edit3, Plus, Rocket, Star, Trash2 } from 'lucide-react';
+import { BookOpen, Calendar, Edit3, Gem, Plus, Star, Trash2 } from 'lucide-react';
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -96,13 +96,15 @@ export default function ChildrenPage() {
         {/* ヘッダー */}
         <header className="w-full max-w-4xl flex justify-between items-center mb-4 px-2 sm:px-0">
           <div>
-            <p className="text-gray-600 text-sm sm:text-lg">Hello, {getDisplayUserName()}! 👋</p>
+            <p className="text-gray-600 text-sm sm:text-lg">
+              {getDisplayUserName()}さん、お子さまを応援するよ！
+            </p>
           </div>
           <button
             onClick={handleLogout}
             className="px-3 py-1.5 sm:px-4 sm:py-2 bg-red-500 text-white text-sm sm:text-base rounded-md hover:bg-red-600"
           >
-            Logout
+            ログアウト
           </button>
         </header>
 
@@ -115,8 +117,10 @@ export default function ChildrenPage() {
 
         {/* メインコンテンツ */}
         <main className="flex w-full max-w-xl flex-1 flex-col items-center justify-center py-4 sm:py-8 px-2 sm:px-0">
-          <h2 className="mb-6 sm:mb-8 text-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800">
-            Who's Ready for Today? 🚀
+          <h2 className="mb-6 sm:mb-8 text-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 flex items-center justify-center gap-3">
+            <Star className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 fill-yellow-500" />
+            がんばってみよう
+            <Star className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 fill-yellow-500" />
           </h2>
 
           {/* 子ども一覧 */}
@@ -143,7 +147,7 @@ export default function ChildrenPage() {
                       }}
                     >
                       <Star className="w-4 h-4 mr-2" />
-                      I'm Ready! ⭐
+                      スタート
                     </Button>
 
                     {/* 編集・削除ボタン */}
@@ -191,7 +195,7 @@ export default function ChildrenPage() {
               className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-2 text-sm"
             >
               <Plus className="h-4 w-4 mr-1" />
-              New Challenger! 🎉
+              なまえをつくる
             </Button>
 
             {/* 学習進捗 */}
@@ -201,7 +205,7 @@ export default function ChildrenPage() {
               className="w-full bg-white border-2 border-blue-300 hover:bg-blue-50 text-blue-700 font-semibold py-2 text-sm"
             >
               <BookOpen className="h-4 w-4 mr-1" />
-              My Progress 📈
+              ふりかえり
             </Button>
 
             {/* アドバンスラーニング */}
@@ -210,8 +214,8 @@ export default function ChildrenPage() {
               onClick={() => router.push('/upgrade')}
               className="w-full bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 hover:bg-gradient-to-r hover:from-amber-100 hover:to-yellow-100 text-amber-700 font-semibold py-2 text-sm"
             >
-              <Rocket className="h-4 w-4 mr-1 text-amber-500" />
-              Advanced Learning 🚀
+              <Gem className="h-4 w-4 mr-1 text-amber-500" />
+              ステップアップ
             </Button>
           </div>
         </footer>
