@@ -18,11 +18,7 @@ interface Child {
 
 export default function ChildrenPage() {
   const { user, logout, loading } = useAuth();
-  const {
-    children: apiChildren,
-    isLoading: childrenLoading,
-    error,
-  } = useChildren();
+  const { children: apiChildren, isLoading: childrenLoading, error } = useChildren();
   const router = useRouter();
   const [backendUserName, setBackendUserName] = useState<string>('');
 
@@ -85,7 +81,6 @@ export default function ChildrenPage() {
     }
     return 'ユーザー';
   };
-
 
   if (loading || childrenLoading) {
     return (
@@ -192,7 +187,7 @@ export default function ChildrenPage() {
           <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:justify-around sm:gap-2">
             {/* 新しいチャレンジャー追加 */}
             <Button
-              onClick={() => router.push("/children/register")}
+              onClick={() => router.push('/children/register')}
               className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-2 text-sm"
             >
               <Plus className="h-4 w-4 mr-1" />
@@ -202,6 +197,7 @@ export default function ChildrenPage() {
             {/* 学習進捗 */}
             <Button
               variant="outline"
+              onClick={() => router.push('/history')}
               className="w-full bg-white border-2 border-blue-300 hover:bg-blue-50 text-blue-700 font-semibold py-2 text-sm"
             >
               <BookOpen className="h-4 w-4 mr-1" />
@@ -211,6 +207,7 @@ export default function ChildrenPage() {
             {/* アドバンスラーニング */}
             <Button
               variant="outline"
+              onClick={() => router.push('/upgrade')}
               className="w-full bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 hover:bg-gradient-to-r hover:from-amber-100 hover:to-yellow-100 text-amber-700 font-semibold py-2 text-sm"
             >
               <Rocket className="h-4 w-4 mr-1 text-amber-500" />
@@ -218,7 +215,6 @@ export default function ChildrenPage() {
             </Button>
           </div>
         </footer>
-
       </div>
     </div>
   );
