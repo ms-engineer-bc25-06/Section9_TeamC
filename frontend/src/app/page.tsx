@@ -101,7 +101,8 @@ export default function Home() {
             src="/logo.png"
             alt="BUD Logo"
             width={250}
-            height={250}
+            height={Math.round(250 / 1.76)}
+            priority
             className="mx-auto mb-4 rounded-full"
           />
         </div>
