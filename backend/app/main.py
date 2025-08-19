@@ -63,9 +63,11 @@ async def login(
 # API ルーター
 from app.api.routers import children
 from app.api.routers import auth
+from app.api.routers import ai_feedback
 
 app.include_router(children.router, prefix="/api/children", tags=["children"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(ai_feedback.router)
 
 # Voice Transcription API
 from app.api.voice.transcription import router as voice_router
