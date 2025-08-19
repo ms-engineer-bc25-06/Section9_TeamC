@@ -152,7 +152,7 @@ export default function ChallengeHistoryPage() {
             <SelectContent className="rounded-xl bg-white/90 shadow-lg">
               {children.map((child) => (
                 <SelectItem key={child.id} value={child.id} className="text-lg">
-                  {child.nickname}ちゃん
+                  {child.nickname}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -166,7 +166,7 @@ export default function ChallengeHistoryPage() {
             <p className="text-5xl font-extrabold text-blue-500">{thisMonthChallengeCount}回</p>
             <p className="text-sm text-gray-500 mt-2">
               {selectedChildId
-                ? `${children.find((c) => c.id === selectedChildId)?.nickname}ちゃん、よくがんばったね！`
+                ? `${children.find((c) => c.id === selectedChildId)?.nickname}よくがんばったね！`
                 : 'お子さまを選択してください'}
             </p>
           </CardContent>
