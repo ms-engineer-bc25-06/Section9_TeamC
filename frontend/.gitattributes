@@ -5,3 +5,6 @@
 *.ts  text working-tree-encoding=UTF-8
 *.tsx text working-tree-encoding=UTF-8
 
+# 画像はバイナリとして扱う
+*.png binary
+*.jpg binary

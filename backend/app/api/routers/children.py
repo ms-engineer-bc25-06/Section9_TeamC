@@ -56,8 +56,7 @@ async def get_children(
         return children_response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-<<<<<<< HEAD
-=======
+
 
 # 特定の子ども情報取得API（新規追加）
 @router.get("/{child_id}", response_model=ChildSchema)
