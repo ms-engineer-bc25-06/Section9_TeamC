@@ -147,3 +147,35 @@ async def get_voice_history(child_id: str, db: AsyncSession = Depends(get_async_
             for challenge in challenges
         ]
     }
+
+@router.get("/challenge/{challenge_id}")
+async def get_challenge_detail(challenge_id: str, db: AsyncSession = Depends(get_async_db)):
+    """個別のチャレンジ詳細を取得"""
+    try:
+        print(f"🔍 チャレンジ詳細取得開始: challenge_id={challenge_id}")
+        
+        # UUID変換して非同期クエリ実行
+        challenge_uuid = UUID(challenge_id)
+        result = await db.execute(select(Challenge).where(Challenge.id == challenge_uuid))
+        challenge = result.scalars().first()
+        
+        if not challenge:
+            print(f"❌ チャレンジが見つかりません: {challenge_id}")
+            raise HTTPException(status_code=404, detail="チャレンジが見つかりません")
+        
+        print(f"✅ チャレンジ詳細取得成功: {challenge_id}")
+        
+        return {
+            "id": str(challenge.id),
+            "child_id": str(challenge.child_id),
+            "transcript": challenge.transcript,
+            "comment": challenge.comment,
+            "created_at": challenge.created_at,
+            "status": "completed" if challenge.transcript else "processing"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ チャレンジ詳細取得エラー: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"チャレンジ詳細取得エラー: {str(e)}")
