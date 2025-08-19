@@ -372,6 +372,26 @@ export const api = {
         throw error;
       }
     },
+
+    getChallenge: async (challengeId: string) => {
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API_URL}/api/voice/challenge/${challengeId}`, {
+          method: 'GET',
+          headers,
+        });
+    
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || 'チャレンジ詳細の取得に失敗しました');
+        }
+    
+        return res.json();
+      } catch (error) {
+        console.error('チャレンジ詳細の取得に失敗:', error);
+        throw error;
+      }
+    },
   },
 
   // 💬 会話履歴API

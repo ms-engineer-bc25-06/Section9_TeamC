@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { api } from '@/lib/api';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { ArrowLeft } from 'lucide-react';
@@ -43,8 +44,8 @@ export default function ChallengeDetailPage() {
         setLoading(true);
         setError(null);
 
-        // 音声認識結果をAPIから取得
-        const data = await api.voice.getTranscript(recordId);
+        // 個別チャレンジの詳細データをAPIから取得
+        const data = await api.voice.getChallenge(recordId);
 
         // child_idが一致するかチェック
         if (data.child_id !== childId) {
