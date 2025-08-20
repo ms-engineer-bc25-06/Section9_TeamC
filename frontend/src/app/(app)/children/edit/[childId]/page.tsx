@@ -70,25 +70,6 @@ export default function ChildEditPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm('本当にこの子どもの情報を削除しますか？')) {
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      await api.children.delete(childId);
-      router.push('/children');
-    } catch (error) {
-      console.error('子ども削除エラー:', error);
-      setError(error instanceof Error ? error.message : '削除に失敗しました');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   if (isFetching) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8">
@@ -191,15 +172,6 @@ export default function ChildEditPage() {
                 className="flex-1 py-3 text-lg font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {isLoading ? '更新中...' : '更新する'}
-              </Button>
-
-              <Button
-                type="button"
-                onClick={handleDelete}
-                disabled={isLoading}
-                className="flex-1 py-3 text-lg font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400 bg-red-500 text-white hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                {isLoading ? '削除中...' : '削除する'}
               </Button>
             </div>
           </form>
