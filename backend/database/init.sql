@@ -91,15 +91,41 @@ INSERT INTO children (id, user_id, nickname, birthdate) VALUES
     ('660e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440002', 'そらちゃん', '2014-12-10');
 
 INSERT INTO challenges (child_id, transcript, comment) VALUES 
-    ('660e8400-e29b-41d4-a716-446655440001', 'Hello!', 'とても上手に挨拶できたね！😊 発音がきれいだよ！'),
-    ('660e8400-e29b-41d4-a716-446655440001', 'My name is Yuto.', '完璧な自己紹介だったよ！👏 はっきりと話せてすごいね！'),
-    ('660e8400-e29b-41d4-a716-446655440001', 'I like apples.', 'すばらしい！「I like apples」って上手に言えたね！🍎 りんごは美味しいよね！'),
-    ('660e8400-e29b-41d4-a716-446655440001', 'Thank you very much.', 'とても丁寧にありがとうが言えたね！✨ 礼儀正しくて素晴らしいよ！'),
-    ('660e8400-e29b-41d4-a716-446655440002', 'Good morning!', '元気な朝の挨拶だったね！🌅 笑顔が伝わってくるよ！'),
-    ('660e8400-e29b-41d4-a716-446655440002', 'How are you?', '上手に質問できたね！💬 会話が上達してるよ！'),
-    ('660e8400-e29b-41d4-a716-446655440003', 'I am fine.', 'パーフェクトな答えだったよ！😄 とても上手になったね！'),
-    ('660e8400-e29b-41d4-a716-446655440003', 'See you later!', '素敵なお別れの挨拶だね！👋 たくさんの英語フレーズを覚えたね！');
-
+    -- ゆうくん（低学年）のチャレンジ
+    ('660e8400-e29b-41d4-a716-446655440001', 
+     'Hello are you lost yes I am lost can you help me where do you want to go um station JR station oh I know this way thank you very much you are welcome bye bye', 
+     '困っている外国人を助けることができたね！😊「this way」で道案内もできてすごいよ！'),
+    
+    ('660e8400-e29b-41d4-a716-446655440001', 
+     'Hi what is your name my name is Tom what is your name I am Yuki nice to meet you do you want to play yes let us play soccer I like soccer me too', 
+     '外国人のお友達と仲良くなれたね！👏「Let us play」で遊びに誘えて上手だよ！'),
+    
+    ('660e8400-e29b-41d4-a716-446655440001', 
+     'Excuse me where is ice cream shop ice cream shop is over there thank you what flavor do you like I like chocolate chocolate is delicious yes very good', 
+     '丁寧に「Excuse me」から始められたね！✨ 好きな味も英語で言えてすばらしい！'),
+    
+    -- あかりちゃん（低学年）のチャレンジ  
+    ('660e8400-e29b-41d4-a716-446655440002', 
+     'Hello nice to meet you nice to meet you too where are you from I am from Canada wow Canada is far yes very far do you like Japan yes I love Japan', 
+     '初対面の挨拶が上手にできたね！🌟 カナダについて質問もできてすごいよ！'),
+    
+    ('660e8400-e29b-41d4-a716-446655440002', 
+     'Excuse me can you take picture of course say cheese cheese thank you very much you are welcome where are you going we go to temple temple is beautiful yes very beautiful', 
+     '写真をお願いするのも英語でできたね！📸「Say cheese」も覚えられて楽しいね！'),
+    
+    -- そらちゃん（高学年）のチャレンジ
+    ('660e8400-e29b-41d4-a716-446655440003', 
+     'Excuse me how can I go to Tokyo Station you need to take JR line which platform platform number three over there how much does it cost about 200 yen thank you for your help you are welcome have a nice trip', 
+     '電車の乗り方を詳しく教えてあげられたね！🚃 料金まで英語で説明できてすごい！'),
+    
+    ('660e8400-e29b-41d4-a716-446655440003', 
+     'Hello do you need help yes I am looking for restaurant what kind of food do you like I like Japanese food I know good sushi restaurant really where is it near the station thank you so much', 
+     'レストランの案内まで英語でできるなんて！🍣 外国人観光客にとても親切だね！'),
+    
+    ('660e8400-e29b-41d4-a716-446655440003', 
+     'Hi are you enjoying Japan yes Japan is amazing what did you visit today we visited temple and museum how was it very interesting Japanese culture is wonderful I am glad you like it', 
+     '日本の文化について英語で話せるようになったね！🏛️ 会話がとても自然で上手だよ！');
+     
 -- アプリケーションユーザーに権限を付与
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO bud_user;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO bud_user;
