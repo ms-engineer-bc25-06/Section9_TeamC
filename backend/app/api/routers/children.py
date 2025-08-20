@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, text
 from typing import List
 from app.core.database import get_db
 from app.models.child import Child as ChildModel
@@ -155,3 +155,59 @@ async def create_child(
     except Exception as e:
         db.rollback()  # エラー時はトランザクションをロールバック
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.delete("/{child_id}")
+async def delete_child(
+    child_id: str,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    子ども情報を削除する（関連データも含めて）
+    """
+    try:
+        # 1. 現在のユーザーを取得
+        result = db.execute(
+            select(User).where(User.firebase_uid == current_user["user_id"])
+        )
+        user = result.scalars().first()
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # 2. 指定されたIDの子どもを取得（セキュリティ：自分の子どものみ）
+        result = db.execute(
+            select(ChildModel).where(
+                ChildModel.id == child_id,
+                ChildModel.user_id == user.id
+            )
+        )
+        child = result.scalars().first()
+        
+        # 3. 子どもが見つからない場合は404エラー
+        if not child:
+            raise HTTPException(
+                status_code=404,
+                detail="指定された子ども情報が見つかりません"
+            )
+        
+        # 4. 関連データを削除（challenges テーブルのみ）
+        db.execute(
+            text("DELETE FROM challenges WHERE child_id = :child_id"),
+            {"child_id": child_id}
+        )
+        
+        # 5. 子どもを削除
+        db.delete(child)
+        db.commit()
+        
+        return {"message": "子ども情報を削除しました", "deleted_id": child_id}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"削除処理中にエラーが発生しました: {str(e)}"
+        )
