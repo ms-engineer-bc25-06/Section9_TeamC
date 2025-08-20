@@ -117,7 +117,7 @@ export default function Home() {
   if (user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100">
-        <div className="text-xl">アプリページに移動中...</div>
+        <div className="text-xl">移動中...</div>
       </div>
     );
   }

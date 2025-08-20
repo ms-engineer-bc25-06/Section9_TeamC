@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MessageSquareHeart, ThumbsUp } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -175,13 +175,19 @@ export default function ChallengeDetailPage() {
           </CardHeader>
           <CardContent className="p-0 text-left space-y-4">
             <div>
-              <h3 className="text-lg font-semibold text-green-700 mb-1">✨ いいね</h3>
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-green-700 mb-1">
+                <ThumbsUp className="h-5 w-5 text-blue-500" />
+                いいね
+              </h3>
               <p className="text-gray-700 text-base leading-relaxed">{record.aiFeedback.praise}</p>
             </div>
             {/* アドバイスがある場合のみ表示 */}
             {record.aiFeedback.advice && (
               <div>
-                <h3 className="text-lg font-semibold text-orange-700 mb-1">💡 アドバイス</h3>
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-orange-700 mb-1">
+                  <MessageSquareHeart className="h-5 w-5 text-pink-500" />
+                  アドバイス
+                </h3>
                 <p className="text-gray-700 text-base leading-relaxed">
                   {record.aiFeedback.advice}
                 </p>
@@ -191,8 +197,8 @@ export default function ChallengeDetailPage() {
         </Card>
 
         <Link href="/children" passHref>
-          <Button className="w-full max-w-xs py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 bg-blue-400 text-white hover:bg-blue-500">
-            ホーム
+          <Button className="w-full max-w-xs py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 bg-blue-500 text-white hover:bg-blue-600">
+            ホームに戻る
           </Button>
         </Link>
       </main>
