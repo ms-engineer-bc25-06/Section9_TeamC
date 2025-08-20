@@ -147,7 +147,7 @@ async def create_child(
         response_data = {
             'id': child.id,
             'user_id': child.user_id,
-            'nickname': child.nickname,
+            'name': child.nickname,
             'birth_date': child.birthdate,  # DB: birthdate → API: birth_date
             'created_at': child.created_at,
         }
