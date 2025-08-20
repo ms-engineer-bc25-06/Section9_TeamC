@@ -28,7 +28,9 @@ function ConfirmPageContent() {
                   話しかけても大丈夫？
                 </p>
                 <p className="text-sm text-gray-500">
-                  相手の行動や時間を見て、話しかけても大丈夫か確認しよう。
+                  相手の行動や時間を見て、
+                  <br />
+                  話しかけても大丈夫か確認しよう。
                 </p>
               </div>
             </div>
@@ -39,7 +41,9 @@ function ConfirmPageContent() {
                   「はなしたい！」って思ってる？
                 </p>
                 <p className="text-sm text-gray-500">
-                  「はなしたい！」って思ってる時に頑張ってみよう。
+                  話す前におねがいボタンで
+                  <br />
+                  話したい気持ちを伝えよう。
                 </p>
               </div>
             </div>
@@ -49,9 +53,7 @@ function ConfirmPageContent() {
                 <p className="text-base font-semibold text-gray-700 sm:text-lg">
                   録音の準備はできてるかな？
                 </p>
-                <p className="text-sm text-gray-500">
-                  チャレンジの記録を残すために、スマートフォンの録音機能などを準備しておきましょう。
-                </p>
+                <p className="text-sm text-gray-500">チャレンジの記録を残すことができるよ。</p>
               </div>
             </div>
           </div>

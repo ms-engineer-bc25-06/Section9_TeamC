@@ -97,7 +97,9 @@ export default function ChildrenPage() {
         <header className="w-full max-w-4xl flex justify-between items-center mb-4 px-2 sm:px-0">
           <div>
             <p className="text-gray-600 text-sm sm:text-lg">
-              {getDisplayUserName()}さん、お子さまを応援するよ！
+              {getDisplayUserName()}さん、
+              <br />
+              お子さまを応援するよ！
             </p>
           </div>
           <button

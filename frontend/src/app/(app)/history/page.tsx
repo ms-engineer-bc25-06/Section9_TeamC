@@ -178,7 +178,7 @@ export default function ChallengeHistoryPage() {
             <Card className="w-full rounded-xl bg-white/80 p-6 shadow-md backdrop-blur-sm text-center">
               <CardContent className="p-0">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-                <p className="text-gray-600">履歴を読み込み中...</p>
+                <p className="text-gray-600">読み込み中...</p>
               </CardContent>
             </Card>
           ) : records.length > 0 ? (
@@ -208,7 +208,7 @@ export default function ChallengeHistoryPage() {
           ) : (
             <Card className="w-full rounded-xl bg-white/80 p-6 shadow-md backdrop-blur-sm text-center">
               <CardContent className="p-0 text-gray-600 text-lg">
-                まだチャレンジの記録がありません。
+                まだ記録がありません。
               </CardContent>
             </Card>
           )}

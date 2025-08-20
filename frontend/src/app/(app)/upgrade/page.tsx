@@ -22,9 +22,6 @@ export default function UpgradePage() {
           <ArrowLeft className="h-4 w-4 mr-1" />
           <span className="text-xs font-medium">もどる</span>
         </Link>
-        <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-gray-800 sm:text-xl text-center px-4">
-          プレミアムプラン
-        </h1>
         <div className="w-16" /> {/* 右のスペース確保 */}
       </header>
 

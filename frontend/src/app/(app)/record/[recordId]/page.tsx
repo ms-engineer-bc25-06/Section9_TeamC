@@ -130,7 +130,7 @@ export default function RecordCompletionPage() {
         </Card>
 
         <Link href="/children" passHref>
-          <Button className="w-full max-w-xs py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 bg-blue-400 text-white hover:bg-blue-500">
+          <Button className="w-full max-w-xs py-4 sm:py-5 text-xl sm:text-2xl font-bold rounded-full shadow-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 bg-blue-400 text-white hover:bg-blue-500">
             ホームに戻る
           </Button>
         </Link>
