@@ -3,13 +3,14 @@ import os
 from typing import Optional
 import asyncio
 
+
 class AIFeedbackService:
     def __init__(self):
         self.client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        
+
     async def generate_feedback(self, transcript: str, child_age: Optional[int] = None) -> str:
         """音声文字起こしからAIフィードバックを生成"""
-        
+
         prompt = f"""
 以下は子どもが外国人と英語で話そうとした記録です: "{transcript}"
 
@@ -37,26 +38,26 @@ class AIFeedbackService:
 
 フィードバック:
 """
-        
+
         try:
             response = await self._call_openai_api(prompt)
             feedback = response.choices[0].message.content.strip()
             return feedback
-            
-        except Exception as e:
+
+        except Exception:
             return f"'{transcript}' とても上手に話せたね！次回も頑張ろう！😊"
-    
+
     async def _call_openai_api(self, prompt: str):
         """OpenAI API呼び出し（非同期）"""
         loop = asyncio.get_event_loop()
-        
+
         def _sync_call():
             return self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=150,
                 temperature=0.7,
-                timeout=10.0
+                timeout=10.0,
             )
-        
+
         return await loop.run_in_executor(None, _sync_call)

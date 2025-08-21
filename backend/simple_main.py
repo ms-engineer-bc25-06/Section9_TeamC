@@ -11,15 +11,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def root():
     return {"message": "BUD Simple API"}
 
+
 @app.get("/api/children")
 def get_children():
-    return {
-        "children": [
-            {"id": 1, "name": "ひなた"},
-            {"id": 2, "name": "ゆうた"}
-        ]
-    }
+    return {"children": [{"id": 1, "name": "ひなた"}, {"id": 2, "name": "ゆうた"}]}

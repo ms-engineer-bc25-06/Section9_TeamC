@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings
 from typing import List
 import os
 
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Section9 TeamC Backend"
     VERSION: str = "1.0.0"
@@ -21,7 +22,9 @@ class Settings(BaseSettings):
 
     # Firebase設定を追加
     FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "bud-app-4dd93")
-    GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "./serviceAccountKey.json")
+    GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv(
+        "GOOGLE_APPLICATION_CREDENTIALS", "./serviceAccountKey.json"
+    )
     HOST: str = os.getenv("HOST", "0.0.0.0")
     PORT: int = int(os.getenv("PORT", "8000"))
 
@@ -33,5 +36,6 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+
 
 settings = Settings()
