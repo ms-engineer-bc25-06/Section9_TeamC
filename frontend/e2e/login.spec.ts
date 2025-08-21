@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 // E2Eテストの基本構造
-describe('ログイン画面 E2E テスト', () => {
+// Playwrightでは test.describe を使用
+test.describe('ログイン画面 E2E テスト', () => {
   // 各テストの前に実行される準備処理
   test.beforeEach(async ({ page }) => {
     // ログイン画面にアクセス
