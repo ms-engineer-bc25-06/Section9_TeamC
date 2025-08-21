@@ -66,7 +66,7 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
 
 app.include_router(children.router, prefix="/api/children", tags=["children"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
-app.include_router(ai_feedback.router)
+app.include_router(ai_feedback.router, prefix="/api")
 
 
 
