@@ -15,7 +15,7 @@ export default function DebugPage() {
           nickname: child.nickname,
           birthdate: child.birthdate,
           age: child.age,
-          全データ: child
+          全データ: child,
         });
       });
     }

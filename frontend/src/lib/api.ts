@@ -210,7 +210,7 @@ export const api = {
           headers,
           body: JSON.stringify({
             nickname: data.name, // nameをnicknameとして送信
-            birth_date: data.birthdate,  // birthdateをbirth_dateとして送信
+            birth_date: data.birthdate, // birthdateをbirth_dateとして送信
           }),
         });
         if (!res.ok) {
@@ -250,7 +250,7 @@ export const api = {
           headers,
           body: JSON.stringify({
             nickname: data.name || data.nickname,
-            birth_date: data.birthdate,  // birthdateをbirth_dateとして送信
+            birth_date: data.birthdate, // birthdateをbirth_dateとして送信
           }),
         });
         if (!res.ok) {
@@ -289,12 +289,12 @@ export const api = {
     transcribe: async (audioBlob: Blob, childId: string) => {
       try {
         console.log('🎤 音声文字起こし開始:', { childId, blobSize: audioBlob.size });
-        
+
         // childIdが存在することを確認
         if (!childId) {
           throw new Error('child_idが指定されていません');
         }
-        
+
         // 認証ヘッダーを取得（Content-Typeは削除してFormDataに任せる）
         const headers = await getAuthHeaders();
         delete headers['Content-Type'];
@@ -380,12 +380,12 @@ export const api = {
           method: 'GET',
           headers,
         });
-    
+
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.detail || 'チャレンジ詳細の取得に失敗しました');
         }
-    
+
         return res.json();
       } catch (error) {
         console.error('チャレンジ詳細の取得に失敗:', error);
