@@ -4,14 +4,14 @@ from datetime import datetime, date
 import uuid
 
 class ChildBase(BaseModel):
-    name: str
+    nickname: str
     birth_date: Optional[date] = None
 
-    @field_validator('name')
+    @field_validator('nickname')
     @classmethod
-    def name_must_not_be_empty(cls, v):
+    def nickname_must_not_be_empty(cls, v):
         if not v or not v.strip():
-            raise ValueError('名前は必須です')
+            raise ValueError('ニックネームは必須です')
         return v.strip()
 
 class ChildCreate(ChildBase):
