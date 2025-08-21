@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import Home from '@/app/page';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api';
-import { signOut } from 'firebase/auth';
+import { signOut, User } from 'firebase/auth';
 import { vi } from 'vitest';
 
 // モックの設定
@@ -12,7 +12,9 @@ vi.mock('@/hooks/useAuth');
 vi.mock('@/lib/api');
 vi.mock('firebase/auth');
 vi.mock('next/image', () => ({
-  default: ({ src, alt, ...props }: any) => <img src={src} alt={alt} {...props} />,
+  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: any }) => (
+    <img src={src} alt={alt} {...props} />
+  ),
 }));
 
 const mockPush = vi.fn();
@@ -56,7 +58,7 @@ describe('Login Page (ホーム画面 - ログイン機能)', () => {
 
     test('ログイン済みユーザーは子ども選択画面にリダイレクトされる', () => {
       mockUseAuth.mockReturnValue({
-        user: { uid: 'test-uid', displayName: 'Test User' } as any,
+        user: { uid: 'test-uid', displayName: 'Test User' } as User,
         loginWithGoogle: vi.fn().mockResolvedValue({ success: true }),
         loginWithAccountSelection: vi.fn().mockResolvedValue({ success: true }),
         logout: vi.fn().mockResolvedValue({ success: true }),
@@ -123,7 +125,7 @@ describe('Login Page (ホーム画面 - ログイン機能)', () => {
     test('バックエンドAPI連携が失敗した場合のエラーハンドリング', async () => {
       const mockLoginWithGoogle = vi.fn().mockResolvedValue({
         success: true,
-        user: { uid: 'test-uid', displayName: 'Test User' } as any,
+        user: { uid: 'test-uid', displayName: 'Test User' } as User,
       });
 
       mockUseAuth.mockReturnValue({
@@ -136,9 +138,12 @@ describe('Login Page (ホーム画面 - ログイン機能)', () => {
       });
 
       // APIログインを失敗させる
-      (mockApi as any).auth = {
-        login: vi.fn().mockRejectedValue(new Error('Backend connection failed')),
-        test: vi.fn(),
+      mockApi.auth = {
+        login: vi.fn().mockResolvedValue({ success: true }),
+        test: vi.fn().mockResolvedValue({}),
+        getProfile: vi.fn().mockResolvedValue({}),
+        updateProfile: vi.fn().mockResolvedValue({}),
+        getChildren: vi.fn().mockResolvedValue([]),
       };
 
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -163,7 +168,7 @@ describe('Login Page (ホーム画面 - ログイン機能)', () => {
     test('アカウント切り替えボタンが正常に動作する', async () => {
       const mockLoginWithAccountSelection = vi.fn().mockResolvedValue({
         success: true,
-        user: { uid: 'test-uid', displayName: 'Test User' } as any,
+        user: { uid: 'test-uid', displayName: 'Test User' } as User,
       });
 
       mockUseAuth.mockReturnValue({
@@ -175,9 +180,12 @@ describe('Login Page (ホーム画面 - ログイン機能)', () => {
         isAuthenticated: false,
       });
 
-      (mockApi as any).auth = {
+      mockApi.auth = {
         login: vi.fn().mockResolvedValue({ success: true }),
-        test: vi.fn(),
+        test: vi.fn().mockResolvedValue({}),
+        getProfile: vi.fn().mockResolvedValue({}),
+        updateProfile: vi.fn().mockResolvedValue({}),
+        getChildren: vi.fn().mockResolvedValue([]),
       };
 
       render(<Home />);
@@ -194,7 +202,7 @@ describe('Login Page (ホーム画面 - ログイン機能)', () => {
     test('ログイン処理が実行されることを確認', async () => {
       const mockLoginWithGoogle = vi.fn().mockResolvedValue({
         success: true,
-        user: { uid: 'test-uid', displayName: 'Test User' } as any,
+        user: { uid: 'test-uid', displayName: 'Test User' } as User,
       });
 
       mockUseAuth.mockReturnValue({
@@ -206,9 +214,12 @@ describe('Login Page (ホーム画面 - ログイン機能)', () => {
         isAuthenticated: false,
       });
 
-      (mockApi as any).auth = {
+      mockApi.auth = {
         login: vi.fn().mockResolvedValue({ success: true }),
-        test: vi.fn(),
+        test: vi.fn().mockResolvedValue({}),
+        getProfile: vi.fn().mockResolvedValue({}),
+        updateProfile: vi.fn().mockResolvedValue({}),
+        getChildren: vi.fn().mockResolvedValue([]),
       };
 
       render(<Home />);
