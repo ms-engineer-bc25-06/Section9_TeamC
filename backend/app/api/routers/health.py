@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 
 router = APIRouter()
 
+
 @router.get("/")
 async def health_check():
     """基本的なヘルスチェック"""
@@ -16,8 +17,9 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "service": settings.PROJECT_NAME,
-        "version": settings.VERSION
+        "version": settings.VERSION,
     }
+
 
 @router.get("/detailed")
 async def detailed_health_check(db: AsyncSession = Depends(get_db)):
@@ -31,7 +33,7 @@ async def detailed_health_check(db: AsyncSession = Depends(get_db)):
         "service": settings.PROJECT_NAME,
         "version": settings.VERSION,
         "environment": settings.ENVIRONMENT,
-        "checks": {}
+        "checks": {},
     }
 
     # データベース接続チェック（非同期）
@@ -46,7 +48,7 @@ async def detailed_health_check(db: AsyncSession = Depends(get_db)):
 
     health_status["checks"]["database"] = {
         "status": db_status,
-        "response_time_ms": db_response_time
+        "response_time_ms": db_response_time,
     }
 
     # 非同期データベース接続チェック
@@ -57,15 +59,13 @@ async def detailed_health_check(db: AsyncSession = Depends(get_db)):
         async_db_status = "unhealthy"
         health_status["status"] = "unhealthy"
 
-    health_status["checks"]["async_database"] = {
-        "status": async_db_status
-    }
+    health_status["checks"]["async_database"] = {"status": async_db_status}
 
     # システムリソース情報を取得
     health_status["system"] = {
         "cpu_percent": psutil.cpu_percent(),  # CPU使用率
         "memory_percent": psutil.virtual_memory().percent,  # メモリ使用率
-        "disk_percent": psutil.disk_usage('/').percent  # ディスク使用率
+        "disk_percent": psutil.disk_usage("/").percent,  # ディスク使用率
     }
 
     # 異常時は503エラーを返す
@@ -73,6 +73,7 @@ async def detailed_health_check(db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=503, detail=health_status)
 
     return health_status
+
 
 @router.get("/readiness")
 async def readiness_check(db: AsyncSession = Depends(get_db)):
@@ -83,10 +84,8 @@ async def readiness_check(db: AsyncSession = Depends(get_db)):
         return {"status": "ready"}
     except Exception as e:
         # DB接続失敗時は準備未完了
-        raise HTTPException(
-            status_code=503,
-            detail={"status": "not ready", "error": str(e)}
-        )
+        raise HTTPException(status_code=503, detail={"status": "not ready", "error": str(e)})
+
 
 @router.get("/liveness")
 async def liveness_check():

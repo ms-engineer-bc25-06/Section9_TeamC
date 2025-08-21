@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
 
+
 class UserBase(BaseModel):
     username: str
     email: EmailStr
@@ -10,8 +11,10 @@ class UserBase(BaseModel):
     bio: Optional[str] = None
     profile_image: Optional[str] = None
 
+
 class UserCreate(UserBase):
     password: str
+
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
@@ -20,9 +23,11 @@ class UserUpdate(BaseModel):
     bio: Optional[str] = None
     profile_image: Optional[str] = None
 
+
 class UserPasswordUpdate(BaseModel):
     current_password: str
     new_password: str
+
 
 class User(UserBase):
     id: int
@@ -34,10 +39,12 @@ class User(UserBase):
     class Config:
         from_attributes = True
 
+
 class UserWithChildren(User):
     children: List["Child"] = []
 
     class Config:
         from_attributes = True
+
 
 UserWithChildren.model_rebuild()

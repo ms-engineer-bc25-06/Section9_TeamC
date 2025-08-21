@@ -1,7 +1,7 @@
-import pytest
 from fastapi import status
 
 # --- テスト用の関数ベースでシンプルに書く ---
+
 
 def test_firebase_login_success(client, firebase_token):
     """Firebase認証で正常にログインできるテスト"""
