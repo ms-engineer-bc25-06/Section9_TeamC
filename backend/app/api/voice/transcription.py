@@ -7,6 +7,7 @@ from app.core.database import get_async_db
 from app.models.child import Child
 from app.models.challenge import Challenge
 from app.services.voice_service import voice_service
+from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/api/voice", tags=["voice-transcription"])
 
@@ -42,7 +43,10 @@ async def transcribe_text(
         result = await db.execute(select(Child).where(Child.id == child_uuid))
         child = result.scalars().first()
         if not child:
-            raise HTTPException(status_code=404, detail="子供が見つかりません")
+            return JSONResponse(
+                status_code=404,
+                content={"detail": "子供が見つかりません", "error_code": "CHILD_NOT_FOUND"}
+            )
 
         # Challenge作成
         challenge = Challenge(
@@ -56,7 +60,11 @@ async def transcribe_text(
         child_name = child.nickname or child.name or "お子さま"
 
         # AIフィードバック生成
-        feedback = await voice_service.generate_feedback(transcript, child_name)
+        try:
+            feedback = await voice_service.generate_feedback(transcript, child_name)
+        except Exception as e:
+            print(f"⚠️ AIフィードバック生成に失敗、デフォルトメッセージを使用: {e}")
+            feedback = f"「{transcript}」と話してくれてありがとう！とても上手に話せていますね。これからも頑張ってください！"
 
         # Challenge更新
         challenge.comment = feedback
@@ -65,6 +73,13 @@ async def transcribe_text(
 
         return {"transcript_id": str(challenge.id), "status": "completed", "comment": feedback}
 
+    except ValueError as e:
+        # UUID変換エラーの場合
+        print(f"❌ UUID変換エラー: {str(e)}")
+        return JSONResponse(
+            status_code=400,
+            content={"detail": "無効なchild_idです", "error_code": "INVALID_UUID"}
+        )
     except Exception as e:
         import traceback
 
@@ -72,14 +87,19 @@ async def transcribe_text(
         print(f"❌ AIフィードバック生成エラー: {str(e)}")
         print(f"❌ エラー詳細: {error_details}")
 
-
         # エラーの場合もChallengeを更新しておく
         if 'challenge' in locals():
-            challenge.comment = f"AIフィードバック生成エラー: {str(e)}"
-            db.add(challenge)
-            await db.commit()
+            try:
+                challenge.comment = f"AIフィードバック生成エラー: {str(e)}"
+                db.add(challenge)
+                await db.commit()
+            except Exception as commit_error:
+                print(f"❌ Challenge更新エラー: {commit_error}")
 
-        raise HTTPException(status_code=500, detail="AIフィードバック生成中にエラーが発生しました")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "AIフィードバック生成中にエラーが発生しました", "error_code": "AI_FEEDBACK_ERROR"}
+        )
 
 
 

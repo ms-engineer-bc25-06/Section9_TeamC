@@ -193,8 +193,8 @@ export default function ChallengePage() {
     try {
       // 直接文字起こしテキストを送信
       const result = await api.voice.saveTranscription({
-        child_id: childId,
-        text: transcription,
+        childId,
+        transcription,
       });
       router.push(`/record/${result.transcript_id}`);
     } catch (error) {

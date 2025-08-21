@@ -307,7 +307,13 @@ export const api = {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
+        let errorData;
+        try {
+          errorData = await res.json();
+        } catch (jsonError) {
+          // JSON形式でない場合のフォールバック
+          errorData = { detail: `保存に失敗しました(${res.status})` };
+        }
         console.error('❌ 文字起こしエラー詳細:', errorData);
         throw new Error(errorData.detail || `保存に失敗しました(${res.status})`);
       }
@@ -337,7 +343,13 @@ export const api = {
         });
 
         if (!res.ok) {
-          const errorData = await res.json();
+          let errorData;
+          try {
+            errorData = await res.json();
+          } catch (jsonError) {
+            // JSON形式でない場合のフォールバック
+            errorData = { detail: `文字起こしに失敗しました(${res.status})` };
+          }
           console.error('❌ 文字起こしエラー詳細:', errorData);
           throw new Error(errorData.detail || `文字起こしに失敗しました(${res.status})`);
         }
@@ -364,7 +376,13 @@ export const api = {
         });
 
         if (!res.ok) {
-          const errorData = await res.json();
+          let errorData;
+          try {
+            errorData = await res.json();
+          } catch (jsonError) {
+            // JSON形式でない場合のフォールバック
+            errorData = { detail: '音声認識結果の取得に失敗しました' };
+          }
           throw new Error(errorData.detail || '音声認識結果の取得に失敗しました');
         }
 
@@ -384,7 +402,13 @@ export const api = {
         });
 
         if (!res.ok) {
-          const errorData = await res.json();
+          let errorData;
+          try {
+            errorData = await res.json();
+          } catch (jsonError) {
+            // JSON形式でない場合のフォールバック
+            errorData = { detail: '音声履歴の取得に失敗しました' };
+          }
           throw new Error(errorData.detail || '音声履歴の取得に失敗しました');
         }
 
