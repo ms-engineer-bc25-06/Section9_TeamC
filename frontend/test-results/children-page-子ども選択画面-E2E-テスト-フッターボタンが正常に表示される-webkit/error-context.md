@@ -1,0 +1,51 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8] [cursor=pointer]
+  - alert [ref=e13]
+  - iframe [ref=e14]:
+    
+  - generic [ref=e16]:
+    - generic [ref=e17]:
+      - heading "BUD" [level=1] [ref=e18]
+      - paragraph [ref=e19]: お子様の英語の芽を育てよう！
+      - img "BUD Logo" [ref=e20]
+    - generic [ref=e21]:
+      - paragraph [ref=e22]: BUDの特徴
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - paragraph [ref=e25]: ・困った時のサポート
+          - paragraph [ref=e26]: 会話中につまった時でも安心
+        - generic [ref=e27]:
+          - paragraph [ref=e28]: ・会話の内容を記録
+          - paragraph [ref=e29]: 自動で会話が記録され成長を確認できます
+        - generic [ref=e30]:
+          - paragraph [ref=e31]: ・フィードバック
+          - paragraph [ref=e32]: AIが優しくアドバイスしてくれます
+    - generic [ref=e34]:
+      - img [ref=e36]
+      - generic [ref=e38]:
+        - heading "初めての方へ" [level=3] [ref=e39]
+        - paragraph [ref=e40]:
+          - text: Googleでログインすると、
+          - text: BUDアカウントが自動で作成されます
+    - generic [ref=e41]:
+      - button "Googleでログイン" [ref=e42] [cursor=pointer]:
+        - img [ref=e43] [cursor=pointer]
+        - generic [ref=e48] [cursor=pointer]: Googleでログイン
+      - generic [ref=e49]:
+        - button "別のGoogleアカウントを使用" [ref=e50] [cursor=pointer]
+        - paragraph [ref=e51]:
+          - text: すでにBUDをご利用の方で、
+          - text: 異なるアカウントに切り替えたい場合
+    - paragraph [ref=e52]:
+      - text: ログインすると、
+      - link "利用規約" [ref=e53]:
+        - /url: /terms
+      - text: と
+      - link "プライバシーポリシー" [ref=e54]:
+        - /url: /privacy
+      - text: に同意したことになります。安心してご利用ください。
+```
