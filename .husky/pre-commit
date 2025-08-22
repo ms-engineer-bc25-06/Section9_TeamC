@@ -2,10 +2,7 @@
 # npm run lint:front
 # npm run format:front 
 # docker exec section9_teamc-frontend-1 ls
-# echo "husky実行"
-
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+# echo "husky実行""
 
 CONTAINER_NAME="section9_teamc-frontend-1"
 # docker exec section9_teamc-frontend-1 ls

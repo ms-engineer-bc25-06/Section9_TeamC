@@ -1,7 +1,7 @@
 import os
+import tempfile
 import openai
 from fastapi import HTTPException
-import tempfile
 from typing import Optional
 
 
@@ -19,6 +19,7 @@ class VoiceService:
                 )
             self.client = openai.OpenAI(api_key=api_key)
         return self.client
+
 
     async def transcribe_audio(self, audio_content: bytes, filename: str) -> str:
         """音声ファイルをテキストに変換"""
@@ -50,6 +51,7 @@ class VoiceService:
     async def generate_feedback(
         self, transcribed_text: str, child_name: Optional[str] = None
     ) -> str:
+
         """AIフィードバックを生成"""
         try:
             client = self._get_client()
