@@ -26,7 +26,16 @@ vi.mock('@/lib/api', () => ({
 
 // Next.js Image コンポーネントのモック
 vi.mock('next/image', () => ({
-  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: any }) => (
+  default: ({
+    src,
+    alt,
+    ...props
+  }: {
+    src: string;
+    alt: string;
+    [key: string]: string | number | boolean | undefined;
+  }) => (
+    // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={alt} {...props} />
   ),
 }));
