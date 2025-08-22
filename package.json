@@ -2,12 +2,29 @@
   "name": "section9_teamc-monorepo",
   "private": true,
   "scripts": {
+    "prepare": "husky install",
     "lint:front": "cd frontend && npx eslint . --ext .ts,.tsx",
     "format:front": "cd frontend && npx prettier --write .",
-    "check:all": "npm run lint:front && npm run format:front"
+    "check:all": "npm run lint:front && npm run format:front",
+    "lint:backend": "cd backend && source venv/bin/activate && ruff check .",
+    "format:backend": "cd backend && source venv/bin/activate && ruff format .",
+    "lint:all": "npm run lint:front && npm run lint:backend",
+    "format:all": "npm run format:front && npm run format:backend"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "lint-staged": "^16.1.5"
+  },
   "dependencies": {
     "firebase": "^12.0.0"
+  },
+  "lint-staged": {
+    "frontend/**/*.{ts,tsx}": [
+      "cd frontend && npx eslint --fix",
+      "cd frontend && npx prettier --write"
+    ],
+    "backend/**/*.py": [
+      "cd backend && source venv/bin/activate && ruff check --fix",
+      "cd backend && source venv/bin/activate && ruff format"
+    ]
   }
 }
