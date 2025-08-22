@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy.pool import NullPool  # QueuePoolの代わり
 import os
 from typing import AsyncGenerator
 
@@ -23,7 +22,7 @@ async_engine = create_async_engine(
     max_overflow=30,
     pool_pre_ping=True,
     pool_recycle=3600,
-    echo=False
+    echo=False,
 )
 
 # 同期エンジン（Alembicで使用）
@@ -33,14 +32,11 @@ sync_engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
 
 # 非同期セッションメーカー
-AsyncSessionLocal = sessionmaker(
-    async_engine,
-    class_=AsyncSession,
-    expire_on_commit=False
-)
+AsyncSessionLocal = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 # Base class for models
 Base = declarative_base()
+
 
 # 同期用の依存性注入関数
 def get_db():
@@ -49,6 +45,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 # 非同期用の依存性注入関数
 async def get_async_db() -> AsyncGenerator[AsyncSession, None]:
@@ -62,6 +59,7 @@ async def get_async_db() -> AsyncGenerator[AsyncSession, None]:
         finally:
             await session.close()
 
+
 # データベース接続テスト関数
 async def test_connection():
     try:
@@ -73,10 +71,12 @@ async def test_connection():
         print(f"❌ データベース接続失敗: {e}")
         return False
 
+
 # 後方互換性のための関数
 async def connect_to_db():
     """データベース接続初期化"""
     return await test_connection()
+
 
 async def disconnect_from_db():
     """データベース接続終了"""
