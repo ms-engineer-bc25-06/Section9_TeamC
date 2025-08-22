@@ -15,13 +15,10 @@ router = APIRouter(prefix="/api/voice", tags=["voice-transcription"])
 # AIフィードバックサービスのインスタンス作成
 ai_feedback_service = AIFeedbackService()
 
-
-
 # PydanticモデルでJSONを受け取る
 class TranscribeRequest(BaseModel):
     transcript: str  # Web Speech APIから送る文字起こし結果
     child_id: str    # 子どものUUID
-
 
 
 @router.get("/test")
@@ -67,12 +64,10 @@ async def transcribe_text(
 
         # AIフィードバック生成（統合されたサービスを使用）
         try:
-
-           feedback = await ai_feedback_service.generate_feedback(
-
-    transcript=transcript, 
-    feedback_type="english_challenge"  # 英語チャレンジ用の高品質プロンプト
-)
+            feedback = await ai_feedback_service.generate_feedback(
+                transcript=transcript, 
+                feedback_type="english_challenge"  # 英語チャレンジ用の高品質プロンプト
+            )
         except Exception as e:
             print(f"⚠️ AIフィードバック生成に失敗、デフォルトメッセージを使用: {e}")
             feedback = f"「{transcript}」と話してくれてありがとう！とても上手に話せていますね。これからも頑張ってください！"
@@ -108,12 +103,10 @@ async def transcribe_text(
             except Exception as commit_error:
                 print(f"❌ Challenge更新エラー: {commit_error}")
 
-
         return JSONResponse(
             status_code=500,
             content={"detail": "AIフィードバック生成中にエラーが発生しました", "error_code": "AI_FEEDBACK_ERROR"}
         )
-
 
 
 @router.get("/transcript/{transcript_id}")
