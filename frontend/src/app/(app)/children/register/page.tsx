@@ -28,7 +28,11 @@ export default function ChildRegisterPage() {
     console.log('✅ handleSubmit 発火');
 
     if (!birthDate) {
-      toast({ variant: 'destructive', description: '誕生日を入力してください' });
+      toast({
+        variant: 'destructive',
+        title: '入力エラー',
+        description: '誕生日を入力してください。',
+      });
       return;
     }
 
@@ -36,7 +40,11 @@ export default function ChildRegisterPage() {
       setLoading(true);
 
       if (!user) {
-        toast({ variant: 'destructive', description: 'ログインが必要です' });
+        toast({
+          variant: 'destructive',
+          title: '認証エラー',
+          description: 'ログインが必要です',
+        });
         return;
       }
 
@@ -54,14 +62,23 @@ export default function ChildRegisterPage() {
       );
       console.log('✅ API レスポンス:', res);
 
-      toast({ description: '子どもを登録しました' });
-      router.push('/children');
+      toast({
+        title: '登録完了 🎉',
+        description: `${nickname} を追加しました。`,
+      });
+
+      // ほんの少しだけ待ってから遷移（トーストを見せたい場合）
+      setTimeout(() => router.push('/children'), 1000);
     } catch (err: unknown) {
-      // unknown を Error に絞り込み
       const message =
-        err instanceof Error ? err.message : typeof err === 'string' ? err : '登録に失敗しました';
+        err instanceof Error ? err.message : typeof err === 'string' ? err : '登録に失敗しました。';
+
       console.error('❌ 登録エラー:', err);
-      toast({ variant: 'destructive', description: message });
+      toast({
+        variant: 'destructive',
+        title: '登録エラー',
+        description: message,
+      });
     } finally {
       setLoading(false);
     }

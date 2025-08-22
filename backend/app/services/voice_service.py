@@ -20,7 +20,6 @@ class VoiceService:
             self.client = openai.OpenAI(api_key=api_key)
         return self.client
 
-
     async def transcribe_audio(self, audio_content: bytes, filename: str) -> str:
         """音声ファイルをテキストに変換"""
         try:

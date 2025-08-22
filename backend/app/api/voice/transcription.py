@@ -12,10 +12,12 @@ from fastapi.responses import JSONResponse
 router = APIRouter(prefix="/api/voice", tags=["voice-transcription"])
 
 
+
 # PydanticモデルでJSONを受け取る
 class TranscribeRequest(BaseModel):
     transcript: str  # Web Speech APIから送る文字起こし結果
     child_id: str    # 子どものUUID
+
 
 
 @router.get("/test")
@@ -80,6 +82,7 @@ async def transcribe_text(
             status_code=400,
             content={"detail": "無効なchild_idです", "error_code": "INVALID_UUID"}
         )
+
     except Exception as e:
         import traceback
 
@@ -99,10 +102,7 @@ async def transcribe_text(
         return JSONResponse(
             status_code=500,
             content={"detail": "AIフィードバック生成中にエラーが発生しました", "error_code": "AI_FEEDBACK_ERROR"}
-        )
-
-
-
+       
 
 @router.get("/transcript/{transcript_id}")
 async def get_transcript(transcript_id: str, db: AsyncSession = Depends(get_async_db)):
@@ -179,7 +179,6 @@ async def get_challenge_detail(challenge_id: str, db: AsyncSession = Depends(get
             "created_at": challenge.created_at,
             "status": "completed" if challenge.transcript else "processing",
         }
-
 
     except HTTPException:
         raise
