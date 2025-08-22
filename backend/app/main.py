@@ -9,6 +9,7 @@ from app.api.routers import children, auth, ai_feedback
 from app.api.voice.transcription import router as voice_router
 
 
+
 # Pydanticモデル定義
 class LoginRequest(BaseModel):
     idToken: str
@@ -64,10 +65,21 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
 
 
 
+# API ルーター
+from app.api.routers import children
+from app.api.routers import auth
+from app.api.routers import ai_feedback
+
+
+
 app.include_router(children.router, prefix="/api/children", tags=["children"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(ai_feedback.router, prefix="/api")
 
+
+
+# Voice Transcription API
+from app.api.voice.transcription import router as voice_router
 
 
 app.include_router(voice_router)

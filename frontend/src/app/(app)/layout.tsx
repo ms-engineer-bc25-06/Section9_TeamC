@@ -2,6 +2,7 @@
 
 'use client';
 
+import { Toaster } from '@/components/ui/toaster';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -41,5 +42,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   // 認証済みの場合のみ子ページを表示
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <Toaster />
+    </>
+  );
 }

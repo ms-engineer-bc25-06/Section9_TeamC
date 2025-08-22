@@ -9,6 +9,8 @@ from datetime import date
 router = APIRouter(prefix="/ai-feedback", tags=["ai-feedback"])
 
 
+
+
 @router.post("/generate/{challenge_id}")
 async def generate_feedback_for_challenge(challenge_id: str, db: Session = Depends(get_db)):
     """個別チャレンジのAIフィードバック生成"""
@@ -21,6 +23,7 @@ async def generate_feedback_for_challenge(challenge_id: str, db: Session = Depen
     if not challenge.transcript:
         raise HTTPException(status_code=400, detail="文字起こしデータがありません")
 
+
     # 子どもの年齢情報を取得（修正版）
     child = db.query(Child).filter(Child.id == challenge.child_id).first()
     child_age = None
@@ -31,6 +34,7 @@ async def generate_feedback_for_challenge(challenge_id: str, db: Session = Depen
             - child.birthdate.year
             - ((today.month, today.day) < (child.birthdate.month, child.birthdate.day))
         )
+
 
     try:
         # AIフィードバック生成
@@ -70,6 +74,7 @@ async def preview_feedback(challenge_id: str, db: Session = Depends(get_db)):
     if not challenge.transcript:
         raise HTTPException(status_code=400, detail="文字起こしデータがありません")
 
+
     # 子どもの年齢情報を取得（修正版）
     child = db.query(Child).filter(Child.id == challenge.child_id).first()
     child_age = None
@@ -80,6 +85,7 @@ async def preview_feedback(challenge_id: str, db: Session = Depends(get_db)):
             - child.birthdate.year
             - ((today.month, today.day) < (child.birthdate.month, child.birthdate.day))
         )
+
 
     try:
         ai_service = AIFeedbackService()
@@ -94,6 +100,7 @@ async def preview_feedback(challenge_id: str, db: Session = Depends(get_db)):
             "current_comment": challenge.comment,
             "preview_feedback": preview_feedback,
             "child_age": child_age,
+
         }
 
     except Exception as e:
@@ -202,3 +209,4 @@ async def get_analysis_status(db: Session = Depends(get_db)):
         if total_with_transcript > 0
         else 0,
     }
+

@@ -20,7 +20,6 @@ class VoiceService:
             self.client = openai.OpenAI(api_key=api_key)
         return self.client
 
-
     async def transcribe_audio(self, audio_content: bytes, filename: str) -> str:
         """音声ファイルをテキストに変換"""
         try:
@@ -48,42 +47,8 @@ class VoiceService:
                     pass
             raise HTTPException(status_code=500, detail=f"音声認識エラー: {str(e)}")
 
-    async def generate_feedback(
-        self, transcribed_text: str, child_name: Optional[str] = None
-    ) -> str:
-
-        """AIフィードバックを生成"""
-        try:
-            client = self._get_client()
-
-            prompt = f"""
-あなたは優しい先生です。子供が話した内容を聞いて、温かく励ましのフィードバックをしてください。
-
-子供が話した内容：
-「{transcribed_text}」
-
-以下の点を含めてフィードバックしてください：
-1. 話してくれたことへの感謝
-2. 良かった点の具体的な褒め言葉
-3. 次に向けての優しい励まし
-
-フィードバックは200文字以内で、子供が理解しやすい言葉で書いてください。
-"""
-
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "あなたは子供たちを励ます優しい先生です。"},
-                    {"role": "user", "content": prompt},
-                ],
-                max_tokens=300,
-                temperature=0.7,
-            )
-
-            return response.choices[0].message.content.strip()
-
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"フィードバック生成エラー: {str(e)}")
+    # ❌ generate_feedback() メソッドを削除
+    # 今後はai_feedback_service.pyを使用
 
 
 voice_service = VoiceService()
