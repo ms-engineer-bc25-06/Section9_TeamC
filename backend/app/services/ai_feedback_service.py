@@ -2,14 +2,35 @@ import openai
 import os
 from typing import Optional
 import asyncio
+from fastapi import HTTPException
 
 
 class AIFeedbackService:
     def __init__(self):
         self.client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-    async def generate_feedback(self, transcript: str, child_age: Optional[int] = None) -> str:
-        """音声文字起こしからAIフィードバックを生成"""
+    async def generate_feedback(
+        self, 
+        transcript: str, 
+        child_age: Optional[int] = None,
+        feedback_type: str = "english_challenge"  # 新しいパラメータ追加
+    ) -> str:
+        """統合されたAIフィードバック生成"""
+        
+        if feedback_type == "english_challenge":
+            return await self._generate_english_challenge_feedback(transcript, child_age)
+        elif feedback_type == "general":
+            return await self._generate_general_feedback(transcript)
+        else:
+            # デフォルトは英語チャレンジ（既存動作を維持）
+            return await self._generate_english_challenge_feedback(transcript, child_age)
+
+    async def _generate_english_challenge_feedback(
+        self, 
+        transcript: str, 
+        child_age: Optional[int] = None
+    ) -> str:
+        """英語チャレンジ用フィードバック（既存のロジック）"""
 
         prompt = f"""
 以下は子どもが外国人と英語で話そうとした記録です: "{transcript}"
@@ -47,8 +68,38 @@ class AIFeedbackService:
         except Exception:
             return f"'{transcript}' とても上手に話せたね！次回も頑張ろう！😊"
 
+    async def _generate_general_feedback(self, transcribed_text: str) -> str:
+        """一般的なフィードバック（voice_serviceから移行）"""
+        
+        try:
+            prompt = f"""
+あなたは優しい先生です。子供が話した内容を聞いて、温かく励ましのフィードバックをしてください。
+
+子供が話した内容：
+「{transcribed_text}」
+
+以下の点を含めてフィードバックしてください：
+1. 話してくれたことへの感謝
+2. 良かった点の具体的な褒め言葉
+3. 次に向けての優しい励まし
+
+フィードバックは200文字以内で、子供が理解しやすい言葉で書いてください。
+"""
+
+            response = await self._call_openai_api_with_system(
+                prompt, 
+                system_message="あなたは子供たちを励ます優しい先生です。",
+                model="gpt-3.5-turbo",
+                max_tokens=300
+            )
+
+            return response.choices[0].message.content.strip()
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"フィードバック生成エラー: {str(e)}")
+
     async def _call_openai_api(self, prompt: str):
-        """OpenAI API呼び出し（非同期）"""
+        """OpenAI API呼び出し（非同期）- 既存メソッド"""
         loop = asyncio.get_event_loop()
 
         def _sync_call():
@@ -56,6 +107,30 @@ class AIFeedbackService:
                 model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=150,
+                temperature=0.7,
+                timeout=10.0,
+            )
+
+        return await loop.run_in_executor(None, _sync_call)
+
+    async def _call_openai_api_with_system(
+        self, 
+        prompt: str, 
+        system_message: str,
+        model: str = "gpt-4o-mini",
+        max_tokens: int = 150
+    ):
+        """OpenAI API呼び出し（システムメッセージ付き）- 新しいメソッド"""
+        loop = asyncio.get_event_loop()
+
+        def _sync_call():
+            return self.client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": prompt},
+                ],
+                max_tokens=max_tokens,
                 temperature=0.7,
                 timeout=10.0,
             )
