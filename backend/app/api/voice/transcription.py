@@ -65,10 +65,10 @@ async def transcribe_text(
 
         # AIフィードバック生成（統合されたサービスを使用）
         try:
-            feedback = await ai_feedback_service.generate_feedback(
-                transcript=transcript, 
-                feedback_type="general"  # 一般的なフィードバック
-            )
+           feedback = await ai_feedback_service.generate_feedback(
+    transcript=transcript, 
+    feedback_type="english_challenge"  # 英語チャレンジ用の高品質プロンプト
+)
         except Exception as e:
             print(f"⚠️ AIフィードバック生成に失敗、デフォルトメッセージを使用: {e}")
             feedback = f"「{transcript}」と話してくれてありがとう！とても上手に話せていますね。これからも頑張ってください！"
