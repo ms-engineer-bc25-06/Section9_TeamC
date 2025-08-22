@@ -12,7 +12,7 @@ vi.mock('@/hooks/useAuth');
 vi.mock('@/lib/api');
 vi.mock('firebase/auth');
 vi.mock('next/image', () => ({
-  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: any }) => (
+  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown }) => (
     <img src={src} alt={alt} {...props} />
   ),
 }));

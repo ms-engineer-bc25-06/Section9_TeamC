@@ -50,7 +50,6 @@ class VoiceService:
     async def generate_feedback(
         self, transcribed_text: str, child_name: Optional[str] = None
     ) -> str:
-
         """AIフィードバックを生成"""
         try:
             client = self._get_client()

@@ -1,15 +1,3 @@
-type CreateChildRequest = {
-  nickname: string;
-  birth_date?: string;
-};
-
-type CreateChildResponse = {
-  id: string;
-  nickname: string;
-  birth_date?: string;
-  age?: number;
-};
-
 export async function createChild(data: { nickname: string; birth_date?: string }, token: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/children`, {
     method: 'POST',

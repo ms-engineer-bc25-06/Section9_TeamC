@@ -26,7 +26,7 @@ vi.mock('@/lib/api', () => ({
 
 // Next.js Image コンポーネントのモック
 vi.mock('next/image', () => ({
-  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: any }) => (
+  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown }) => (
     <img src={src} alt={alt} {...props} />
   ),
 }));
