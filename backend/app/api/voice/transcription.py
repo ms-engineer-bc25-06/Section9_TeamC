@@ -67,7 +67,9 @@ async def transcribe_text(
 
         # AIフィードバック生成（統合されたサービスを使用）
         try:
-            feedback = await ai_feedback_service.generate_feedback(
+
+           feedback = await ai_feedback_service.generate_feedback(
+
     transcript=transcript, 
     feedback_type="english_challenge"  # 英語チャレンジ用の高品質プロンプト
 )
