@@ -13,7 +13,7 @@ class AIFeedbackService:
         self, 
         transcript: str, 
         child_age: Optional[int] = None,
-        feedback_type: str = "english_challenge"  # 新しいパラメータ追加
+        feedback_type: str = "english_challenge"
     ) -> str:
         """統合されたAIフィードバック生成"""
         
@@ -22,7 +22,6 @@ class AIFeedbackService:
         elif feedback_type == "general":
             return await self._generate_general_feedback(transcript)
         else:
-            # デフォルトは英語チャレンジ（既存動作を維持）
             return await self._generate_english_challenge_feedback(transcript, child_age)
 
     async def _generate_english_challenge_feedback(
@@ -30,7 +29,7 @@ class AIFeedbackService:
         transcript: str, 
         child_age: Optional[int] = None
     ) -> str:
-        """英語チャレンジ用フィードバック（既存のロジック）"""
+        """英語チャレンジ用フィードバック"""
 
         prompt = f"""
 以下は子どもが外国人と英語で話そうとした記録です: "{transcript}"
@@ -61,15 +60,22 @@ class AIFeedbackService:
 """
 
         try:
+            print(f"🔍 AIフィードバック生成開始: transcript='{transcript}'")
+            print(f"🔍 プロンプト長: {len(prompt)} 文字")
             response = await self._call_openai_api(prompt)
             feedback = response.choices[0].message.content.strip()
+            print(f"✅ AIフィードバック生成成功: feedback='{feedback}'")
             return feedback
 
-        except Exception:
+        except Exception as e:
+            print(f"❌ AIフィードバック生成エラー: {e}")
+            print(f"❌ エラータイプ: {type(e).__name__}")
+            import traceback
+            print(f"❌ トレースバック: {traceback.format_exc()}")
             return f"'{transcript}' とても上手に話せたね！次回も頑張ろう！😊"
 
     async def _generate_general_feedback(self, transcribed_text: str) -> str:
-        """一般的なフィードバック（voice_serviceから移行）"""
+        """一般的なフィードバック"""
         
         try:
             prompt = f"""
@@ -99,7 +105,7 @@ class AIFeedbackService:
             raise HTTPException(status_code=500, detail=f"フィードバック生成エラー: {str(e)}")
 
     async def _call_openai_api(self, prompt: str):
-        """OpenAI API呼び出し（非同期）- 既存メソッド"""
+        """OpenAI API呼び出し"""
         loop = asyncio.get_event_loop()
 
         def _sync_call():
@@ -120,7 +126,7 @@ class AIFeedbackService:
         model: str = "gpt-4o-mini",
         max_tokens: int = 150
     ):
-        """OpenAI API呼び出し（システムメッセージ付き）- 新しいメソッド"""
+        """OpenAI API呼び出し（システムメッセージ付き）"""
         loop = asyncio.get_event_loop()
 
         def _sync_call():
