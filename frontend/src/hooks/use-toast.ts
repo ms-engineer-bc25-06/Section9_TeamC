@@ -1,6 +1,7 @@
 'use client';
 
 // Inspired by react-hot-toast library
+
 import type { ToastActionElement, ToastProps } from '@/components/ui/toast';
 import * as React from 'react';
 
@@ -31,6 +32,8 @@ type Action =
   | { type: typeof actionTypes.DISMISS_TOAST; toastId?: ToasterToast['id'] }
   | { type: typeof actionTypes.REMOVE_TOAST; toastId?: ToasterToast['id'] };
 
+
+
 interface State {
   toasts: ToasterToast[];
 }
@@ -58,13 +61,16 @@ const addToRemoveQueue = (toastId: string) => {
 // ------------------ Reducer ------------------
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
+
     case actionTypes.ADD_TOAST:
+
       return {
         ...state,
         toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
       };
 
     case actionTypes.UPDATE_TOAST:
+
       return {
         ...state,
         toasts: state.toasts.map((t) => (t.id === action.toast.id ? { ...t, ...action.toast } : t)),
@@ -75,7 +81,9 @@ export const reducer = (state: State, action: Action): State => {
       if (toastId) {
         addToRemoveQueue(toastId);
       } else {
+
         state.toasts.forEach((t) => addToRemoveQueue(t.id));
+
       }
       return {
         ...state,
@@ -97,10 +105,12 @@ export const reducer = (state: State, action: Action): State => {
 
 // ------------------ グローバル管理 ------------------
 const listeners: Array<(state: State) => void> = [];
+
 let memoryState: State = { toasts: [] };
 
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action);
+
   listeners.forEach((listener) => listener(memoryState));
 }
 
@@ -128,6 +138,7 @@ function toast(props: Toast) {
   });
 
   return { id, dismiss, update };
+
 }
 
 // ------------------ Hook ------------------
@@ -138,15 +149,19 @@ function useToast() {
     listeners.push(setState);
     return () => {
       const index = listeners.indexOf(setState);
+
       if (index > -1) listeners.splice(index, 1);
     };
   }, []);
 
+
   return {
     ...state,
     toast,
+
     dismiss: (toastId?: string) => dispatch({ type: actionTypes.DISMISS_TOAST, toastId }),
   };
 }
 
 export { toast, useToast };
+

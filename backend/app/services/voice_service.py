@@ -1,7 +1,7 @@
 import os
+import tempfile
 import openai
 from fastapi import HTTPException
-import tempfile
 from typing import Optional
 
 
@@ -43,13 +43,14 @@ class VoiceService:
             if "temp_file_path" in locals():
                 try:
                     os.unlink(temp_file_path)
-                except:
+                except Exception:
                     pass
             raise HTTPException(status_code=500, detail=f"音声認識エラー: {str(e)}")
 
     async def generate_feedback(
         self, transcribed_text: str, child_name: Optional[str] = None
     ) -> str:
+
         """AIフィードバックを生成"""
         try:
             client = self._get_client()

@@ -210,7 +210,7 @@ export const api = {
           headers,
           body: JSON.stringify({
             nickname: data.name, // nameをnicknameとして送信
-            birth_date: data.birthdate,  // birthdateをbirth_dateとして送信
+            birth_date: data.birthdate, // birthdateをbirth_dateとして送信
           }),
         });
         if (!res.ok) {
@@ -250,7 +250,7 @@ export const api = {
           headers,
           body: JSON.stringify({
             nickname: data.name || data.nickname,
-            birth_date: data.birthdate,  // birthdateをbirth_dateとして送信
+            birth_date: data.birthdate, // birthdateをbirth_dateとして送信
           }),
         });
         if (!res.ok) {
@@ -285,41 +285,71 @@ export const api = {
 
   // 🎤 音声文字起こしAPI
   voice: {
+    saveTranscription: async ({
+      childId,
+      transcription,
+    }: {
+      childId: string;
+      transcription: string;
+    }) => {
+      const headers = await getAuthHeaders();
+
+      const res = await fetch(`${API_URL}/api/voice/transcribe`, {
+        method: 'POST',
+        headers: {
+          ...headers,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          child_id: childId,
+          transcript: transcription,
+        }),
+      });
+
+      if (!res.ok) {
+        let errorData;
+        try {
+          errorData = await res.json();
+        } catch (jsonError) {
+          // JSON形式でない場合のフォールバック
+          errorData = { detail: `保存に失敗しました(${res.status})` };
+        }
+        console.error('❌ 文字起こしエラー詳細:', errorData);
+        throw new Error(errorData.detail || `保存に失敗しました(${res.status})`);
+      }
+
+      return res.json();
+    },
+
     // 音声ファイルを文字起こしするAPI（修正版：child_idをクエリパラメータとして送信）
     transcribe: async (audioBlob: Blob, childId: string) => {
       try {
-        console.log('🎤 音声文字起こし開始:', { childId, blobSize: audioBlob.size });
-        
-        // childIdが存在することを確認
-        if (!childId) {
-          throw new Error('child_idが指定されていません');
-        }
-        
-        // 認証ヘッダーを取得（Content-Typeは削除してFormDataに任せる）
         const headers = await getAuthHeaders();
-        delete headers['Content-Type'];
 
-        // FormDataを作成して音声ファイルを追加
-        const formData = new FormData();
-        formData.append('file', audioBlob, 'recording.webm');
+        const base64Audio = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(audioBlob);
+        });
 
-        // child_idをクエリパラメータとして確実に追加
-        const url = `${API_URL}/api/voice/transcribe?child_id=${encodeURIComponent(childId)}`;
-        console.log('🎤 リクエストURL:', url);
-        console.log('🎤 child_id:', childId);
-
-        const res = await fetch(url, {
+        const res = await fetch(`${API_URL}/api/voice/transcribe`, {
           method: 'POST',
           headers: {
             ...headers,
+            'Content-Type': 'application/json',
           },
-          body: formData,
+          body: JSON.stringify({ file: base64Audio, child_id: childId }),
         });
 
-        console.log('🎤 レスポンス受信:', res.status, res.statusText);
-
         if (!res.ok) {
-          const errorData = await res.json();
+          let errorData;
+          try {
+            errorData = await res.json();
+          } catch (jsonError) {
+            // JSON形式でない場合のフォールバック
+            errorData = { detail: `文字起こしに失敗しました(${res.status})` };
+          }
           console.error('❌ 文字起こしエラー詳細:', errorData);
           throw new Error(errorData.detail || `文字起こしに失敗しました(${res.status})`);
         }
@@ -327,8 +357,12 @@ export const api = {
         const result = await res.json();
         console.log('✅ 文字起こし成功:', result);
         return result;
-      } catch (error) {
-        console.error('❌ 文字起こしに失敗:', error);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error('❌ 文字起こしに失敗:', error.message);
+        } else {
+          console.error('❌ 文字起こしに失敗:', error);
+        }
         throw error;
       }
     },
@@ -342,7 +376,13 @@ export const api = {
         });
 
         if (!res.ok) {
-          const errorData = await res.json();
+          let errorData;
+          try {
+            errorData = await res.json();
+          } catch (jsonError) {
+            // JSON形式でない場合のフォールバック
+            errorData = { detail: '音声認識結果の取得に失敗しました' };
+          }
           throw new Error(errorData.detail || '音声認識結果の取得に失敗しました');
         }
 
@@ -362,7 +402,13 @@ export const api = {
         });
 
         if (!res.ok) {
-          const errorData = await res.json();
+          let errorData;
+          try {
+            errorData = await res.json();
+          } catch (jsonError) {
+            // JSON形式でない場合のフォールバック
+            errorData = { detail: '音声履歴の取得に失敗しました' };
+          }
           throw new Error(errorData.detail || '音声履歴の取得に失敗しました');
         }
 
@@ -380,12 +426,12 @@ export const api = {
           method: 'GET',
           headers,
         });
-    
+
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.detail || 'チャレンジ詳細の取得に失敗しました');
         }
-    
+
         return res.json();
       } catch (error) {
         console.error('チャレンジ詳細の取得に失敗:', error);

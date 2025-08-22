@@ -1,4 +1,4 @@
-# backend/simple_working_api.py
+
 # 最新DBモデル対応 + シンプルな動作確保
 
 from fastapi import FastAPI, Depends, HTTPException
@@ -56,7 +56,7 @@ async def health():
         db.execute(text("SELECT 1"))
         db.close()
         return {"status": "healthy", "database": "connected"}
-    except:
+    except Exception:
         return {"status": "unhealthy", "database": "disconnected"}
 
 
@@ -67,8 +67,8 @@ async def check_tables(db: Session = Depends(get_db)):
         # テーブル一覧を取得
         result = db.execute(
             text("""
-            SELECT table_name 
-            FROM information_schema.tables 
+            SELECT table_name
+            FROM information_schema.tables
             WHERE table_schema = 'public'
         """)
         )
@@ -80,7 +80,7 @@ async def check_tables(db: Session = Depends(get_db)):
             column_result = db.execute(
                 text(f"""
                 SELECT column_name, data_type, is_nullable
-                FROM information_schema.columns 
+                FROM information_schema.columns
                 WHERE table_name = '{table}'
                 ORDER BY ordinal_position
             """)

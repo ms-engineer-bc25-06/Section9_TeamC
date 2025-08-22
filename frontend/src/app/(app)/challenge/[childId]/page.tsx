@@ -13,7 +13,6 @@ import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import {
   ArrowRight,
-  // 新しく追加するアイコン
   Droplets,
   Flower,
   HelpCircle,
@@ -25,7 +24,54 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+
+// Web Speech APIの型定義を追加
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
+  }
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onstart: ((this: SpeechRecognition, ev: Event) => void) | null;
+  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void) | null;
+  onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void) | null;
+  onend: ((this: SpeechRecognition, ev: Event) => void) | null;
+  start(): void;
+  stop(): void;
+}
+
+interface SpeechRecognitionEvent extends Event {
+  resultIndex: number;
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  isFinal: boolean;
+  length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+}
 
 export default function ChallengePage() {
   const params = useParams();
@@ -39,28 +85,14 @@ export default function ChallengePage() {
   const { children, isLoading } = useChildren();
 
   // state管理用のHooks
-  const [isRecording, setIsRecording] = useState(false);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [transcription, setTranscription] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const [showMamaPhraseDialog, setShowMamaPhraseDialog] = useState(false);
   const [showChildPhraseDialog, setShowChildPhraseDialog] = useState(false);
 
-  // ref用のHooks
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-
-  // effect用のHooks（クリーンアップ処理）
-  useEffect(() => {
-    return () => {
-      // コンポーネントがアンマウントされる時、録音中なら停止
-      if (mediaRecorderRef.current && isRecording) {
-        mediaRecorderRef.current.stop();
-      }
-    };
-  }, [isRecording]);
-
-  // ★ 全てのHooksを呼び出した後で、条件分岐による表示制御を行う
-  // これにより、毎回同じ順序・同じ数のHooksが呼ばれることを保証
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   // 子供の名前を取得（UUIDで検索）
   const child = children.find((c) => c.id === childId);
@@ -88,59 +120,88 @@ export default function ChallengePage() {
     );
   }
 
-  // 録音開始処理
-  const startRecording = async () => {
+  // 録音開始処理 Web Speech API
+  const startListening = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
+      const SpeechRecognitionConstructor = (window.SpeechRecognition ||
+        window.webkitSpeechRecognition) as {
+        new (): SpeechRecognition;
+      };
+      if (!SpeechRecognitionConstructor) {
+        alert('お使いのブラウザは音声認識に対応していません。');
+        return;
+      }
 
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
+      recognitionRef.current = new SpeechRecognitionConstructor();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+      recognitionRef.current.lang = 'ja-JP';
+
+      recognitionRef.current.onstart = () => {
+        setIsListening(true);
+        setTranscription('');
       };
 
-      mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        setAudioBlob(blob);
-        stream.getTracks().forEach((track) => track.stop());
+      recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+        let finalTranscript = '';
+        let interimTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        setTranscription(finalTranscript + interimTranscript);
       };
 
-      mediaRecorderRef.current.start();
-      setIsRecording(true);
-      setAudioBlob(null);
+      recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
+        console.error('音声認識エラー:', event.error);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current.start();
     } catch (error) {
-      console.error('マイクへのアクセスに失敗しました:', error);
-      alert('マイクへのアクセスを許可してください。');
+      console.error('音声認識の開始に失敗:', error);
+      alert('音声認識を開始できませんでした。');
     }
   };
 
   // 録音停止処理
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
     }
   };
 
   // 録音保存処理
-  const saveRecording = async () => {
-    if (!audioBlob) {
-      alert('保存する録音データがありません。');
+  const saveTranscription = async () => {
+    if (!transcription.trim()) {
+      alert('文字起こしされた内容がありません。');
       return;
     }
 
-    setIsUploading(true);
+    setIsProcessing(true);
 
     try {
-      // サーバーに音声データを送信して文字起こし
-      const result = await api.voice.transcribe(audioBlob, childId);
-      // 結果画面に遷移
+      // 直接文字起こしテキストを送信
+      const result = await api.voice.saveTranscription({
+        childId,
+        transcription,
+      });
       router.push(`/record/${result.transcript_id}`);
     } catch (error) {
-      console.error('録音の保存に失敗しました:', error);
-      alert('録音の保存に失敗しました。もう一度お試しください。');
+      console.error('文字起こしの保存に失敗:', error);
+      alert('保存に失敗しました。もう一度お試しください。');
     } finally {
-      setIsUploading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -163,9 +224,9 @@ export default function ChallengePage() {
         <div className="mb-8 flex flex-col items-center">
           {/* チャレンジ中テキスト */}
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 text-center">
-            {isRecording
+            {isListening
               ? 'チャレンジ中・・・'
-              : audioBlob
+              : transcription
                 ? 'お疲れさま！保存するをおしてね'
                 : `${childName} がんばってね！`}
           </h2>
@@ -188,18 +249,18 @@ export default function ChallengePage() {
 
         {/* 録音ボタン */}
         <div className="flex flex-col items-center">
-          {!audioBlob && (
+          {!transcription && (
             <Button
-              onClick={isRecording ? stopRecording : startRecording}
+              onClick={isListening ? stopListening : startListening}
               className={cn(
                 'w-40 h-40 sm:w-48 sm:h-48 rounded-full flex flex-col items-center justify-center shadow-xl transition-all duration-300',
-                isRecording
+                isListening
                   ? 'bg-red-500 hover:bg-red-600 animate-pulse'
                   : 'bg-blue-400 hover:bg-blue-500'
               )}
               size="icon"
             >
-              {isRecording ? (
+              {isListening ? (
                 <>
                   <Mic className="h-16 w-16 sm:h-20 sm:w-20 text-white" />
                   <span className="mt-2 text-white text-base sm:text-lg font-semibold">
@@ -216,20 +277,27 @@ export default function ChallengePage() {
               )}
             </Button>
           )}
+          {/* 文字起こし結果表示 */}
+          {transcription && (
+            <div className="w-full max-w-md mt-6 p-4 bg-white rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">文字起こし結果</h3>
+              <p className="text-gray-700 bg-gray-50 p-3 rounded border">{transcription}</p>
+            </div>
+          )}
 
           {/* 保存ボタン（録音完了後に表示） */}
-          {audioBlob && (
+          {transcription && (
             <Button
-              onClick={saveRecording}
-              disabled={isUploading}
+              onClick={saveTranscription}
+              disabled={isProcessing}
               className={cn(
                 'py-3 mt-8 text-lg font-semibold rounded-full shadow-md w-40',
-                isUploading
+                isProcessing
                   ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                   : 'bg-green-500 text-white hover:bg-green-600 hover:scale-105'
               )}
             >
-              {isUploading ? (
+              {isProcessing ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                   まっててね...

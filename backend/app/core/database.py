@@ -64,7 +64,7 @@ async def get_async_db() -> AsyncGenerator[AsyncSession, None]:
 async def test_connection():
     try:
         async with AsyncSessionLocal() as session:
-            result = await session.execute(text("SELECT 1"))
+            await session.execute(text("SELECT 1"))
         print("✅ データベース接続成功")
         return True
     except Exception as e:
