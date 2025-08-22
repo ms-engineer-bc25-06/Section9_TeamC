@@ -7,17 +7,18 @@ from app.core.database import get_async_db
 from app.models.child import Child
 from app.models.challenge import Challenge
 from app.services.voice_service import voice_service
+from app.services.ai_feedback_service import AIFeedbackService  # 新しく追加
 from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/api/voice", tags=["voice-transcription"])
 
-
+# AIフィードバックサービスのインスタンス作成
+ai_feedback_service = AIFeedbackService()
 
 # PydanticモデルでJSONを受け取る
 class TranscribeRequest(BaseModel):
     transcript: str  # Web Speech APIから送る文字起こし結果
     child_id: str    # 子どものUUID
-
 
 
 @router.get("/test")
@@ -61,9 +62,12 @@ async def transcribe_text(
 
         child_name = child.nickname or child.name or "お子さま"
 
-        # AIフィードバック生成
+        # AIフィードバック生成（統合されたサービスを使用）
         try:
-            feedback = await voice_service.generate_feedback(transcript, child_name)
+            feedback = await ai_feedback_service.generate_feedback(
+                transcript=transcript, 
+                feedback_type="english_challenge"  # 英語チャレンジ用の高品質プロンプト
+            )
         except Exception as e:
             print(f"⚠️ AIフィードバック生成に失敗、デフォルトメッセージを使用: {e}")
             feedback = f"「{transcript}」と話してくれてありがとう！とても上手に話せていますね。これからも頑張ってください！"
@@ -102,7 +106,8 @@ async def transcribe_text(
         return JSONResponse(
             status_code=500,
             content={"detail": "AIフィードバック生成中にエラーが発生しました", "error_code": "AI_FEEDBACK_ERROR"}
-       
+        )
+
 
 @router.get("/transcript/{transcript_id}")
 async def get_transcript(transcript_id: str, db: AsyncSession = Depends(get_async_db)):
@@ -185,5 +190,3 @@ async def get_challenge_detail(challenge_id: str, db: AsyncSession = Depends(get
     except Exception as e:
         print(f"❌ チャレンジ詳細取得エラー: {str(e)}")
         raise HTTPException(status_code=500, detail=f"チャレンジ詳細取得エラー: {str(e)}")
-    
-    
