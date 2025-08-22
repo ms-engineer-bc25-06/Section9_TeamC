@@ -12,7 +12,16 @@ vi.mock('@/hooks/useAuth');
 vi.mock('@/lib/api');
 vi.mock('firebase/auth');
 vi.mock('next/image', () => ({
-  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: any }) => (
+  default: ({
+    src,
+    alt,
+    ...props
+  }: {
+    src: string;
+    alt: string;
+    [key: string]: string | number | boolean | undefined;
+  }) => (
+    // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={alt} {...props} />
   ),
 }));
