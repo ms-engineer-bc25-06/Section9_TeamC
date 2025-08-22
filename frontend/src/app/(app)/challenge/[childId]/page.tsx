@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Web Speech APIの型定義を追加
 declare global {
@@ -88,11 +88,31 @@ export default function ChallengePage() {
   const [isListening, setIsListening] = useState(false);
   const [transcription, setTranscription] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [shouldKeepListening, setShouldKeepListening] = useState(false); // 録音継続フラグ
+  const [accumulatedTranscript, setAccumulatedTranscript] = useState(''); // 累積された文字起こし
+  const [lastSpeechTime, setLastSpeechTime] = useState(Date.now()); // 最後の発話時刻
 
   const [showMamaPhraseDialog, setShowMamaPhraseDialog] = useState(false);
   const [showChildPhraseDialog, setShowChildPhraseDialog] = useState(false);
-
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  useEffect(() => {
+    const cleanup = () => {
+      setShouldKeepListening(false);
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
+    };
+    const handleBeforeUnload = () => {
+      cleanup();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      cleanup();
+    };
+  }, []);
 
   // 子供の名前を取得（UUIDで検索）
   const child = children.find((c) => c.id === childId);
@@ -131,54 +151,142 @@ export default function ChallengePage() {
         alert('お使いのブラウザは音声認識に対応していません。');
         return;
       }
+      // フラグを設定：録音を継続する意思を示す
+      setShouldKeepListening(true);
+      setAccumulatedTranscript(''); // 累積テキストをリセット
+      setTranscription('');
+      setLastSpeechTime(Date.now());
 
-      recognitionRef.current = new SpeechRecognitionConstructor();
-      recognitionRef.current.continuous = true;
-      recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = 'ja-JP';
+      const startRecognition = () => {
+        recognitionRef.current = new SpeechRecognitionConstructor();
+        recognitionRef.current.continuous = true;
+        recognitionRef.current.interimResults = true;
+        recognitionRef.current.lang = 'ja-JP';
 
-      recognitionRef.current.onstart = () => {
-        setIsListening(true);
-        setTranscription('');
-      };
+        recognitionRef.current.onstart = () => {
+          console.log('音声認識開始');
+          setIsListening(true);
+        };
 
-      recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
-        let finalTranscript = '';
-        let interimTranscript = '';
+        recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+          let finalTranscript = '';
+          let interimTranscript = '';
 
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript;
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript;
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+
+          // 確定したテキストがある場合
+          if (finalTranscript) {
+            const currentTime = Date.now();
+            const timeSinceLastSpeech = currentTime - lastSpeechTime;
+            setAccumulatedTranscript((prev) => {
+              // 前回の発話から3秒以上経過している場合は改行を追加
+              const separator = timeSinceLastSpeech > 3000 && prev.length > 0 ? '\n\n' : '';
+              return prev + separator + finalTranscript;
+            });
+
+            setLastSpeechTime(currentTime);
+          }
+
+          // 表示用のテキストを更新（累積 + 暫定）
+          const currentTime = Date.now();
+          const timeSinceLastSpeech = currentTime - lastSpeechTime;
+
+          // 累積されたテキスト + 新しい確定テキスト + 暫定テキスト
+          let displayText = accumulatedTranscript;
+
+          if (finalTranscript) {
+            // 3秒以上経過していて、既にテキストがある場合は改行を追加
+            const separator =
+              timeSinceLastSpeech > 3000 && accumulatedTranscript.length > 0 ? '\n\n' : '';
+            displayText += separator + finalTranscript;
+          }
+
+          if (interimTranscript) {
+            displayText += ' ' + interimTranscript;
+          }
+
+          setTranscription(displayText);
+        };
+        recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
+          console.error('音声認識エラー:', event.error);
+
+          // どんなエラーが発生しても、shouldKeepListeningがtrueなら再開
+          if (shouldKeepListening) {
+            console.log('エラー後再開:', event.error);
+            setTimeout(() => {
+              if (shouldKeepListening) {
+                startRecognition(); // 再帰的に再開
+              }
+            }, 500);
+          }
+        };
+
+        recognitionRef.current.onend = () => {
+          console.log('音声認識終了');
+
+          // shouldKeepListeningがtrueの間は絶対に再開
+          if (shouldKeepListening) {
+            console.log('自動再開実行');
+            setTimeout(() => {
+              if (shouldKeepListening) {
+                startRecognition(); // 再帰的に再開
+              }
+            }, 100);
           } else {
-            interimTranscript += transcript;
+            // 手動停止された場合のみ完全停止
+            setIsListening(false);
+            console.log('録音完全停止');
+          }
+        };
+        try {
+          recognitionRef.current.start();
+        } catch (error) {
+          console.error('音声認識の開始に失敗:', error);
+
+          // 開始に失敗しても再試行
+          if (shouldKeepListening) {
+            setTimeout(() => {
+              if (shouldKeepListening) {
+                startRecognition();
+              }
+            }, 1000);
           }
         }
-
-        setTranscription(finalTranscript + interimTranscript);
       };
-
-      recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
-        console.error('音声認識エラー:', event.error);
-        setIsListening(false);
-      };
-
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current.start();
+      // 初回開始
+      startRecognition();
     } catch (error) {
-      console.error('音声認識の開始に失敗:', error);
+      console.error('音声認識の初期化に失敗:', error);
       alert('音声認識を開始できませんでした。');
+      setShouldKeepListening(false);
+      setIsListening(false);
     }
   };
 
   // 録音停止処理
   const stopListening = () => {
+    console.log('手動停止実行');
+    // 最重要：継続フラグをfalseにして再開を完全に停止
+    setShouldKeepListening(false);
+
+    // 現在の認識を停止
     if (recognitionRef.current) {
       recognitionRef.current.stop();
+      recognitionRef.current = null;
     }
+    // 最終的な文字起こし結果を設定
+    if (accumulatedTranscript) {
+      setTranscription(accumulatedTranscript);
+    }
+    setIsListening(false);
+    console.log('録音完全停止完了');
   };
 
   // 録音保存処理
@@ -281,12 +389,20 @@ export default function ChallengePage() {
           {transcription && (
             <div className="w-full max-w-md mt-6 p-4 bg-white rounded-lg shadow-md">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">文字起こし結果</h3>
-              <p className="text-gray-700 bg-gray-50 p-3 rounded border">{transcription}</p>
+              <div className="text-gray-700 bg-gray-50 p-3 rounded border max-h-60 overflow-y-auto whitespace-pre-line">
+                {transcription}
+              </div>
+              {/* 録音状態の説明追加 */}
+              {isListening && (
+                <p className="text-sm text-blue-600 mt-2">
+                  📍 まだ録音中です。「ストップ」を押すと終了します。
+                </p>
+              )}
             </div>
           )}
 
           {/* 保存ボタン（録音完了後に表示） */}
-          {transcription && (
+          {transcription && !isListening && (
             <Button
               onClick={saveTranscription}
               disabled={isProcessing}
