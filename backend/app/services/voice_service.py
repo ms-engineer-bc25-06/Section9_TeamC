@@ -2,7 +2,6 @@ import os
 import tempfile
 import openai
 from fastapi import HTTPException
-from typing import Optional
 
 
 class VoiceService:

@@ -4,7 +4,7 @@ import { useChildren } from '@/hooks/useChildren';
 import { useEffect } from 'react';
 
 export default function DebugPage() {
-  const { children, isLoading, error } = useChildren();
+  const { children, isLoading } = useChildren();
 
   useEffect(() => {
     if (!isLoading && children.length > 0) {

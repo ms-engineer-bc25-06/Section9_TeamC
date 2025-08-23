@@ -1,5 +1,4 @@
 # コード品質チェック用ワークフロー
-# エラーが出た場合は、ログをよく読み、必要に応じて依存パッケージのインストールや設定を見直してください。
 name: Lint & Format Check
 
 on:
@@ -11,32 +10,53 @@ on:
 jobs:
   lint-frontend:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    
     steps:
       - name: リポジトリをチェックアウト
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+      
       - name: Node.jsをセットアップ
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
       - name: 依存パッケージをインストール
-        run: cd frontend && npm install
-      - name: ESLintでコードチェック
-        run: cd frontend && npx eslint . --ext .ts,.tsx
-      - name: Prettierで自動整形チェック
-        run: cd frontend && npx prettier --check .
+        run: npm ci
+      
+      - name: ESLintでコードチェック（ローカルと同じ設定）
+        run: npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0
+      
+      - name: Prettierでフォーマットチェック
+        run: npx prettier --check .
 
   lint-backend:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    
     steps:
       - name: リポジトリをチェックアウト
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+      
       - name: Pythonをセットアップ
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
-      - name: 依存パッケージをインストール
-        run: pip install -r backend/requirements-dev.txt
+          python-version: "3.11.13"
+          cache: 'pip'
+      
+      - name: 依存関係をインストール
+        run: |
+          pip install -r requirements.txt
+          pip install ruff
+      
       - name: Ruffでコードチェック
-        run: ruff check backend/
-      - name: autopep8で自動整形チェック
-        run: autopep8 --diff --recursive backend/
+        run: ruff check . --diff
+      
+      - name: Ruffでフォーマットチェック
+        run: ruff format . --check
