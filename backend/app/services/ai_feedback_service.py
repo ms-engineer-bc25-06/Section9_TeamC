@@ -10,13 +10,13 @@ class AIFeedbackService:
         self.client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     async def generate_feedback(
-        self, 
-        transcript: str, 
+        self,
+        transcript: str,
         child_age: Optional[int] = None,
-        feedback_type: str = "english_challenge"
+        feedback_type: str = "english_challenge",
     ) -> str:
         """統合されたAIフィードバック生成"""
-        
+
         if feedback_type == "english_challenge":
             return await self._generate_english_challenge_feedback(transcript, child_age)
         elif feedback_type == "general":
@@ -25,9 +25,7 @@ class AIFeedbackService:
             return await self._generate_english_challenge_feedback(transcript, child_age)
 
     async def _generate_english_challenge_feedback(
-        self, 
-        transcript: str, 
-        child_age: Optional[int] = None
+        self, transcript: str, child_age: Optional[int] = None
     ) -> str:
         """英語チャレンジ用フィードバック"""
 
@@ -71,12 +69,13 @@ class AIFeedbackService:
             print(f"❌ AIフィードバック生成エラー: {e}")
             print(f"❌ エラータイプ: {type(e).__name__}")
             import traceback
+
             print(f"❌ トレースバック: {traceback.format_exc()}")
             return f"'{transcript}' とても上手に話せたね！次回も頑張ろう！😊"
 
     async def _generate_general_feedback(self, transcribed_text: str) -> str:
         """一般的なフィードバック"""
-        
+
         try:
             prompt = f"""
 あなたは優しい先生です。子供が話した内容を聞いて、温かく励ましのフィードバックをしてください。
@@ -93,10 +92,10 @@ class AIFeedbackService:
 """
 
             response = await self._call_openai_api_with_system(
-                prompt, 
+                prompt,
                 system_message="あなたは子供たちを励ます優しい先生です。",
                 model="gpt-3.5-turbo",
-                max_tokens=300
+                max_tokens=300,
             )
 
             return response.choices[0].message.content.strip()
@@ -120,11 +119,7 @@ class AIFeedbackService:
         return await loop.run_in_executor(None, _sync_call)
 
     async def _call_openai_api_with_system(
-        self, 
-        prompt: str, 
-        system_message: str,
-        model: str = "gpt-4o-mini",
-        max_tokens: int = 150
+        self, prompt: str, system_message: str, model: str = "gpt-4o-mini", max_tokens: int = 150
     ):
         """OpenAI API呼び出し（システムメッセージ付き）"""
         loop = asyncio.get_event_loop()

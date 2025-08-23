@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, BackgroundTasks, Form
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from uuid import UUID
@@ -6,7 +6,6 @@ from pydantic import BaseModel
 from app.core.database import get_async_db
 from app.models.child import Child
 from app.models.challenge import Challenge
-from app.services.voice_service import voice_service
 from app.services.ai_feedback_service import AIFeedbackService  # 新しく追加
 from fastapi.responses import JSONResponse
 
@@ -15,10 +14,11 @@ router = APIRouter(prefix="/api/voice", tags=["voice-transcription"])
 # AIフィードバックサービスのインスタンス作成
 ai_feedback_service = AIFeedbackService()
 
+
 # PydanticモデルでJSONを受け取る
 class TranscribeRequest(BaseModel):
     transcript: str  # Web Speech APIから送る文字起こし結果
-    child_id: str    # 子どものUUID
+    child_id: str  # 子どものUUID
 
 
 @router.get("/test")
@@ -28,16 +28,13 @@ def test_endpoint():
 
 
 @router.post("/transcribe")
-async def transcribe_text(
-    request: TranscribeRequest,
-    db: AsyncSession = Depends(get_async_db)
-):
+async def transcribe_text(request: TranscribeRequest, db: AsyncSession = Depends(get_async_db)):
     """文字起こし結果を受け取りDBに保存し、AIフィードバックを生成"""
     transcript = request.transcript
     child_id = request.child_id
 
     # デバッグ用ログを追加
-    print(f"🔍 リクエスト受信:")
+    print("🔍 リクエスト受信:")
     print(f"  - child_id: '{child_id}' (type: {type(child_id)})")
     print(f"  - transcript length: {len(transcript) if transcript else 0}")
 
@@ -48,14 +45,11 @@ async def transcribe_text(
         if not child:
             return JSONResponse(
                 status_code=404,
-                content={"detail": "子供が見つかりません", "error_code": "CHILD_NOT_FOUND"}
+                content={"detail": "子供が見つかりません", "error_code": "CHILD_NOT_FOUND"},
             )
 
         # Challenge作成
-        challenge = Challenge(
-            child_id=child_uuid,
-            transcript=transcript
-        )
+        challenge = Challenge(child_id=child_uuid, transcript=transcript)
         db.add(challenge)
         await db.commit()
         await db.refresh(challenge)
@@ -65,8 +59,8 @@ async def transcribe_text(
         # AIフィードバック生成（統合されたサービスを使用）
         try:
             feedback = await ai_feedback_service.generate_feedback(
-                transcript=transcript, 
-                feedback_type="english_challenge"  # 英語チャレンジ用の高品質プロンプト
+                transcript=transcript,
+                feedback_type="english_challenge",  # 英語チャレンジ用の高品質プロンプト
             )
         except Exception as e:
             print(f"⚠️ AIフィードバック生成に失敗、デフォルトメッセージを使用: {e}")
@@ -83,8 +77,7 @@ async def transcribe_text(
         # UUID変換エラーの場合
         print(f"❌ UUID変換エラー: {str(e)}")
         return JSONResponse(
-            status_code=400,
-            content={"detail": "無効なchild_idです", "error_code": "INVALID_UUID"}
+            status_code=400, content={"detail": "無効なchild_idです", "error_code": "INVALID_UUID"}
         )
 
     except Exception as e:
@@ -95,7 +88,7 @@ async def transcribe_text(
         print(f"❌ エラー詳細: {error_details}")
 
         # エラーの場合もChallengeを更新しておく
-        if 'challenge' in locals():
+        if "challenge" in locals():
             try:
                 setattr(challenge, "comment", f"AIフィードバック生成エラー: {str(e)}")
                 db.add(challenge)
@@ -105,7 +98,10 @@ async def transcribe_text(
 
         return JSONResponse(
             status_code=500,
-            content={"detail": "AIフィードバック生成中にエラーが発生しました", "error_code": "AI_FEEDBACK_ERROR"}
+            content={
+                "detail": "AIフィードバック生成中にエラーが発生しました",
+                "error_code": "AI_FEEDBACK_ERROR",
+            },
         )
 
 
