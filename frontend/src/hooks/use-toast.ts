@@ -24,7 +24,6 @@ const actionTypes = {
   REMOVE_TOAST: 'REMOVE_TOAST',
 } as const;
 
-type ActionType = keyof typeof actionTypes;
 
 type Action =
   | { type: typeof actionTypes.ADD_TOAST; toast: ToasterToast }

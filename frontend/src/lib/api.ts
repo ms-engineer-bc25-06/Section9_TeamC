@@ -310,7 +310,7 @@ export const api = {
         let errorData;
         try {
           errorData = await res.json();
-        } catch (jsonError) {
+        } catch {
           // JSON形式でない場合のフォールバック
           errorData = { detail: `保存に失敗しました(${res.status})` };
         }
@@ -346,7 +346,7 @@ export const api = {
           let errorData;
           try {
             errorData = await res.json();
-          } catch (jsonError) {
+          } catch {
             // JSON形式でない場合のフォールバック
             errorData = { detail: `文字起こしに失敗しました(${res.status})` };
           }
@@ -379,7 +379,7 @@ export const api = {
           let errorData;
           try {
             errorData = await res.json();
-          } catch (jsonError) {
+          } catch {
             // JSON形式でない場合のフォールバック
             errorData = { detail: '音声認識結果の取得に失敗しました' };
           }
@@ -405,7 +405,7 @@ export const api = {
           let errorData;
           try {
             errorData = await res.json();
-          } catch (jsonError) {
+          } catch {
             // JSON形式でない場合のフォールバック
             errorData = { detail: '音声履歴の取得に失敗しました' };
           }
