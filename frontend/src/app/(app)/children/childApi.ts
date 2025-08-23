@@ -1,15 +1,3 @@
-type CreateChildRequest = {
-  nickname: string;
-  birth_date?: string;
-};
-
-type CreateChildResponse = {
-  id: string;
-  nickname: string;
-  birth_date?: string;
-  age?: number;
-};
-
 export async function createChild(data: { nickname: string; birth_date?: string }, token: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/children`, {
     method: 'POST',
@@ -19,11 +7,9 @@ export async function createChild(data: { nickname: string; birth_date?: string 
     },
     body: JSON.stringify(data),
   });
-
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || '子ども登録に失敗しました');
   }
-
   return res.json();
 }

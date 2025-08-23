@@ -1,4 +1,17 @@
 {
   "extends": ["next"],
-  "ignorePatterns": [".next", "node_modules", "dist", "build"]
+  "ignorePatterns": [".next", "node_modules", "dist", "build"],
+  "overrides": [
+    {
+      "files": [
+        "src/__tests__/**/*",
+        "src/**/*.test.{ts,tsx}",
+        "**/__tests__/**/*",
+        "**/*.test.{ts,tsx}"
+      ],
+      "rules": {
+        "@next/next/no-img-element": "off"
+      }
+    }
+  ]
 }
