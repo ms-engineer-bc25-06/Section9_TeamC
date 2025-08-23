@@ -47,7 +47,7 @@ jobs:
       - name: Pythonをセットアップ
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.11.13"
           cache: 'pip'
       
       - name: 依存関係をインストール
