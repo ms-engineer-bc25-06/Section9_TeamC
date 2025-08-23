@@ -1,17 +1,14 @@
-#!/usr/bin/env sh
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+set -e
 
 echo "🔍 Running pre-push checks..."
 
 echo "📝 Running mypy type checking..."
-cd backend && source venv/bin/activate && mypy . || {
-  echo "❌ Type checking failed!"
-  exit 1
-}
+docker compose exec -T backend sh -lc "mypy ."
 
 echo "🧪 Running pytest..."
-cd backend && source venv/bin/activate && pytest || {
-  echo "❌ Tests failed!"
-  exit 1
-}
+docker compose exec -T backend sh -lc "pytest tests/ -v"
 
 echo "✅ Pre-push checks completed!"
