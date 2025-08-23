@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.core.database import get_db
 from app.utils.auth import verify_firebase_token
+from fastapi.security import HTTPAuthorizationCredentials
 from app.services.user_service import UserService
 from app.api.routers import children, auth, ai_feedback
 from app.api.voice.transcription import router as voice_router
@@ -38,7 +39,8 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="idToken is required")
 
         # Firebase トークン検証
-        decoded_token = await verify_firebase_token(token)
+        credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
+        decoded_token = await verify_firebase_token(credentials)
         uid = decoded_token["uid"]
         email = decoded_token.get("email", "")
         name = decoded_token.get("name", "")

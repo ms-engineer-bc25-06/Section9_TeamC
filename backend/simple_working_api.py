@@ -2,7 +2,8 @@
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, Engine
+from typing import Optional
 from sqlalchemy.orm import sessionmaker, Session
 
 # FastAPI設定
@@ -21,6 +22,7 @@ DATABASE_URL = "postgresql://bud_user:bud_password@localhost:5432/bud_db"
 
 print(f"🔍 データベース接続URL: {DATABASE_URL}")
 
+engine: Optional[Engine] = None
 try:
     engine = create_engine(DATABASE_URL)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
