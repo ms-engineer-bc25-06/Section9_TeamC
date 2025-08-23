@@ -20,3 +20,5 @@ jinja2==3.1.2
 aiofiles==23.2.1
 openai>=1.0.0
 psycopg2-binary
+ruff==0.12.10
+mypy
