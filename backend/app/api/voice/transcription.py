@@ -73,7 +73,7 @@ async def transcribe_text(
             feedback = f"「{transcript}」と話してくれてありがとう！とても上手に話せていますね。これからも頑張ってください！"
 
         # Challenge更新
-        challenge.comment = feedback
+        setattr(challenge, "comment", feedback)
         db.add(challenge)
         await db.commit()
 
@@ -97,7 +97,7 @@ async def transcribe_text(
         # エラーの場合もChallengeを更新しておく
         if 'challenge' in locals():
             try:
-                challenge.comment = f"AIフィードバック生成エラー: {str(e)}"
+                setattr(challenge, "comment", f"AIフィードバック生成エラー: {str(e)}")
                 db.add(challenge)
                 await db.commit()
             except Exception as commit_error:

@@ -40,14 +40,14 @@ async def generate_feedback_for_challenge(challenge_id: str, db: Session = Depen
         # AIフィードバック生成
         ai_service = AIFeedbackService()
         new_feedback = await ai_service.generate_feedback(
-            transcript=challenge.transcript, child_age=child_age
+            transcript=str(challenge.transcript), child_age=child_age
         )
 
         # 元のコメントを保存
         original_comment = challenge.comment
 
         # commentカラムを更新
-        challenge.comment = new_feedback
+        setattr(challenge, "comment", new_feedback)
         db.commit()
 
         return {
@@ -90,7 +90,7 @@ async def preview_feedback(challenge_id: str, db: Session = Depends(get_db)):
     try:
         ai_service = AIFeedbackService()
         preview_feedback = await ai_service.generate_feedback(
-            transcript=challenge.transcript, child_age=child_age
+            transcript=str(challenge.transcript), child_age=child_age
         )
 
         return {
@@ -151,11 +151,11 @@ async def auto_analyze_challenges(db: Session = Depends(get_db)):
 
                 # AI分析実行
                 feedback = await ai_service.generate_feedback(
-                    transcript=challenge.transcript, child_age=child_age
+                    transcript=str(challenge.transcript), child_age=child_age
                 )
 
                 # commentに保存
-                challenge.comment = feedback
+                setattr(challenge, "comment", feedback)
                 success_count += 1
 
             except Exception as e:

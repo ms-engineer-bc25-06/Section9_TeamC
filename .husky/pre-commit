@@ -1,8 +1,12 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
 
-echo "🔍 Running pre-commit checks..."
+set -e
 
-npx lint-staged
+echo "🎨 FE: lint-staged"
+npx lint-staged --cwd frontend --config frontend/.lintstagedrc.cjs
+
+echo "🐍 BE: ruff"
+docker compose exec -T backend sh -lc "ruff check --fix . && ruff format ."
 
 echo "✅ Pre-commit checks completed!"
