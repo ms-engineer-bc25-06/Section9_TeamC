@@ -21,3 +21,4 @@ aiofiles==23.2.1
 openai>=1.0.0
 psycopg2-binary
 ruff
+mypy
