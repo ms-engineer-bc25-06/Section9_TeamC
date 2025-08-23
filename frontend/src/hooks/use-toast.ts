@@ -24,14 +24,11 @@ const actionTypes = {
   REMOVE_TOAST: 'REMOVE_TOAST',
 } as const;
 
-
 type Action =
   | { type: typeof actionTypes.ADD_TOAST; toast: ToasterToast }
   | { type: typeof actionTypes.UPDATE_TOAST; toast: Partial<ToasterToast> }
   | { type: typeof actionTypes.DISMISS_TOAST; toastId?: ToasterToast['id'] }
   | { type: typeof actionTypes.REMOVE_TOAST; toastId?: ToasterToast['id'] };
-
-
 
 interface State {
   toasts: ToasterToast[];
@@ -60,16 +57,13 @@ const addToRemoveQueue = (toastId: string) => {
 // ------------------ Reducer ------------------
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
-
     case actionTypes.ADD_TOAST:
-
       return {
         ...state,
         toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
       };
 
     case actionTypes.UPDATE_TOAST:
-
       return {
         ...state,
         toasts: state.toasts.map((t) => (t.id === action.toast.id ? { ...t, ...action.toast } : t)),
@@ -80,9 +74,7 @@ export const reducer = (state: State, action: Action): State => {
       if (toastId) {
         addToRemoveQueue(toastId);
       } else {
-
         state.toasts.forEach((t) => addToRemoveQueue(t.id));
-
       }
       return {
         ...state,
@@ -137,7 +129,6 @@ function toast(props: Toast) {
   });
 
   return { id, dismiss, update };
-
 }
 
 // ------------------ Hook ------------------
@@ -153,7 +144,6 @@ function useToast() {
     };
   }, []);
 
-
   return {
     ...state,
     toast,
@@ -163,4 +153,3 @@ function useToast() {
 }
 
 export { toast, useToast };
-
