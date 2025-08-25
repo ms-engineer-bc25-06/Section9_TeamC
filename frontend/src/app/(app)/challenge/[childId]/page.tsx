@@ -388,10 +388,15 @@ export default function ChallengePage() {
           {/* 文字起こし結果表示 */}
           {transcription && (
             <div className="w-full max-w-md mt-6 p-4 bg-white rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">文字起こし結果</h3>
-              <div className="text-gray-700 bg-gray-50 p-3 rounded border max-h-60 overflow-y-auto whitespace-pre-line">
-                {transcription}
-              </div>
+               <h3 className="text-lg font-semibold text-gray-800 mb-2">文字起こし結果</h3>
+
+               <div className="space-y-2">
+                 {transcription.split('\n').map((line, index) => (
+                   <p key={index} className="text-gray-700 bg-gray-50 p-2 rounded border">
+                     {line}
+                   </p>
+                  ))}
+                </div>
               {/* 録音状態の説明追加 */}
               {isListening && (
                 <p className="text-sm text-blue-600 mt-2">
