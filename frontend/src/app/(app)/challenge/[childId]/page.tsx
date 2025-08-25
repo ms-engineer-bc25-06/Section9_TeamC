@@ -327,6 +327,35 @@ export default function ChallengePage() {
         </Link>
       </header>
 
+      {/* マーキー表示エリア（文字起こし結果がある時のみ表示） */}
+      {transcription && (
+        <div className="w-full max-w-xl mb-4">
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-md border border-blue-200">
+            <div className="text-xs text-gray-500 mb-1 text-center">📝 文字起こし結果</div>
+            <div
+              className="overflow-hidden whitespace-nowrap bg-gradient-to-r from-blue-50 to-purple-50 rounded-md p-2 border"
+              style={{ height: '40px', display: 'flex', alignItems: 'center' }}
+            >
+              <div
+                className="text-gray-800 font-medium animate-marquee"
+                style={{
+                  animation: 'marquee 20s linear infinite',
+                  minWidth: '100%',
+                }}
+              >
+                {transcription.replace(/\n+/g, ' 🔸 ')}
+              </div>
+            </div>
+            {isListening && (
+              <div className="text-xs text-blue-600 text-center mt-1 flex items-center justify-center">
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse mr-2"></div>
+                録音中...
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* メインコンテンツ */}
       <main className="flex flex-1 flex-col items-center justify-center w-full max-w-xl pt-2 pb-4">
         <div className="mb-8 flex flex-col items-center">
@@ -385,25 +414,17 @@ export default function ChallengePage() {
               )}
             </Button>
           )}
-          {/* 文字起こし結果表示 */}
-          {transcription && (
-            <div className="w-full max-w-md mt-6 p-4 bg-white rounded-lg shadow-md">
-               <h3 className="text-lg font-semibold text-gray-800 mb-2">文字起こし結果</h3>
 
-               <div className="space-y-2">
-                 {transcription.split('\n').map((line, index) => (
-                   <p key={index} className="text-gray-700 bg-gray-50 p-2 rounded border">
-                     {line}
-                   </p>
-                  ))}
-                </div>
-              {/* 録音状態の説明追加 */}
-              {isListening && (
-                <p className="text-sm text-blue-600 mt-2">
-                  📍 まだ録音中です。「ストップ」を押すと終了します。
-                </p>
-              )}
-            </div>
+          {/* 録音中でも表示する簡易ストップボタン（文字起こし結果がある時） */}
+          {transcription && isListening && (
+            <Button
+              onClick={stopListening}
+              className="w-32 h-32 rounded-full flex flex-col items-center justify-center shadow-xl bg-red-500 hover:bg-red-600 animate-pulse"
+              size="icon"
+            >
+              <Mic className="h-12 w-12 text-white" />
+              <span className="mt-1 text-white text-sm font-semibold">ストップ</span>
+            </Button>
           )}
 
           {/* 保存ボタン（録音完了後に表示） */}
@@ -430,6 +451,25 @@ export default function ChallengePage() {
                 </>
               )}
             </Button>
+          )}
+
+          {/* 詳細な文字起こし結果表示（折りたたみ可能） */}
+          {transcription && !isListening && (
+            <details className="w-full max-w-md mt-6">
+              <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800 p-2 bg-white/50 rounded-md border border-gray-200">
+                📄 詳細を見る（クリックで展開）
+              </summary>
+              <div className="mt-2 p-4 bg-white rounded-lg shadow-md">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">文字起こし詳細</h3>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {transcription.split('\n').map((line, index) => (
+                    <p key={index} className="text-gray-700 bg-gray-50 p-2 rounded border text-sm">
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </details>
           )}
         </div>
 
@@ -503,6 +543,27 @@ export default function ChallengePage() {
           </Button>
         </DialogContent>
       </Dialog>
+
+      {/* マーキーアニメーション用のCSS */}
+      <style jsx>{`
+        @keyframes marquee {
+          0% {
+            transform: translateX(100%);
+          }
+          100% {
+            transform: translateX(-100%);
+          }
+        }
+
+        .animate-marquee {
+          animation: marquee 20s linear infinite;
+        }
+
+        /* 長いテキストの場合はスピードを調整 */
+        .animate-marquee:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
     </div>
   );
 }
