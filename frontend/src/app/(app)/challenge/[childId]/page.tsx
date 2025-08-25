@@ -388,23 +388,41 @@ export default function ChallengePage() {
           {/* 文字起こし結果表示 */}
           {transcription && (
             <div className="w-full max-w-md mt-6 p-4 bg-white rounded-lg shadow-md">
-               <h3 className="text-lg font-semibold text-gray-800 mb-2">文字起こし結果</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">文字起こし結果</h3>
 
-               <div className="space-y-2">
-                 {transcription.split('\n').map((line, index) => (
-                   <p key={index} className="text-gray-700 bg-gray-50 p-2 rounded border">
+              <div className="space-y-2">
+                {transcription.split('\n').map((line, index) => {
+                  if (!line.trim()) return null; // 空行はスキップ
+
+                  // 1文字0.3秒、最低5秒（短すぎないようにする）
+                  const duration = Math.max(5, line.length * 0.3);
+
+                 return (
+                  <div
+                    key={index}
+                    className="relative overflow-hidden h-10 bg-gray-50 p-2 rounded border"
+                  >
+                    <p
+                       className="whitespace-nowrap"
+                       style={{
+                         animation: `marquee ${duration}s linear infinite`,
+                    }}
+                    >
                      {line}
-                   </p>
-                  ))}
+                  </p>
                 </div>
-              {/* 録音状態の説明追加 */}
-              {isListening && (
-                <p className="text-sm text-blue-600 mt-2">
-                  📍 まだ録音中です。「ストップ」を押すと終了します。
-                </p>
-              )}
-            </div>
-          )}
+               );
+             })}
+           </div>
+
+            {isListening && (
+              <p className="text-sm text-blue-600 mt-2">
+                📍 まだ録音中です。「ストップ」を押すと終了します。
+             </p>
+            )}
+          </div>
+        )}
+
 
           {/* 保存ボタン（録音完了後に表示） */}
           {transcription && !isListening && (
