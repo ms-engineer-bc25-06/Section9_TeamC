@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from uuid import UUID
@@ -25,7 +27,6 @@ class TranscribeRequest(BaseModel):
 def test_endpoint():
     """テスト用エンドポイント"""
     return {"message": "Voice API is working", "status": "ok"}
-
 
 @router.post("/transcribe")
 async def transcribe_text(request: TranscribeRequest, db: AsyncSession = Depends(get_async_db)):
@@ -98,6 +99,7 @@ async def transcribe_text(request: TranscribeRequest, db: AsyncSession = Depends
 
         return JSONResponse(
             status_code=500,
+
             content={
                 "detail": "AIフィードバック生成中にエラーが発生しました",
                 "error_code": "AI_FEEDBACK_ERROR",
