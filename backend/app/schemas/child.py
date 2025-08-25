@@ -1,4 +1,5 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
+from pydantic import ConfigDict
 from typing import Optional
 from datetime import datetime, date
 import uuid
@@ -6,7 +7,7 @@ import uuid
 
 class ChildBase(BaseModel):
     nickname: str
-    birth_date: Optional[date] = None
+    birthdate: Optional[date] = Field(default=None, alias="birth_date")  # DB準拠に変更＋alias追加
 
     @field_validator("nickname")
     @classmethod
@@ -17,7 +18,7 @@ class ChildBase(BaseModel):
 
 
 class ChildCreate(ChildBase):
-    pass
+    model_config = ConfigDict(populate_by_name=True)  # alias対応を有効化
 
 
 class Child(ChildBase):  # ChildBaseを継承するので birth_date も含まれる
@@ -25,4 +26,4 @@ class Child(ChildBase):  # ChildBaseを継承するので birth_date も含ま�
     user_id: uuid.UUID
     created_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": True, "populate_by_name": True}  # populate_by_nameを追記
