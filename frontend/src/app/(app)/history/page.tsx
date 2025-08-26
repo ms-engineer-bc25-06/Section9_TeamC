@@ -13,7 +13,7 @@ import { useChildren } from '@/hooks/useChildren';
 import { api } from '@/lib/api';
 import { format, isSameMonth, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { ArrowLeft, CalendarDays, Download } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Download, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -32,6 +32,36 @@ export default function ChallengeHistoryPage() {
   const [thisMonthChallengeCount, setThisMonthChallengeCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // 削除ハンドラー
+  const handleDelete = async (recordId: string) => {
+    if (!confirm('この記録を削除しますか？削除した記録は元に戻せません。')) {
+      return;
+    }
+
+    setDeletingId(recordId);
+
+    try {
+      await api.challenges.delete(recordId);
+
+      // レコードリストから削除
+      setRecords((prev) => prev.filter((record) => record.id !== recordId));
+
+      // 今月のチャレンジ回数を再計算
+      const currentMonth = new Date();
+      const remainingRecords = records.filter((record) => record.id !== recordId);
+      const count = remainingRecords.filter((record) =>
+        isSameMonth(parseISO(record.date), currentMonth)
+      ).length;
+      setThisMonthChallengeCount(count);
+    } catch (error) {
+      console.error('削除エラー:', error);
+      alert('削除中にエラーが発生しました');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   // 子ども選択の初期化
   useEffect(() => {
@@ -185,24 +215,45 @@ export default function ChallengeHistoryPage() {
             records.map((record) => (
               <Card
                 key={record.id}
-                className="w-full rounded-xl bg-white/80 p-4 shadow-md backdrop-blur-sm flex items-center justify-between"
+                className="w-full rounded-xl bg-white/80 p-4 shadow-md backdrop-blur-sm"
               >
-                <CardContent className="p-0 flex items-center">
-                  <CalendarDays className="h-8 w-8 text-purple-400 mr-4 flex-shrink-0" />
-                  <div>
-                    <p className="text-lg font-semibold text-gray-700">
-                      {format(parseISO(record.date), 'yyyy年MM月dd日 (EEE)', { locale: ja })}
-                    </p>
-                    <p className="text-sm text-gray-500">{record.summary}</p>
+                <CardContent className="p-0 flex items-center justify-between">
+                  <div className="flex items-center">
+                    <CalendarDays className="h-8 w-8 text-purple-400 mr-4 flex-shrink-0" />
+                    <div>
+                      <p className="text-lg font-semibold text-gray-700">
+                        {format(parseISO(record.date), 'yyyy年MM月dd日 (EEE)', { locale: ja })}
+                      </p>
+                      <p className="text-sm text-gray-500">{record.summary}</p>
+                    </div>
+                  </div>
+
+                  {/* ボタンエリア */}
+                  <div className="flex items-center space-x-2">
+                    {/* 詳細ボタン */}
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full text-blue-500 border-blue-300 hover:bg-blue-50"
+                    >
+                      <Link href={`/history/${record.childId}/${record.id}`}>詳細</Link>
+                    </Button>
+
+                    {/* 削除ボタン */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(record.id)}
+                      disabled={deletingId === record.id}
+                      className="rounded-full text-red-500 hover:text-red-700 hover:bg-red-50 p-2"
+                      title="記録を削除"
+                    >
+                      <Trash2 size={16} />
+                      {deletingId === record.id && <span className="ml-1 text-xs">削除中...</span>}
+                    </Button>
                   </div>
                 </CardContent>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="rounded-full text-blue-500 border-blue-300 hover:bg-blue-50"
-                >
-                  <Link href={`/history/${record.childId}/${record.id}`}>詳細</Link>
-                </Button>
               </Card>
             ))
           ) : (
