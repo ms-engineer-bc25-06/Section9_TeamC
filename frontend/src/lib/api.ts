@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Firebase認証トークンを取得するヘルパー関数（デバッグ強化版）
 const getAuthHeaders = async (): Promise<Record<string, string>> => {
