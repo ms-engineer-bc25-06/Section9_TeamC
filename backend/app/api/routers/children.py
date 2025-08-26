@@ -36,10 +36,8 @@ async def get_children(
         # ユーザーの子どもリストを取得
         result = db.execute(select(ChildModel).where(ChildModel.user_id == user.id))
         children = result.scalars().all()
-
         # Pydanticモデルに変換して返却
         return [ChildSchema.model_validate(child) for child in children]
-        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -113,7 +111,6 @@ async def create_child(
 
         # Pydanticモデルに変換して返却
         return ChildSchema.model_validate(child)
-        
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -167,8 +164,8 @@ async def update_child(
 
 @router.delete("/{child_id}")
 async def delete_child(
-    child_id: str, 
-    db: Session = Depends(get_db), 
+    child_id: str,
+    db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
     """子ども情報を削除する（関連データも含めて）"""
