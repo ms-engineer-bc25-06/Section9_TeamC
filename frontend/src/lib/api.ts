@@ -509,4 +509,27 @@ export const api = {
       }
     },
   },
+
+  // チャレンジ削除API
+  challenges: {
+    delete: async (challengeId: string) => {
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API_URL}/api/ai-feedback/${challengeId}`, {
+          method: 'DELETE',
+          headers,
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || 'Failed to delete challenge');
+        }
+
+        return res.json();
+      } catch (error) {
+        console.error('チャレンジ記録の削除に失敗:', error);
+        throw error;
+      }
+    },
+  },
 };
