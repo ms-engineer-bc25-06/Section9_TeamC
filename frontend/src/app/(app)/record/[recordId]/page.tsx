@@ -1,4 +1,4 @@
-'use client';
+Copy'use client';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,14 +9,13 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-// API連携用の型定義（フレーズ提案を追加）
+// API連携用の型定義（直後ページ用：シンプル）
 interface RecordData {
   id: string;
   childId: string;
   childName: string;
   timestamp: Date;
   aiFeedback: string;
-  phraseData: { en: string; ja: string } | null; // 新規: フレーズ提案データ
 }
 
 export default function RecordCompletionPage() {
@@ -39,8 +38,8 @@ export default function RecordCompletionPage() {
         setLoading(true);
         setError(null);
 
-        // 振り返りページ用のAPI呼び出し（getChallenge）
-        const data = await api.voice.getChallenge(recordId);
+        // 直後ページ用のAPI呼び出し（getTranscript）
+        const data = await api.voice.getTranscript(recordId);
 
         // 子ども情報も取得
         let childName = 'お子さま';
@@ -51,17 +50,13 @@ export default function RecordCompletionPage() {
           console.error('子ども情報取得エラー:', childError);
         }
 
-        // commentをJSON.parseしてfeedback_shortとphrase_suggestionを取得
+        // commentをJSON.parseしてfeedback_shortを取得（失敗時は従来表示）
         let aiText = data.comment || 'AIフィードバックを生成中です...';
-        let phraseData: { en: string; ja: string } | null = null;
         try {
           const parsed = JSON.parse(data.comment);
-          // JSON形式の場合：feedback_shortとphrase_suggestionを取得
           aiText = parsed?.feedback_short || aiText;
-          phraseData = parsed?.phrase_suggestion || null;
         } catch {
           // JSON parseに失敗した場合は元のテキストを使用（旧データ対応）
-          // phraseDataはnullのまま（フレーズ提案は表示されない）
         }
 
         // APIレスポンスを画面表示用の形式に変換
@@ -71,7 +66,6 @@ export default function RecordCompletionPage() {
           childName: childName,
           timestamp: new Date(data.created_at),
           aiFeedback: aiText, // JSON形式ならfeedback_short、旧形式なら元テキスト
-          phraseData: phraseData, // JSON形式ならフレーズ1件、旧形式ならnull
         });
       } catch (error) {
         console.error('記録取得エラー:', error);
@@ -145,25 +139,6 @@ export default function RecordCompletionPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* フレーズ提案カード（JSON形式でphrase_suggestionがある場合のみ表示） */}
-        {record.phraseData && (
-          <Card className="w-full rounded-xl bg-blue-50/80 p-6 shadow-lg backdrop-blur-sm mb-8">
-            <CardHeader className="p-0 pb-4">
-              <CardTitle className="text-lg font-bold text-blue-800">
-                💡 こんな言い方もあるよ！
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="bg-white/60 rounded-lg p-4">
-                {/* 英語フレーズ */}
-                <p className="text-xl font-semibold text-blue-700 mb-2">{record.phraseData.en}</p>
-                {/* 日本語の意味 */}
-                <p className="text-gray-600">{record.phraseData.ja}</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* ホームに戻るボタン */}
         <Link href="/children" passHref>
