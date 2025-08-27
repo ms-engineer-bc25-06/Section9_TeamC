@@ -50,13 +50,22 @@ export default function RecordCompletionPage() {
           console.error('子ども情報取得エラー:', childError);
         }
 
+        // commentをJSON.parseしてfeedback_shortを取得（失敗時は従来表示）
+        let aiText = data.comment || 'AIフィードバックを生成中です...';
+        try {
+          const parsed = JSON.parse(data.comment);
+          aiText = parsed?.feedback_short || aiText;
+        } catch {
+          // JSON parseに失敗した場合は元のテキストを使用（旧データ対応）
+        }
+
         // APIレスポンスを画面表示用の形式に変換
         setRecord({
           id: data.id,
           childId: data.child_id,
           childName: childName,
           timestamp: new Date(data.created_at),
-          aiFeedback: data.comment || 'AIフィードバックを生成中です...',
+          aiFeedback: aiText,
         });
       } catch (error) {
         console.error('記録取得エラー:', error);
