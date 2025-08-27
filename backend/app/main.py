@@ -19,7 +19,13 @@ app = FastAPI(title="BUD Backend API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://section9-team-c.vercel.app",  
+        "https://*.vercel.app",
+        "https://*.ngrok.io",
+        "https://*.ngrok-free.app",],
+    
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
