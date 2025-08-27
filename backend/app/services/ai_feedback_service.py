@@ -119,21 +119,20 @@ class AIFeedbackService:
         return await loop.run_in_executor(None, _sync_call)
 
     async def _call_openai_api_with_system(
-        self, prompt: str, system_message: str, model: str = "gpt-4o-mini", max_tokens: int = 150
+        self, prompt: str, system_message: str, model: str = "gpt-4o-mini", max_tokens: int = 150, temperature: float = 0.7, # 追加
     ):
         """OpenAI API呼び出し（システムメッセージ付き）"""
         loop = asyncio.get_event_loop()
 
         def _sync_call():
-            return self.client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": prompt},
-                ],
-                max_tokens=max_tokens,
-                temperature=0.7,
-                timeout=10.0,
-            )
-
+          return self.client.chat.completions.create(
+            model=model,
+            messages=[
+             {"role": "system", "content": system_message},
+             {"role": "user", "content": prompt},
+            ],
+            max_tokens=max_tokens,
+            temperature=temperature,
+           timeout=10.0,
+          )
         return await loop.run_in_executor(None, _sync_call)
