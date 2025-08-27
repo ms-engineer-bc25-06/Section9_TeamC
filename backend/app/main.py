@@ -25,6 +25,7 @@ app.add_middleware(
         "https://*.vercel.app",
         "https://*.ngrok.io",
         "https://*.ngrok-free.app",
+        "https://*.loca.lt", 
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
