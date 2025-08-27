@@ -55,10 +55,23 @@ async def transcribe_text(request: TranscribeRequest, db: AsyncSession = Depends
 
         child_name = child.nickname or child.name or "お子さま"
 
-        # AIフィードバック生成（統合されたサービスを使用）
+        # 子どもの年齢を算出（あれば）
+        child_age = None
+        try:
+            if child and getattr(child, "birthdate", None):
+                from datetime import date
+                today = date.today()
+                child_age = today.year - child.birthdate.year - (
+                    (today.month, today.day) < (child.birthdate.month, child.birthdate.day)
+                )
+        except Exception:
+            child_age = None
+
+        # AIフィードバック生成（年齢付き）
         try:
             feedback = await ai_feedback_service.generate_feedback(
                 transcript=transcript,
+                child_age=child_age,
                 feedback_type="english_challenge",  # 英語チャレンジ用の高品質プロンプト
             )
         except Exception as e:

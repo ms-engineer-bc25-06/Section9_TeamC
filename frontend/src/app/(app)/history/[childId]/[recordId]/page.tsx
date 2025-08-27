@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-// API連携用の型定義
+// API連携用の型定義（フレーズ提案を追加）
 interface RecordDetail {
   id: string;
   childId: string;
@@ -21,6 +21,7 @@ interface RecordDetail {
     praise: string;
     advice: string;
   };
+  phraseData: { en: string; ja: string } | null; // 新規: フレーズ提案データ
 }
 
 export default function ChallengeDetailPage() {
@@ -52,21 +53,36 @@ export default function ChallengeDetailPage() {
           throw new Error('指定されたチャレンジ記録が見つかりませんでした');
         }
 
-        // APIのcommentを praise と advice に分割する簡易処理
+        // commentをJSON.parseしてfeedback_shortとphrase_suggestionを取得
         const comment = data.comment || 'AIフィードバックを生成中です...';
-        const splitComment = splitAIFeedback(comment);
+        let praise = '';
+        let advice = '';
+        let phraseData: { en: string; ja: string } | null = null;
+
+        try {
+          const parsed = JSON.parse(comment);
+          // JSON形式の場合：feedback_shortとphrase_suggestionを取得
+          praise = parsed?.feedback_short || '';
+          phraseData = parsed?.phrase_suggestion || null;
+        } catch {
+          // JSON parseに失敗した場合は旧データ対応（splitAIFeedback使用）
+          const splitComment = splitAIFeedback(comment);
+          praise = splitComment.praise;
+          advice = splitComment.advice;
+        }
 
         // APIレスポンスを画面表示用の形式に変換
         setRecord({
           id: data.id,
           childId: data.child_id,
-          title: 'チャレンジ記録', // APIにtitleがないため固定値
+          title: 'チャレンジ記録',
           timestamp: new Date(data.created_at),
           transcript: data.transcript || '音声認識処理中...',
           aiFeedback: {
-            praise: splitComment.praise,
-            advice: splitComment.advice,
+            praise: praise,
+            advice: advice, // JSON形式では基本的に空（旧データのみ使用）
           },
+          phraseData: phraseData, // JSON形式ならフレーズ1件、旧形式ならnull
         });
       } catch (error) {
         console.error('記録取得エラー:', error);
@@ -80,9 +96,8 @@ export default function ChallengeDetailPage() {
     fetchRecord();
   }, [recordId, childId]);
 
-  // AIフィードバックを praise と advice に分割する関数
+  // AIフィードバックを praise と advice に分割する関数（旧データ用）
   const splitAIFeedback = (comment: string) => {
-    // シンプルな分割ロジック（改行や句点で分割）
     const sentences = comment.split(/[。！\n]/).filter((s) => s.trim());
 
     if (sentences.length >= 2) {
@@ -92,10 +107,9 @@ export default function ChallengeDetailPage() {
         advice: sentences.slice(midPoint).join('。') + '。',
       };
     } else {
-      // 固定アドバイスを削除し、コメント全体を praise として表示
       return {
         praise: comment,
-        advice: '', // 空文字列に変更
+        advice: '',
       };
     }
   };
@@ -181,7 +195,7 @@ export default function ChallengeDetailPage() {
               </h3>
               <p className="text-gray-700 text-base leading-relaxed">{record.aiFeedback.praise}</p>
             </div>
-            {/* アドバイスがある場合のみ表示 */}
+            {/* アドバイスがある場合のみ表示（主に旧データ用） */}
             {record.aiFeedback.advice && (
               <div>
                 <h3 className="flex items-center gap-2 text-lg font-semibold text-orange-700 mb-1">
@@ -195,6 +209,25 @@ export default function ChallengeDetailPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* フレーズ提案カード（JSON形式でphrase_suggestionがある場合のみ表示） */}
+        {record.phraseData && (
+          <Card className="w-full rounded-xl bg-blue-50/80 p-6 shadow-lg backdrop-blur-sm mb-8">
+            <CardHeader className="p-0 pb-4">
+              <CardTitle className="text-lg font-bold text-blue-800">
+                💡 こんな言い方もあるよ！
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="bg-white/60 rounded-lg p-4">
+                {/* 英語フレーズ */}
+                <p className="text-xl font-semibold text-blue-700 mb-2">{record.phraseData.en}</p>
+                {/* 日本語の意味 */}
+                <p className="text-gray-600">{record.phraseData.ja}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Link href="/children" passHref>
           <Button className="w-full max-w-xs py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 bg-blue-500 text-white hover:bg-blue-600">

@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-// API連携用の型定義
+// API連携用の型定義（直後ページ用：シンプル）
 interface RecordData {
   id: string;
   childId: string;
@@ -38,7 +38,7 @@ export default function RecordCompletionPage() {
         setLoading(true);
         setError(null);
 
-        // 音声認識結果をAPIから取得
+        // 直後ページ用のAPI呼び出し（getTranscript）
         const data = await api.voice.getTranscript(recordId);
 
         // 子ども情報も取得
@@ -50,13 +50,22 @@ export default function RecordCompletionPage() {
           console.error('子ども情報取得エラー:', childError);
         }
 
+        // commentをJSON.parseしてfeedback_shortを取得（失敗時は従来表示）
+        let aiText = data.comment || 'AIフィードバックを生成中です...';
+        try {
+          const parsed = JSON.parse(data.comment);
+          aiText = parsed?.feedback_short || aiText;
+        } catch {
+          // JSON parseに失敗した場合は元のテキストを使用（旧データ対応）
+        }
+
         // APIレスポンスを画面表示用の形式に変換
         setRecord({
           id: data.id,
           childId: data.child_id,
           childName: childName,
           timestamp: new Date(data.created_at),
-          aiFeedback: data.comment || 'AIフィードバックを生成中です...',
+          aiFeedback: aiText, // JSON形式ならfeedback_short、旧形式なら元テキスト
         });
       } catch (error) {
         console.error('記録取得エラー:', error);
@@ -113,6 +122,7 @@ export default function RecordCompletionPage() {
           よくがんばったね！
         </h1>
 
+        {/* メインのフィードバックカード */}
         <Card className="w-full rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm mb-8">
           <CardHeader className="p-0 pb-4">
             <CardTitle className="text-xl font-bold text-gray-800 sm:text-2xl">
@@ -120,6 +130,7 @@ export default function RecordCompletionPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 text-left">
+            {/* AIフィードバック表示（JSON形式ならfeedback_short、旧形式なら元テキスト） */}
             <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
               {record.aiFeedback}
             </p>
@@ -129,6 +140,7 @@ export default function RecordCompletionPage() {
           </CardContent>
         </Card>
 
+        {/* ホームに戻るボタン */}
         <Link href="/children" passHref>
           <Button className="w-full max-w-xs py-4 sm:py-5 text-xl sm:text-2xl font-bold rounded-full shadow-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 bg-blue-400 text-white hover:bg-blue-500">
             ホームに戻る
