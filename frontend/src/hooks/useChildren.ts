@@ -5,24 +5,31 @@ import { api } from '@/lib/api';
 import { Child, ChildSelectionState } from '@/types';
 import { useCallback, useEffect, useState } from 'react';
 
-//APIのレスポンス型（サーバーのsnake_caseに合わせる）
+/**
+ * APIから取得する子どもデータの型定義
+ */
 type ApiChild = {
   id: string;
   name: string;
   nickname?: string;
-  birth_date?: string;
+  birthdate?: string;
   grade?: string;
   created_at?: string;
   updated_at?: string;
 };
 
-// 年齢計算関数
+/**
+ * 年齢計算関数
+ * @param birthdate 誕生日（YYYY-MM-DD形式）
+ * @returns 年齢
+ */
 const calculateAge = (birthdate: string): number => {
   const today = new Date();
   const birth = new Date(birthdate);
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
 
+  // 誕生日がまだ来ていない場合は1歳引く
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
@@ -33,14 +40,19 @@ const calculateAge = (birthdate: string): number => {
 export function useChildren() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
 
+  // 子ども選択状態の管理
   const [state, setState] = useState<ChildSelectionState>({
     selectedChild: null,
     isLoading: true,
     error: null,
   });
 
+  // 子どもリストの状態管理
   const [children, setChildren] = useState<Child[]>([]);
 
+  /**
+   * 子どもリストをAPIから取得
+   */
   const fetchChildren = useCallback(async () => {
     // 認証ローディング中は待機
     if (authLoading) {
@@ -55,6 +67,7 @@ export function useChildren() {
       console.log('🔍 useAuth user:', user);
       console.log('🔍 useAuth isAuthenticated:', isAuthenticated);
 
+      // 未認証の場合は空のリストを返す
       if (!isAuthenticated || !user) {
         console.log('⚠️ 認証されていません、空のデータを使用');
         setChildren([]);
@@ -64,27 +77,26 @@ export function useChildren() {
 
       console.log('🔍 認証済み、実APIを呼び出します');
 
-      // api.children.list を使用して子ども一覧を取得
+      // APIから子どもリストを取得
       const data: ApiChild[] = await api.children.list();
       console.log('✅ 実APIデータ:', data);
 
-      // APIの birth_date(snake_case) → フロントの birthdate(camelCase) に正規化
+      // データを処理して年齢を計算
       const processedChildren: Child[] = data.map((child: ApiChild, index: number): Child => {
         console.log(`🔍 子ども${index + 1}の生データ:`, {
-          birth_date: child.birth_date,
-          型: typeof child.birth_date,
-          値: child.birth_date,
+          birthdate: child.birthdate,
+          型: typeof child.birthdate,
+          値: child.birthdate,
         });
 
-        // 🟢 正規化後の birthdate を使って年齢を計算
-        const birthdate = child.birth_date ?? undefined;
+        const birthdate = child.birthdate ?? undefined;
         const age = birthdate ? calculateAge(birthdate) : undefined;
 
         return {
           id: child.id,
           name: child.name,
           nickname: child.nickname,
-          birthdate, // 🟢 APIの birth_date を birthdate に変換
+          birthdate,
           age,
           grade: child.grade,
           created_at: child.created_at,
@@ -92,7 +104,6 @@ export function useChildren() {
         };
       });
 
-      // デバッグ用ログ
       console.log('📊 処理済みデータ:', processedChildren);
 
       setChildren(processedChildren);
@@ -100,7 +111,7 @@ export function useChildren() {
     } catch (error) {
       console.error('❌ API取得失敗:', error);
 
-      // エラー時は空配列
+      // エラー時は空配列をセット
       setChildren([]);
       setState((prev) => ({
         ...prev,
@@ -110,6 +121,9 @@ export function useChildren() {
     }
   }, [user, isAuthenticated, authLoading]);
 
+  /**
+   * 子どもを選択
+   */
   const selectChild = useCallback((child: Child) => {
     setState((prev) => ({
       ...prev,
@@ -118,6 +132,9 @@ export function useChildren() {
     }));
   }, []);
 
+  /**
+   * 子どもの選択をクリア
+   */
   const clearSelection = useCallback(() => {
     setState((prev) => ({
       ...prev,
@@ -126,14 +143,21 @@ export function useChildren() {
     }));
   }, []);
 
+  /**
+   * 子どもリストを再取得
+   */
   const refreshChildren = useCallback(async () => {
     await fetchChildren();
   }, [fetchChildren]);
 
+  /**
+   * 表示用の名前を取得（年齢付き）
+   */
   const getDisplayName = useCallback((child: Child): string => {
     return child.age ? `${child.age}歳` : '年齢未設定';
   }, []);
 
+  // 初回ロード時に子どもリストを取得
   useEffect(() => {
     fetchChildren();
   }, [fetchChildren]);

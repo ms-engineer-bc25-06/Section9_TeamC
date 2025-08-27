@@ -1,6 +1,9 @@
 const API_URL = 'http://localhost:8000';
 
-// Firebase認証トークンを取得するヘルパー関数（デバッグ強化版）
+/**
+ * Firebase認証ヘッダーを取得
+ * @returns 認証ヘッダー
+ */
 const getAuthHeaders = async (): Promise<Record<string, string>> => {
   try {
     console.log('🔍 getAuthHeaders: 開始');
@@ -51,9 +54,11 @@ export const api = {
     }
   },
 
-  // 🔐 認証関連API
+  // 認証関連API
   auth: {
-    // Firebase認証後のバックエンド連携（修正版）
+    /**
+     * Firebase認証後のバックエンド連携
+     */
     login: async () => {
       try {
         console.log('🚀 api.auth.login: 開始');
@@ -102,7 +107,7 @@ export const api = {
       }
     },
 
-    // その他の認証関連API（既存のまま）
+    // プロフィール取得
     getProfile: async () => {
       try {
         const headers = await getAuthHeaders();
@@ -123,6 +128,7 @@ export const api = {
       }
     },
 
+    // プロフィール更新
     updateProfile: async (profileData: { full_name?: string; username?: string; bio?: string }) => {
       try {
         const headers = await getAuthHeaders();
@@ -144,6 +150,7 @@ export const api = {
       }
     },
 
+    // 認証済み子ども一覧取得
     getChildren: async () => {
       try {
         const headers = await getAuthHeaders();
@@ -164,6 +171,7 @@ export const api = {
       }
     },
 
+    // 認証テスト
     test: async () => {
       try {
         const headers = await getAuthHeaders();
@@ -187,6 +195,7 @@ export const api = {
 
   // 子ども管理API
   children: {
+    // 子ども一覧取得
     list: async () => {
       try {
         const headers = await getAuthHeaders();
@@ -202,6 +211,7 @@ export const api = {
       }
     },
 
+    // 子ども登録
     create: async (data: { name: string; nickname?: string; birthdate?: string }) => {
       try {
         const headers = await getAuthHeaders();
@@ -209,8 +219,8 @@ export const api = {
           method: 'POST',
           headers,
           body: JSON.stringify({
-            nickname: data.name, // nameをnicknameとして送信
-            birth_date: data.birthdate, // birthdateをbirth_dateとして送信
+            nickname: data.name,
+            birthdate: data.birthdate,
           }),
         });
         if (!res.ok) {
@@ -224,6 +234,7 @@ export const api = {
       }
     },
 
+    // 子ども詳細取得
     get: async (childId: string) => {
       try {
         const headers = await getAuthHeaders();
@@ -239,6 +250,7 @@ export const api = {
       }
     },
 
+    // 子ども情報更新
     update: async (
       childId: string,
       data: { name?: string; nickname?: string; birthdate?: string }
@@ -250,7 +262,7 @@ export const api = {
           headers,
           body: JSON.stringify({
             nickname: data.name || data.nickname,
-            birth_date: data.birthdate, // birthdateをbirth_dateとして送信
+            birthdate: data.birthdate,
           }),
         });
         if (!res.ok) {
@@ -264,6 +276,7 @@ export const api = {
       }
     },
 
+    // 子ども削除
     delete: async (childId: string) => {
       try {
         const headers = await getAuthHeaders();
@@ -283,8 +296,9 @@ export const api = {
     },
   },
 
-  // 🎤 音声文字起こしAPI
+  // 音声認識API
   voice: {
+    // 文字起こし保存
     saveTranscription: async ({
       childId,
       transcription,
@@ -326,6 +340,7 @@ export const api = {
       try {
         const headers = await getAuthHeaders();
 
+        // 音声ファイルをBase64に変換
         const base64Audio = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
@@ -367,6 +382,7 @@ export const api = {
       }
     },
 
+    // 文字起こし結果取得
     getTranscript: async (transcriptId: string) => {
       try {
         const headers = await getAuthHeaders();
@@ -393,6 +409,7 @@ export const api = {
       }
     },
 
+    // 音声履歴取得
     getHistory: async (childId: string) => {
       try {
         const headers = await getAuthHeaders();
@@ -419,6 +436,7 @@ export const api = {
       }
     },
 
+    // チャレンジ詳細取得
     getChallenge: async (challengeId: string) => {
       try {
         const headers = await getAuthHeaders();
@@ -440,8 +458,9 @@ export const api = {
     },
   },
 
-  // 💬 会話履歴API
+  // 会話履歴API
   conversations: {
+    // 会話履歴一覧取得
     list: async (childId?: string) => {
       try {
         const headers = await getAuthHeaders();
@@ -466,6 +485,7 @@ export const api = {
       }
     },
 
+    // 会話詳細取得
     get: async (conversationId: string) => {
       try {
         const headers = await getAuthHeaders();
@@ -487,8 +507,9 @@ export const api = {
     },
   },
 
-  // 🤖 AIフィードバックAPI
+  // AIフィードバックAPI
   feedback: {
+    // フィードバック生成
     generate: async (transcriptId: string) => {
       try {
         const headers = await getAuthHeaders();
@@ -510,8 +531,9 @@ export const api = {
     },
   },
 
-  // チャレンジ削除API
+  // チャレンジAPI
   challenges: {
+    // チャレンジ削除
     delete: async (challengeId: string) => {
       try {
         const headers = await getAuthHeaders();

@@ -16,17 +16,20 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function ChildRegisterPage() {
+  // フォームの状態管理
   const [nickname, setNickname] = useState('');
   const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
   const [loading, setLoading] = useState(false);
+
+  // Next.js と認証のフック
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('✅ handleSubmit 発火');
 
+    // バリデーション：誕生日必須チェック
     if (!birthDate) {
       toast({
         variant: 'destructive',
@@ -39,6 +42,7 @@ export default function ChildRegisterPage() {
     try {
       setLoading(true);
 
+      // 認証チェック
       if (!user) {
         toast({
           variant: 'destructive',
@@ -48,32 +52,30 @@ export default function ChildRegisterPage() {
         return;
       }
 
-      // Firebase IDトークン取得（必要なら getIdToken(true) で強制更新）
+      // Firebase IDトークン取得
       const token = await user.getIdToken();
-      console.log('✅ 取得したIDトークン(先頭のみ):', token?.slice(0, 20), '...');
 
-      // API呼び出し
-      const res = await createChild(
+      // API呼び出し（子ども登録）
+      await createChild(
         {
           nickname: nickname,
-          birth_date: birthDate.toISOString().split('T')[0], // APIが期待するフィールド名
+          birthdate: birthDate.toISOString().split('T')[0], // YYYY-MM-DD形式
         },
         token
       );
-      console.log('✅ API レスポンス:', res);
 
+      // 成功時の処理
       toast({
         title: '登録完了 🎉',
         description: `${nickname} を追加しました。`,
       });
 
-      // ほんの少しだけ待ってから遷移（トーストを見せたい場合）
+      // 子どもリストページに遷移（トーストを表示してから遷移）
       setTimeout(() => router.push('/children'), 1000);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : typeof err === 'string' ? err : '登録に失敗しました。';
 
-      console.error('❌ 登録エラー:', err);
       toast({
         variant: 'destructive',
         title: '登録エラー',
@@ -86,6 +88,7 @@ export default function ChildRegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8">
+      {/* 戻るボタン */}
       <div className="absolute top-4 left-4">
         <Button
           type="button"
@@ -98,6 +101,8 @@ export default function ChildRegisterPage() {
           もどる
         </Button>
       </div>
+
+      {/* メインカード */}
       <Card className="w-full max-w-md rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm sm:p-8 md:p-10">
         <CardContent className="p-0">
           <h1 className="mb-6 text-center text-2xl font-bold text-gray-800 sm:text-3xl">
@@ -107,7 +112,9 @@ export default function ChildRegisterPage() {
             たのしく遊べるように、少しだけ聞かせてね
           </p>
 
+          {/* 登録フォーム */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* ニックネーム入力 */}
             <div>
               <Label
                 htmlFor="nickname"
@@ -127,6 +134,7 @@ export default function ChildRegisterPage() {
               />
             </div>
 
+            {/* 誕生日選択 */}
             <div>
               <Label
                 htmlFor="birthDate"
@@ -153,15 +161,16 @@ export default function ChildRegisterPage() {
                     mode="single"
                     selected={birthDate}
                     onSelect={setBirthDate}
-                    initialFocus
+                    autoFocus
                     captionLayout="dropdown"
-                    fromYear={new Date().getFullYear() - 15}
-                    toYear={new Date().getFullYear()}
+                    startMonth={new Date(new Date().getFullYear() - 15, 0)} // fromYearの代替
+                    endMonth={new Date(new Date().getFullYear(), 11)} // toYearの代替
                   />
                 </PopoverContent>
               </Popover>
             </div>
 
+            {/* 登録ボタン */}
             <Button
               type="submit"
               disabled={loading}
