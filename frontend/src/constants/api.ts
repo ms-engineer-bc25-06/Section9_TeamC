@@ -24,7 +24,9 @@ export const API_CONFIG = {
     },
   },
   TIMEOUTS: {
-    DEFAULT: 10000,
-    UPLOAD: 30000,
+    DEFAULT: 10000,           // 10秒 - 通常のAPIリクエスト
+    UPLOAD: 30000,            // 30秒 - ファイルアップロード
+    TRANSCRIPTION: 60000,     // 60秒 - 音声文字起こし
+    AUTH: 5000,               // 5秒 - 認証リクエスト
   },
 } as const;

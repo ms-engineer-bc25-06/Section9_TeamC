@@ -1,6 +1,7 @@
 // 音声認識カスタムフック - 重複ロジックの共通化とテスト可能化
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { SPEECH_CONFIG } from '@/constants/speech';
 
 // Web Speech APIの型定義
 declare global {
@@ -79,9 +80,9 @@ export const useSpeechRecognition = (): SpeechRecognitionHookResult => {
     const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognitionClass();
     
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'ja-JP';
+    recognition.continuous = SPEECH_CONFIG.CONTINUOUS;
+    recognition.interimResults = SPEECH_CONFIG.INTERIM_RESULTS;
+    recognition.lang = SPEECH_CONFIG.LANGUAGE;
 
     recognition.onstart = () => {
       console.log('🎤 音声認識開始');

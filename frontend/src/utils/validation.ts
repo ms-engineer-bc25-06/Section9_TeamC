@@ -1,10 +1,12 @@
 // バリデーション関数
+import { UI_CONFIG } from '@/constants/ui';
+
 export const validateNickname = (value: string): string | null => {
   if (!value || !value.trim()) {
     return 'ニックネームは必須です';
   }
-  if (value.trim().length > 50) {
-    return 'ニックネームは50文字以内で入力してください';
+  if (value.trim().length > UI_CONFIG.MAX_NICKNAME_LENGTH) {
+    return `ニックネームは${UI_CONFIG.MAX_NICKNAME_LENGTH}文字以内で入力してください`;
   }
   return null;
 };
@@ -23,9 +25,9 @@ export const validateBirthdate = (value: string): string | null => {
   }
   
   const minDate = new Date();
-  minDate.setFullYear(today.getFullYear() - 15);
+  minDate.setFullYear(today.getFullYear() - UI_CONFIG.MAX_AGE_YEARS);
   if (date < minDate) {
-    return '15歳以下の子どもを登録してください';
+    return `${UI_CONFIG.MAX_AGE_YEARS}歳以下の子どもを登録してください`;
   }
   
   return null;

@@ -1,4 +1,5 @@
 import { API_CONFIG } from '@/constants/api';
+import { UI_CONFIG } from '@/constants/ui';
 import { ERROR_MESSAGES } from '@/constants/messages';
 import { handleApiError } from '@/utils/error-handler';
 
@@ -27,7 +28,7 @@ export const getAuthHeaders = async (): Promise<Record<string, string>> => {
       const token = await user.getIdToken();
       console.log(
         '🔍 getAuthHeaders: トークン取得完了',
-        token ? `${token.substring(0, 20)}...` : 'null'
+        token ? `${token.substring(0, UI_CONFIG.TOKEN_PREVIEW_LENGTH)}...` : 'null'
       );
 
       const headers = {
@@ -66,7 +67,7 @@ export const authApi = {
       const idToken = await user.getIdToken();
       console.log(
         '🚀 authApi.login: IDトークン取得完了',
-        idToken ? `${idToken.substring(0, 20)}...` : 'null'
+        idToken ? `${idToken.substring(0, UI_CONFIG.TOKEN_PREVIEW_LENGTH)}...` : 'null'
       );
 
       const response = await fetch(`${BASE_URL}${ENDPOINTS.AUTH.LOGIN}`, {
