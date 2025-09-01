@@ -1,3 +1,7 @@
+// NOTE: 旧API実装 - 新しいApiServiceとDIContainerに移行済み
+// TODO: このファイルは削除予定（互換性確認後）
+// DEPRECATED: 新規開発では /services/apiService.ts を使用
+
 const API_URL = 'http://localhost:8000';
 
 /**

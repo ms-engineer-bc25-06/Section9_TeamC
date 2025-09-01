@@ -55,7 +55,7 @@ export default function ChildrenPage() {
       const transformedChildren = apiChildren.map((child) => ({
         id: child.id.toString(), // string変換を追加
         name: child.nickname || child.name,
-        age: child.birthdate // birth_date → birthdate に修正
+        age: child.birthdate
           ? new Date().getFullYear() - new Date(child.birthdate).getFullYear()
           : 0,
       }));
