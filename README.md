@@ -38,6 +38,7 @@
 ### 📄 要件定義・全体像
 
 - [PRD（プロダクト要求仕様書）](./docs/prd.md)
+- [PRD Appendix](./docs/prd-appendix.md)
 
 ### 🎨 設計関連
 
