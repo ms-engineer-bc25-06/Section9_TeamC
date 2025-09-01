@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.core.database import get_db
 from app.utils.auth import verify_firebase_token
-from fastapi.security import HTTPAuthorizationCredentials
 from app.services.user_service import UserService
 from app.api.routers import children, auth, ai_feedback
 from app.api.routers.voice import router as voice_router

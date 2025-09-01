@@ -207,27 +207,18 @@ async def get_analysis_status(db: Session = Depends(get_db)):
 @router.delete("/{challenge_id}")
 async def delete_challenge(challenge_id: str, db: Session = Depends(get_db)):
     """チャレンジ記録削除"""
-    
+
     challenge = db.query(Challenge).filter(Challenge.id == challenge_id).first()
-    
+
     if not challenge:
-        raise HTTPException(
-            status_code=404,
-            detail="チャレンジ記録が見つかりません"
-        )
-    
+        raise HTTPException(status_code=404, detail="チャレンジ記録が見つかりません")
+
     try:
         db.delete(challenge)
         db.commit()
-        
-        return {
-            "message": "チャレンジ記録を削除しました",
-            "deleted_id": challenge_id
-        }
-        
+
+        return {"message": "チャレンジ記録を削除しました", "deleted_id": challenge_id}
+
     except Exception as e:
         db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"削除中にエラーが発生しました: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"削除中にエラーが発生しました: {str(e)}")

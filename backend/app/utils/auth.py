@@ -16,8 +16,10 @@ if not firebase_admin._apps:
 
         # Docker環境では /app/serviceAccountKey.json を使用
         docker_cred_path = "/app/serviceAccountKey.json"
-        local_cred_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "serviceAccountKey.json")
-        
+        local_cred_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "serviceAccountKey.json"
+        )
+
         if os.path.exists(docker_cred_path):
             cred_path = docker_cred_path
             print(f"🔍 Dockerパス使用: {cred_path}")

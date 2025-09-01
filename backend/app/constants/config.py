@@ -33,7 +33,7 @@ SECURITY_CONFIG = {
     "TOKEN_EXPIRE_MINUTES": 60,
     "RATE_LIMIT": {
         "DEFAULT": 100,  # per minute
-        "VOICE": 10,     # per hour  
-        "AUTH": 5,       # per minute
+        "VOICE": 10,  # per hour
+        "AUTH": 5,  # per minute
     },
 }

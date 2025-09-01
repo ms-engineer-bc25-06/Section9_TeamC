@@ -26,6 +26,7 @@ def test_endpoint():
     """テスト用エンドポイント"""
     return {"message": "Voice API is working", "status": "ok"}
 
+
 @router.post("/transcribe")
 async def transcribe_text(request: TranscribeRequest, db: AsyncSession = Depends(get_async_db)):
     """文字起こし結果を受け取りDBに保存し、AIフィードバックを生成"""
@@ -60,16 +61,19 @@ async def transcribe_text(request: TranscribeRequest, db: AsyncSession = Depends
         try:
             if child and getattr(child, "birthdate", None):
                 from datetime import date
+
                 today = date.today()
-                child_age = today.year - child.birthdate.year - (
-                    (today.month, today.day) < (child.birthdate.month, child.birthdate.day)
+                child_age = (
+                    today.year
+                    - child.birthdate.year
+                    - ((today.month, today.day) < (child.birthdate.month, child.birthdate.day))
                 )
         except Exception:
             child_age = None
 
         # AIフィードバック生成（年齢付き）
         try:
-            print(f"🤖 AIフィードバック生成開始...")
+            print("🤖 AIフィードバック生成開始...")
             print(f"   - transcript: {transcript[:50]}...")
             print(f"   - child_age: {child_age}")
             feedback = await ai_feedback_service.generate_feedback(
@@ -80,7 +84,8 @@ async def transcribe_text(request: TranscribeRequest, db: AsyncSession = Depends
             print(f"✅ AIフィードバック生成成功: {feedback[:50]}...")
         except Exception as e:
             import traceback
-            print(f"⚠️ AIフィードバック生成に失敗、デフォルトメッセージを使用")
+
+            print("⚠️ AIフィードバック生成に失敗、デフォルトメッセージを使用")
             print(f"   エラー詳細: {str(e)}")
             print(f"   スタックトレース: {traceback.format_exc()}")
             feedback = f"「{transcript}」と話してくれてありがとう！とても上手に話せていますね。これからも頑張ってください！"
@@ -109,7 +114,7 @@ async def transcribe_text(request: TranscribeRequest, db: AsyncSession = Depends
         # エラーの場合もChallengeを更新しておく
         if "challenge" in locals():
             try:
-                challenge.ai_feedback = f"AIフィードバック生成エラー: {str(error)}"
+                challenge.ai_feedback = f"AIフィードバック生成エラー: {str(e)}"
                 db.add(challenge)
                 await db.commit()
             except Exception as commit_error:
@@ -117,7 +122,6 @@ async def transcribe_text(request: TranscribeRequest, db: AsyncSession = Depends
 
         return JSONResponse(
             status_code=500,
-
             content={
                 "detail": "AIフィードバック生成中にエラーが発生しました",
                 "error_code": "AI_FEEDBACK_ERROR",

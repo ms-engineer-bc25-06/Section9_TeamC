@@ -71,7 +71,7 @@ async def get_child(
 
         # Pydanticモデルに変換して返却
         return ChildSchema.model_validate(child)
-        
+
     except HTTPException:
         raise
     except Exception as error:
@@ -164,9 +164,7 @@ async def update_child(
 
 @router.delete("/{child_id}")
 async def delete_child(
-    child_id: str,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    child_id: str, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)
 ):
     """子ども情報を削除する（関連データも含めて）"""
     try:
@@ -201,4 +199,6 @@ async def delete_child(
         raise
     except Exception as error:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"削除処理中にエラーが発生しました: {str(error)}")
+        raise HTTPException(
+            status_code=500, detail=f"削除処理中にエラーが発生しました: {str(error)}"
+        )

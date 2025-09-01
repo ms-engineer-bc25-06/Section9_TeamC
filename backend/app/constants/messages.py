@@ -4,7 +4,7 @@
 ERROR_MESSAGES = {
     "AUTH": {
         "INVALID_TOKEN": "認証トークンが無効です",
-        "TOKEN_EXPIRED": "認証トークンの有効期限が切れています", 
+        "TOKEN_EXPIRED": "認証トークンの有効期限が切れています",
         "UNAUTHORIZED": "認証が必要です",
         "FORBIDDEN": "この操作を実行する権限がありません",
     },
@@ -32,7 +32,7 @@ ERROR_MESSAGES = {
 SUCCESS_MESSAGES = {
     "CHILDREN": {
         "CREATED": "子どもを登録しました",
-        "UPDATED": "子ども情報を更新しました", 
+        "UPDATED": "子ども情報を更新しました",
         "DELETED": "子ども情報を削除しました",
     },
     "VOICE": {

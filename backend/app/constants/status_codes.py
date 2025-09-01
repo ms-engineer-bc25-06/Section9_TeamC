@@ -5,11 +5,12 @@ from enum import IntEnum
 
 class HTTPStatus(IntEnum):
     """HTTPステータスコード"""
+
     # 成功
     OK = 200
     CREATED = 201
     NO_CONTENT = 204
-    
+
     # クライアントエラー
     BAD_REQUEST = 400
     UNAUTHORIZED = 401
@@ -18,7 +19,7 @@ class HTTPStatus(IntEnum):
     METHOD_NOT_ALLOWED = 405
     CONFLICT = 409
     UNPROCESSABLE_ENTITY = 422
-    
+
     # サーバーエラー
     INTERNAL_SERVER_ERROR = 500
     NOT_IMPLEMENTED = 501
@@ -28,6 +29,7 @@ class HTTPStatus(IntEnum):
 
 class ErrorContext:
     """エラーコンテキスト定数"""
+
     USER_NOT_FOUND = "ユーザーが見つかりません"
     CHILD_NOT_FOUND = "子ども情報が見つかりません"
     TRANSCRIPTION_FAILED = "文字起こしに失敗しました"
