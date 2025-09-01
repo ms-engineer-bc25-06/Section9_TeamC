@@ -69,3 +69,5 @@
 ---
 
 ## 5. Git 運用ガイド
+
+- [Git 運用ガイド](./docs/git-rules.md)
