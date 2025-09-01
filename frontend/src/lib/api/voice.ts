@@ -1,8 +1,7 @@
-import { getAuthHeaders } from './auth';
+import { ApiService } from '@/services/apiService';
 import { API_CONFIG } from '@/constants/api';
-import { handleApiError } from '@/utils/error-handler';
 
-const { BASE_URL, ENDPOINTS } = API_CONFIG;
+const { ENDPOINTS } = API_CONFIG;
 
 export const voiceApi = {
   // 文字起こし保存
@@ -13,40 +12,20 @@ export const voiceApi = {
     childId: string;
     transcription: string;
   }) => {
-    const headers = await getAuthHeaders();
-
-    const response = await fetch(`${BASE_URL}${ENDPOINTS.VOICE.TRANSCRIBE}`, {
-      method: 'POST',
-      headers: {
-        ...headers,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    try {
+      return await ApiService.post(ENDPOINTS.VOICE.TRANSCRIBE, {
         child_id: childId,
         transcript: transcription,
-      }),
-    });
-
-    if (!response.ok) {
-      let errorData;
-      try {
-        errorData = await response.json();
-      } catch {
-        // JSON形式でない場合のフォールバック
-        errorData = { detail: `保存に失敗しました(${response.status})` };
-      }
-      console.error('❌ 文字起こしエラー詳細:', errorData);
-      throw new Error(errorData.detail || `保存に失敗しました(${response.status})`);
+      });
+    } catch (error) {
+      console.error('❌ 文字起こしエラー:', error);
+      throw error;
     }
-
-    return response.json();
   },
 
   // 音声ファイルを文字起こしするAPI
   transcribe: async (audioBlob: Blob, childId: string) => {
     try {
-      const headers = await getAuthHeaders();
-
       // 音声ファイルをBase64に変換
       const base64Audio = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
@@ -55,36 +34,15 @@ export const voiceApi = {
         reader.readAsDataURL(audioBlob);
       });
 
-      const response = await fetch(`${BASE_URL}${ENDPOINTS.VOICE.TRANSCRIBE}`, {
-        method: 'POST',
-        headers: {
-          ...headers,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ file: base64Audio, child_id: childId }),
+      const result = await ApiService.post(ENDPOINTS.VOICE.TRANSCRIBE, {
+        file: base64Audio,
+        child_id: childId,
       });
-
-      if (!response.ok) {
-        let errorData;
-        try {
-          errorData = await response.json();
-        } catch {
-          // JSON形式でない場合のフォールバック
-          errorData = { detail: `文字起こしに失敗しました(${response.status})` };
-        }
-        console.error('❌ 文字起こしエラー詳細:', errorData);
-        throw new Error(errorData.detail || `文字起こしに失敗しました(${response.status})`);
-      }
-
-      const result = await response.json();
+      
       console.log('✅ 文字起こし成功:', result);
       return result;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error('❌ 文字起こしに失敗:', error.message);
-      } else {
-        console.error('❌ 文字起こしに失敗:', error);
-      }
+    } catch (error) {
+      console.error('❌ 文字起こしに失敗:', error);
       throw error;
     }
   },
@@ -92,23 +50,7 @@ export const voiceApi = {
   // 文字起こし結果取得
   getTranscript: async (transcriptId: string) => {
     try {
-      const headers = await getAuthHeaders();
-      const response = await fetch(`${BASE_URL}${ENDPOINTS.VOICE.TRANSCRIPT(transcriptId)}`, {
-        method: 'GET',
-        headers,
-      });
-
-      if (!response.ok) {
-        let errorData;
-        try {
-          errorData = await response.json();
-        } catch {
-          errorData = { detail: '音声認識結果の取得に失敗しました' };
-        }
-        throw new Error(errorData.detail || '音声認識結果の取得に失敗しました');
-      }
-
-      return response.json();
+      return await ApiService.get(ENDPOINTS.VOICE.TRANSCRIPT(transcriptId));
     } catch (error) {
       console.error('音声認識結果の取得に失敗:', error);
       throw error;
@@ -118,23 +60,7 @@ export const voiceApi = {
   // 音声履歴取得
   getHistory: async (childId: string) => {
     try {
-      const headers = await getAuthHeaders();
-      const response = await fetch(`${BASE_URL}${ENDPOINTS.VOICE.HISTORY(childId)}`, {
-        method: 'GET',
-        headers,
-      });
-
-      if (!response.ok) {
-        let errorData;
-        try {
-          errorData = await response.json();
-        } catch {
-          errorData = { detail: '音声履歴の取得に失敗しました' };
-        }
-        throw new Error(errorData.detail || '音声履歴の取得に失敗しました');
-      }
-
-      return response.json();
+      return await ApiService.get(ENDPOINTS.VOICE.HISTORY(childId));
     } catch (error) {
       console.error('音声履歴の取得に失敗:', error);
       throw error;
@@ -144,18 +70,7 @@ export const voiceApi = {
   // チャレンジ詳細取得
   getChallenge: async (challengeId: string) => {
     try {
-      const headers = await getAuthHeaders();
-      const response = await fetch(`${BASE_URL}${ENDPOINTS.VOICE.CHALLENGE(challengeId)}`, {
-        method: 'GET',
-        headers,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'チャレンジ詳細の取得に失敗しました');
-      }
-
-      return response.json();
+      return await ApiService.get(ENDPOINTS.VOICE.CHALLENGE(challengeId));
     } catch (error) {
       console.error('チャレンジ詳細の取得に失敗:', error);
       throw error;
