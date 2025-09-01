@@ -1,4 +1,6 @@
 // API通信の共通処理 - DRY原則に基づく統一化
+// OPTIMIZE: レスポンスキャッシュとリクエスト重複防止の実装検討
+// TODO: リトライ機能とネットワーク障害時の自動復旧機能追加
 
 import { getAuthHeaders } from '@/lib/api/auth';
 import { API_CONFIG } from '@/constants/api';

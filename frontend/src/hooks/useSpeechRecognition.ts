@@ -1,4 +1,6 @@
 // 音声認識カスタムフック - 重複ロジックの共通化とテスト可能化
+// OPTIMIZE: 音声認識インスタンスの再利用と無駄な初期化防止
+// FIXME: lastSpeechTime が未使用 - 自動停止機能の実装が不完全
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { SPEECH_CONFIG } from '@/constants/speech';
@@ -65,6 +67,7 @@ export const useSpeechRecognition = (): SpeechRecognitionHookResult => {
   const [transcription, setTranscription] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [accumulatedTranscript, setAccumulatedTranscript] = useState('');
+  // FIXME: 自動停止機能実装時に使用予定
   const [lastSpeechTime, setLastSpeechTime] = useState(Date.now());
   
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -157,7 +160,9 @@ export const useSpeechRecognition = (): SpeechRecognitionHookResult => {
     setTranscription('');
     setAccumulatedTranscript('');
     setLastSpeechTime(Date.now());
-  }, []);
+    // FIXME: lastSpeechTime の自動停止機能実装時に活用予定
+    void lastSpeechTime; // 一時的な警告回避
+  }, [lastSpeechTime]);
 
   // クリーンアップ
   useEffect(() => {

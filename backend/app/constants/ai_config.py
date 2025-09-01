@@ -1,5 +1,9 @@
 """AI関連設定定数 - OpenAIパラメータの明確化"""
 
+# TODO: OpenAI APIキーの本番環境での安全な管理方法確立
+# OPTIMIZE: モデル選択の動的切り替え機能（gpt-4, gpt-3.5-turbo）
+# FIXME: エラー時のフォールバック機能が未実装
+
 from pydantic_settings import BaseSettings
 from typing import Dict, Any
 

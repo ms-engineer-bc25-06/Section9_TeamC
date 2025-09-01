@@ -1,5 +1,10 @@
 ﻿'use client';
 
+// FIXME: 569行の巨大コンポーネント - 責任分離とテスト可能性向上が必要
+// TODO: VoiceRecorder、PhraseDialog、ChallengeUIに分割
+// OPTIMIZE: useSpeechRecognition フックの活用でロジック簡素化
+// PERFORMANCE: 重い処理の最適化と不要な再レンダリング防止
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
