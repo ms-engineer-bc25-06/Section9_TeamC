@@ -1,9 +1,7 @@
-﻿'use client';
+'use client';
 
-// FIXME: 569行の巨大コンポーネント - 責任分離とテスト可能性向上が必要
+// FIXME: 巨大コンポーネント - 責任分離とテスト可能性向上が必要
 // TODO: VoiceRecorder、PhraseDialog、ChallengeUIに分割
-// OPTIMIZE: useSpeechRecognition フックの活用でロジック簡素化
-// PERFORMANCE: 重い処理の最適化と不要な再レンダリング防止
 
 import { Button } from '@/components/ui/button';
 import {
@@ -29,54 +27,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-
-// Web Speech APIの型定義を追加
-declare global {
-  interface Window {
-    SpeechRecognition: new () => SpeechRecognition;
-    webkitSpeechRecognition: new () => SpeechRecognition;
-  }
-}
-
-interface SpeechRecognition extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  onstart: ((this: SpeechRecognition, ev: Event) => void) | null;
-  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void) | null;
-  onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void) | null;
-  onend: ((this: SpeechRecognition, ev: Event) => void) | null;
-  start(): void;
-  stop(): void;
-}
-
-interface SpeechRecognitionEvent extends Event {
-  resultIndex: number;
-  results: SpeechRecognitionResultList;
-}
-
-interface SpeechRecognitionResultList {
-  length: number;
-  item(index: number): SpeechRecognitionResult;
-  [index: number]: SpeechRecognitionResult;
-}
-
-interface SpeechRecognitionResult {
-  isFinal: boolean;
-  length: number;
-  item(index: number): SpeechRecognitionAlternative;
-  [index: number]: SpeechRecognitionAlternative;
-}
-
-interface SpeechRecognitionAlternative {
-  transcript: string;
-  confidence: number;
-}
-
-interface SpeechRecognitionErrorEvent extends Event {
-  error: string;
-}
+import { useState } from 'react';
+import { useVoiceRecording } from '@/hooks/useVoiceRecording';
 
 export default function ChallengePage() {
   const params = useParams();
@@ -90,34 +42,19 @@ export default function ChallengePage() {
   const { children, isLoading } = useChildren();
 
   // state管理用のHooks
-  const [isListening, setIsListening] = useState(false);
-  const [transcription, setTranscription] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [shouldKeepListening, setShouldKeepListening] = useState(false); // 録音継続フラグ
-  const [accumulatedTranscript, setAccumulatedTranscript] = useState(''); // 累積された文字起こし
-  const [lastSpeechTime, setLastSpeechTime] = useState(Date.now()); // 最後の発話時刻
-
   const [showMamaPhraseDialog, setShowMamaPhraseDialog] = useState(false);
   const [showChildPhraseDialog, setShowChildPhraseDialog] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-
-  useEffect(() => {
-    const cleanup = () => {
-      setShouldKeepListening(false);
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-        recognitionRef.current = null;
-      }
-    };
-    const handleBeforeUnload = () => {
-      cleanup();
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      cleanup();
-    };
-  }, []);
+  
+  // 音声録音フック
+  const { 
+    isListening, 
+    transcription, 
+    isSupported,
+    startListening, 
+    stopListening,
+    resetTranscription 
+  } = useVoiceRecording();
 
   // 子供の名前を取得（UUIDで検索）
   const child = children.find((c) => c.id === childId);
@@ -145,156 +82,24 @@ export default function ChallengePage() {
     );
   }
 
-  // 録音開始処理 Web Speech API
-  const startListening = async () => {
-    try {
-      const SpeechRecognitionConstructor = (window.SpeechRecognition ||
-        window.webkitSpeechRecognition) as {
-        new (): SpeechRecognition;
-      };
-      if (!SpeechRecognitionConstructor) {
-        alert('お使いのブラウザは音声認識に対応していません。');
-        return;
-      }
-      // フラグを設定：録音を継続する意思を示す
-      setShouldKeepListening(true);
-      setAccumulatedTranscript(''); // 累積テキストをリセット
-      setTranscription('');
-      setLastSpeechTime(Date.now());
+  // 音声認識サポートチェック
+  if (!isSupported) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
+        <p className="text-gray-600 text-lg">お使いのブラウザは音声認識に対応していません。</p>
+        <Link href="/children" className="mt-4 text-blue-500 hover:text-blue-600">
+          子供選択画面に戻る
+        </Link>
+      </div>
+    );
+  }
 
-      const startRecognition = () => {
-        recognitionRef.current = new SpeechRecognitionConstructor();
-        recognitionRef.current.continuous = true;
-        recognitionRef.current.interimResults = true;
-        recognitionRef.current.lang = 'ja-JP';
-
-        recognitionRef.current.onstart = () => {
-          console.log('音声認識開始');
-          setIsListening(true);
-        };
-
-        recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
-          let finalTranscript = '';
-          let interimTranscript = '';
-
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-              finalTranscript += transcript;
-            } else {
-              interimTranscript += transcript;
-            }
-          }
-
-          // 確定したテキストがある場合
-          if (finalTranscript) {
-            const currentTime = Date.now();
-            const timeSinceLastSpeech = currentTime - lastSpeechTime;
-            setAccumulatedTranscript((prev) => {
-              // 前回の発話から3秒以上経過している場合は改行を追加
-              const separator = timeSinceLastSpeech > 3000 && prev.length > 0 ? '\n\n' : '';
-              return prev + separator + finalTranscript;
-            });
-
-            setLastSpeechTime(currentTime);
-          }
-
-          // 表示用のテキストを更新（累積 + 暫定）
-          const currentTime = Date.now();
-          const timeSinceLastSpeech = currentTime - lastSpeechTime;
-
-          // 累積されたテキスト + 新しい確定テキスト + 暫定テキスト
-          let displayText = accumulatedTranscript;
-
-          if (finalTranscript) {
-            // 3秒以上経過していて、既にテキストがある場合は改行を追加
-            const separator =
-              timeSinceLastSpeech > 3000 && accumulatedTranscript.length > 0 ? '\n\n' : '';
-            displayText += separator + finalTranscript;
-          }
-
-          if (interimTranscript) {
-            displayText += ' ' + interimTranscript;
-          }
-
-          setTranscription(displayText);
-        };
-        recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
-          console.error('音声認識エラー:', event.error);
-
-          // どんなエラーが発生しても、shouldKeepListeningがtrueなら再開
-          if (shouldKeepListening) {
-            console.log('エラー後再開:', event.error);
-            setTimeout(() => {
-              if (shouldKeepListening) {
-                startRecognition(); // 再帰的に再開
-              }
-            }, 500);
-          }
-        };
-
-        recognitionRef.current.onend = () => {
-          console.log('音声認識終了');
-
-          // shouldKeepListeningがtrueの間は絶対に再開
-          if (shouldKeepListening) {
-            console.log('自動再開実行');
-            setTimeout(() => {
-              if (shouldKeepListening) {
-                startRecognition(); // 再帰的に再開
-              }
-            }, 100);
-          } else {
-            // 手動停止された場合のみ完全停止
-            setIsListening(false);
-            console.log('録音完全停止');
-          }
-        };
-        try {
-          recognitionRef.current.start();
-        } catch (error) {
-          console.error('音声認識の開始に失敗:', error);
-
-          // 開始に失敗しても再試行
-          if (shouldKeepListening) {
-            setTimeout(() => {
-              if (shouldKeepListening) {
-                startRecognition();
-              }
-            }, 1000);
-          }
-        }
-      };
-      // 初回開始
-      startRecognition();
-    } catch (error) {
-      console.error('音声認識の初期化に失敗:', error);
-      alert('音声認識を開始できませんでした。');
-      setShouldKeepListening(false);
-      setIsListening(false);
-    }
+  // 録音終了処理
+  const handleStopListening = () => {
+    stopListening();
   };
 
-  // 録音停止処理
-  const stopListening = () => {
-    console.log('手動停止実行');
-    // 最重要：継続フラグをfalseにして再開を完全に停止
-    setShouldKeepListening(false);
-
-    // 現在の認識を停止
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-    }
-    // 最終的な文字起こし結果を設定
-    if (accumulatedTranscript) {
-      setTranscription(accumulatedTranscript);
-    }
-    setIsListening(false);
-    console.log('録音完全停止完了');
-  };
-
-  // 録音保存処理
+  // 保存処理
   const saveTranscription = async () => {
     if (!transcription.trim()) {
       alert('文字起こしされた内容がありません。');
@@ -309,7 +114,14 @@ export default function ChallengePage() {
         childId,
         transcription,
       });
-      router.push(`/record/${result.transcript_id}`);
+      
+      if (result && typeof result === 'object' && 'transcript_id' in result) {
+        router.push(`/record/${result.transcript_id}`);
+      } else {
+        console.error('Unexpected API response:', result);
+        alert('保存は完了しましたが、結果の取得に失敗しました。');
+        router.push('/children');
+      }
     } catch (error) {
       console.error('文字起こしの保存に失敗:', error);
       alert('保存に失敗しました。もう一度お試しください。');
@@ -393,7 +205,7 @@ export default function ChallengePage() {
         <div className="flex flex-col items-center">
           {!transcription && (
             <Button
-              onClick={isListening ? stopListening : startListening}
+              onClick={isListening ? handleStopListening : startListening}
               className={cn(
                 'w-40 h-40 sm:w-48 sm:h-48 rounded-full flex flex-col items-center justify-center shadow-xl transition-all duration-300',
                 isListening
@@ -423,7 +235,7 @@ export default function ChallengePage() {
           {/* 録音中でも表示する簡易ストップボタン（文字起こし結果がある時） */}
           {transcription && isListening && (
             <Button
-              onClick={stopListening}
+              onClick={handleStopListening}
               className="w-32 h-32 rounded-full flex flex-col items-center justify-center shadow-xl bg-red-500 hover:bg-red-600 animate-pulse"
               size="icon"
             >

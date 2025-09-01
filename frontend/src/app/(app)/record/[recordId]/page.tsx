@@ -16,6 +16,27 @@ interface RecordData {
   childName: string;
   timestamp: Date;
   aiFeedback: string;
+  phraseSuggestion?: {
+    en: string;
+    ja: string;
+  };
+}
+
+// APIレスポンスの型定義
+interface TranscriptResponse {
+  id: string;
+  child_id: string;
+  transcript: string;
+  ai_feedback?: string;
+  comment?: string;
+  created_at: string;
+  status: string;
+}
+
+interface ChildResponse {
+  id: string;
+  name?: string;
+  nickname?: string;
 }
 
 export default function RecordCompletionPage() {
@@ -39,22 +60,27 @@ export default function RecordCompletionPage() {
         setError(null);
 
         // 直後ページ用のAPI呼び出し（getTranscript）
-        const data = await api.voice.getTranscript(recordId);
+        const data = await api.voice.getTranscript(recordId) as TranscriptResponse;
 
         // 子ども情報も取得
         let childName = 'お子さま';
         try {
-          const childData = await api.children.get(data.child_id);
+          const childData = await api.children.get(data.child_id) as ChildResponse;
           childName = childData.nickname || childData.name || 'お子さま';
         } catch (childError) {
           console.error('子ども情報取得エラー:', childError);
         }
 
-        // commentをJSON.parseしてfeedback_shortを取得（失敗時は従来表示）
-        let aiText = data.comment || 'AIフィードバックを生成中です...';
+        // ai_feedbackをJSON.parseしてfeedback_shortを取得（失敗時は従来表示）
+        let aiText = data.ai_feedback || data.comment || 'AIフィードバックを生成中です...';
+        let phraseSuggestion = undefined;
         try {
-          const parsed = JSON.parse(data.comment);
-          aiText = parsed?.feedback_short || aiText;
+          const feedbackData = data.ai_feedback || data.comment;
+          if (feedbackData && feedbackData !== 'AIフィードバックを生成中です...') {
+            const parsed = JSON.parse(feedbackData);
+            aiText = parsed?.feedback_short || aiText;
+            phraseSuggestion = parsed?.phrase_suggestion;
+          }
         } catch {
           // JSON parseに失敗した場合は元のテキストを使用（旧データ対応）
         }
@@ -66,6 +92,7 @@ export default function RecordCompletionPage() {
           childName: childName,
           timestamp: new Date(data.created_at),
           aiFeedback: aiText, // JSON形式ならfeedback_short、旧形式なら元テキスト
+          phraseSuggestion: phraseSuggestion,
         });
       } catch (error) {
         console.error('記録取得エラー:', error);
@@ -134,6 +161,16 @@ export default function RecordCompletionPage() {
             <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
               {record.aiFeedback}
             </p>
+            
+            {/* フレーズ提案の表示 */}
+            {record.phraseSuggestion && (
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm font-semibold text-blue-800 mb-2">次回使えるフレーズ：</p>
+                <p className="text-lg font-bold text-blue-600">{record.phraseSuggestion.en}</p>
+                <p className="text-sm text-gray-600 mt-1">{record.phraseSuggestion.ja}</p>
+              </div>
+            )}
+            
             <div className="mt-6 text-sm text-gray-500">
               <p>記録日時: {format(record.timestamp, 'yyyy年MM月dd日 HH:mm', { locale: ja })}</p>
             </div>

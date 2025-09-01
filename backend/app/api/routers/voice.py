@@ -69,13 +69,20 @@ async def transcribe_text(request: TranscribeRequest, db: AsyncSession = Depends
 
         # AIフィードバック生成（年齢付き）
         try:
+            print(f"🤖 AIフィードバック生成開始...")
+            print(f"   - transcript: {transcript[:50]}...")
+            print(f"   - child_age: {child_age}")
             feedback = await ai_feedback_service.generate_feedback(
                 transcript=transcript,
                 child_age=child_age,
                 feedback_type="english_challenge",  # 英語チャレンジ用の高品質プロンプト
             )
+            print(f"✅ AIフィードバック生成成功: {feedback[:50]}...")
         except Exception as e:
-            print(f"⚠️ AIフィードバック生成に失敗、デフォルトメッセージを使用: {e}")
+            import traceback
+            print(f"⚠️ AIフィードバック生成に失敗、デフォルトメッセージを使用")
+            print(f"   エラー詳細: {str(e)}")
+            print(f"   スタックトレース: {traceback.format_exc()}")
             feedback = f"「{transcript}」と話してくれてありがとう！とても上手に話せていますね。これからも頑張ってください！"
 
         # Challenge更新

@@ -1,6 +1,6 @@
-import { authApi } from './auth';
-import { childrenApi } from './children';
-import { voiceApi } from './voice';
+import { authApi } from './api/auth';
+import { childrenApi } from './api/children';
+import { voiceApi } from './api/voice';
 
 const API_URL = 'http://localhost:8000';
 
@@ -39,7 +39,7 @@ export const api = {
   challenges: {
     delete: async (challengeId: string) => {
       try {
-        const { getAuthHeaders } = await import('./auth');
+        const { getAuthHeaders } = await import('./api/auth');
         const headers = await getAuthHeaders();
         const response = await fetch(`${API_URL}/api/ai-feedback/${challengeId}`, {
           method: 'DELETE',
@@ -63,7 +63,7 @@ export const api = {
   feedback: {
     generate: async (transcriptId: string) => {
       try {
-        const { getAuthHeaders } = await import('./auth');
+        const { getAuthHeaders } = await import('./api/auth');
         const headers = await getAuthHeaders();
         const response = await fetch(`${API_URL}/api/voice/transcript/${transcriptId}`, {
           method: 'GET',

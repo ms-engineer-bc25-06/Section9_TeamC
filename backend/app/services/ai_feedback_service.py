@@ -85,7 +85,7 @@ class AIFeedbackService:
             response = await self._call_openai_api_with_system(
                 prompt,
                 system_message="あなたは子供たちを励ます優しい先生です。",
-                model="gpt-3.5-turbo",
+                model="gpt-4o-mini",
                 max_tokens=300,
             )
 
@@ -104,7 +104,7 @@ class AIFeedbackService:
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=150,
                 temperature=0.7,
-                timeout=10.0,
+                timeout=30.0,
             )
 
         return await loop.run_in_executor(None, _sync_call)
@@ -129,7 +129,7 @@ class AIFeedbackService:
                 ],
                 max_tokens=max_tokens,
                 temperature=temperature,
-                timeout=10.0,
+                timeout=30.0,
             )
 
         return await loop.run_in_executor(None, _sync_call)

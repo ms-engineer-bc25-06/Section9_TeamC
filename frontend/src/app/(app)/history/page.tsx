@@ -2,128 +2,37 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { ChildSelector } from '@/components/history/ChildSelector';
+import { ExportButton } from '@/components/history/ExportButton';
+import { MonthlyStats } from '@/components/history/MonthlyStats';
+import { RecordsList } from '@/components/history/RecordsList';
 import { useChildren } from '@/hooks/useChildren';
-import { api } from '@/lib/api';
-import { format, isSameMonth, parseISO } from 'date-fns';
-import { ja } from 'date-fns/locale';
-import { ArrowLeft, CalendarDays, Download, Trash2 } from 'lucide-react';
+import { useHistoryRecords } from '@/hooks/useHistoryRecords';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-
-// API連携用の型定義
-interface ChallengeRecord {
-  id: string;
-  childId: string;
-  date: string;
-  summary: string;
-}
 
 export default function ChallengeHistoryPage() {
   const { children, isLoading: childrenLoading } = useChildren();
   const [selectedChildId, setSelectedChildId] = useState<string>('');
-  const [records, setRecords] = useState<ChallengeRecord[]>([]);
-  const [thisMonthChallengeCount, setThisMonthChallengeCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  
+  const {
+    records,
+    thisMonthChallengeCount,
+    loading,
+    error,
+    deletingId,
+    handleDelete,
+  } = useHistoryRecords(selectedChildId);
 
-  // 削除ハンドラー
-  const handleDelete = async (recordId: string) => {
-    if (!confirm('この記録を削除しますか？削除した記録は元に戻せません。')) {
-      return;
-    }
 
-    setDeletingId(recordId);
-
-    try {
-      await api.challenges.delete(recordId);
-
-      // レコードリストから削除
-      setRecords((prev) => prev.filter((record) => record.id !== recordId));
-
-      // 今月のチャレンジ回数を再計算
-      const currentMonth = new Date();
-      const remainingRecords = records.filter((record) => record.id !== recordId);
-      const count = remainingRecords.filter((record) =>
-        isSameMonth(parseISO(record.date), currentMonth)
-      ).length;
-      setThisMonthChallengeCount(count);
-    } catch (error) {
-      console.error('削除エラー:', error);
-      alert('削除中にエラーが発生しました');
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  // 子ども選択の初期化
   useEffect(() => {
     if (!childrenLoading && children.length > 0 && !selectedChildId) {
       setSelectedChildId(children[0].id);
     }
-    setLoading(false);
   }, [children, childrenLoading, selectedChildId]);
 
-  // 選択された子どもの履歴を取得
-  useEffect(() => {
-    if (!selectedChildId) {
-      setRecords([]);
-      setThisMonthChallengeCount(0);
-      return;
-    }
-
-    const fetchRecords = async () => {
-      try {
-        setLoading(true);
-
-        // 音声認識履歴をAPIから取得
-        const data = await api.voice.getHistory(selectedChildId);
-
-        // APIレスポンスを画面表示用の形式に変換
-        const recordsForChild = data.transcripts
-          .map((item: { id: string; created_at: string; transcript?: string }) => ({
-            id: item.id,
-            childId: selectedChildId,
-            date: item.created_at,
-            summary: item.transcript
-              ? item.transcript.length > 30
-                ? item.transcript.substring(0, 30) + '...'
-                : item.transcript
-              : 'チャレンジ記録',
-          }))
-          .sort(
-            (a: ChallengeRecord, b: ChallengeRecord) =>
-              parseISO(b.date).getTime() - parseISO(a.date).getTime()
-          );
-
-        setRecords(recordsForChild);
-
-        // 今月のチャレンジ回数を計算
-        const currentMonth = new Date();
-        const count = recordsForChild.filter((record: ChallengeRecord) =>
-          isSameMonth(parseISO(record.date), currentMonth)
-        ).length;
-        setThisMonthChallengeCount(count);
-      } catch (error) {
-        console.error('履歴取得エラー:', error);
-        setError('履歴の取得に失敗しました');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRecords();
-  }, [selectedChildId]);
-
-  // ローディング中の表示
-  if (loading && children.length === 0) {
+  if (childrenLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-6 lg:p-8 text-center">
         <Card className="w-full max-w-md rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm">
@@ -173,106 +82,26 @@ export default function ChallengeHistoryPage() {
       </header>
 
       <main className="w-full max-w-4xl flex-1 flex flex-col items-center py-8">
-        {/* 子ども選択プルダウン */}
-        <div className="mb-8 w-full max-w-xs">
-          <Select onValueChange={setSelectedChildId} value={selectedChildId}>
-            <SelectTrigger className="w-full rounded-full bg-white/80 shadow-md text-lg font-semibold text-gray-700">
-              <SelectValue placeholder="お子さまを選択" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl bg-white/90 shadow-lg">
-              {children.map((child) => (
-                <SelectItem key={child.id} value={child.id} className="text-lg">
-                  {child.nickname}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <ChildSelector
+          children={children}
+          selectedChildId={selectedChildId}
+          onChildSelect={setSelectedChildId}
+        />
 
-        {/* 統計情報 */}
-        <Card className="w-full rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm mb-8">
-          <CardContent className="p-0 text-center">
-            <p className="text-lg text-gray-600 mb-2">今月のチャレンジ回数</p>
-            <p className="text-5xl font-extrabold text-blue-500">{thisMonthChallengeCount}回</p>
-            <p className="text-sm text-gray-500 mt-2">
-              {selectedChildId
-                ? `${children.find((c) => c.id === selectedChildId)?.nickname}よくがんばったね！`
-                : 'お子さまを選択してください'}
-            </p>
-          </CardContent>
-        </Card>
+        <MonthlyStats
+          challengeCount={thisMonthChallengeCount}
+          selectedChildId={selectedChildId}
+          children={children}
+        />
 
-        {/* 記録リスト */}
-        <div className="w-full space-y-4 mb-8">
-          {loading ? (
-            <Card className="w-full rounded-xl bg-white/80 p-6 shadow-md backdrop-blur-sm text-center">
-              <CardContent className="p-0">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-                <p className="text-gray-600">読み込み中...</p>
-              </CardContent>
-            </Card>
-          ) : records.length > 0 ? (
-            records.map((record) => (
-              <Card
-                key={record.id}
-                className="w-full rounded-xl bg-white/80 p-4 shadow-md backdrop-blur-sm"
-              >
-                <CardContent className="p-0 flex items-center justify-between">
-                  <div className="flex items-center">
-                    <CalendarDays className="h-8 w-8 text-purple-400 mr-4 flex-shrink-0" />
-                    <div>
-                      <p className="text-lg font-semibold text-gray-700">
-                        {format(parseISO(record.date), 'yyyy年MM月dd日 (EEE)', { locale: ja })}
-                      </p>
-                      <p className="text-sm text-gray-500">{record.summary}</p>
-                    </div>
-                  </div>
+        <RecordsList
+          records={records}
+          loading={loading}
+          deletingId={deletingId}
+          onDelete={handleDelete}
+        />
 
-                  {/* ボタンエリア */}
-                  <div className="flex items-center space-x-2">
-                    {/* 詳細ボタン */}
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full text-blue-500 border-blue-300 hover:bg-blue-50"
-                    >
-                      <Link href={`/history/${record.childId}/${record.id}`}>詳細</Link>
-                    </Button>
-
-                    {/* 削除ボタン */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(record.id)}
-                      disabled={deletingId === record.id}
-                      className="rounded-full text-red-500 hover:text-red-700 hover:bg-red-50 p-2"
-                      title="記録を削除"
-                    >
-                      <Trash2 size={16} />
-                      {deletingId === record.id && <span className="ml-1 text-xs">削除中...</span>}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <Card className="w-full rounded-xl bg-white/80 p-6 shadow-md backdrop-blur-sm text-center">
-              <CardContent className="p-0 text-gray-600 text-lg">
-                まだ記録がありません。
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* エクスポート機能（今後実装予定） */}
-        <Button
-          disabled
-          className="py-3 text-lg sm:py-4 sm:text-xl font-semibold rounded-full shadow-md w-full max-w-xs bg-gray-300 text-gray-500 cursor-not-allowed"
-        >
-          <Download className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
-          記録をエクスポート（準備中）
-        </Button>
+        <ExportButton />
       </main>
     </div>
   );

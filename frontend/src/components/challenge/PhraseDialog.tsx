@@ -1,4 +1,4 @@
-// フレーズダイアログコンポーネント - 分離とテスト可能化
+'use client';
 
 import {
   Dialog,
@@ -7,60 +7,59 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { XCircle } from 'lucide-react';
+import { Volume2 } from 'lucide-react';
 
 interface PhraseDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
-  description: string;
-  phrases: string[];
-  onPhraseSelect?: (phrase: string) => void;
 }
 
-export const PhraseDialog: React.FC<PhraseDialogProps> = ({
-  isOpen,
-  onClose,
-  title,
-  description,
-  phrases,
-  onPhraseSelect,
-}) => {
+// フレーズデータ
+const phrases = [
+  { english: 'Hello!', japanese: 'こんにちは！', color: 'text-blue-600', audio: '/audio/hello.mp3' },
+  { english: 'Thank you!', japanese: 'ありがとう！', color: 'text-green-600', audio: '/audio/thank-you.mp3' },
+  { english: 'Excuse me', japanese: 'すみません', color: 'text-purple-600', audio: '/audio/excuse-me.mp3' },
+  { english: 'How much?', japanese: 'いくら？', color: 'text-orange-600', audio: '/audio/how-much.mp3' },
+  { english: 'Where?', japanese: 'どこ？', color: 'text-pink-600', audio: '/audio/where.mp3' },
+  { english: 'Help me', japanese: 'たすけて', color: 'text-red-600', audio: '/audio/help-me.mp3' },
+];
+
+export function PhraseDialog({ isOpen, onClose }: PhraseDialogProps) {
+  const playAudio = (audioPath: string) => {
+    const audio = new Audio(audioPath);
+    audio.play().catch((error) => {
+      console.error('音声再生エラー:', error);
+    });
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-[425px] bg-gradient-to-br from-yellow-50 to-orange-50">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            {title}
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <XCircle className="w-4 h-4" />
-            </Button>
+          <DialogTitle className="text-2xl font-bold text-orange-600">
+            こまったときのフレーズ
           </DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogDescription className="text-gray-600">
+            タップすると音声が流れます
+          </DialogDescription>
         </DialogHeader>
-        
-        <div className="space-y-3">
+
+        <div className="grid gap-3 py-4">
           {phrases.map((phrase, index) => (
-            <div key={index} className="p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-700">{phrase}</p>
-              {onPhraseSelect && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2"
-                  onClick={() => {
-                    onPhraseSelect(phrase);
-                    onClose();
-                  }}
-                >
-                  この表現を使用
-                </Button>
-              )}
-            </div>
+            <button
+              key={index}
+              className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              onClick={() => playAudio(phrase.audio)}
+            >
+              <div className="text-left">
+                <p className={`text-xl font-bold ${phrase.color}`}>{phrase.english}</p>
+                <p className="text-sm text-gray-600">{phrase.japanese}</p>
+              </div>
+              <Volume2 className="w-6 h-6 text-gray-400" />
+            </button>
           ))}
         </div>
       </DialogContent>
     </Dialog>
   );
-};
+}

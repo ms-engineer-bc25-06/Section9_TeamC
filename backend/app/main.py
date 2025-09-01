@@ -39,8 +39,7 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="idToken is required")
 
         # Firebase トークン検証
-        credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
-        decoded_token = await verify_firebase_token(credentials)
+        decoded_token = await verify_firebase_token(token)
         uid = decoded_token["uid"]
         email = decoded_token.get("email", "")
         name = decoded_token.get("name", "")
