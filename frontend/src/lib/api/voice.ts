@@ -1,6 +1,8 @@
 import { getAuthHeaders } from './auth';
+import { API_CONFIG } from '@/constants/api';
+import { handleApiError } from '@/utils/error-handler';
 
-const API_URL = 'http://localhost:8000';
+const { BASE_URL, ENDPOINTS } = API_CONFIG;
 
 export const voiceApi = {
   // 文字起こし保存
@@ -13,7 +15,7 @@ export const voiceApi = {
   }) => {
     const headers = await getAuthHeaders();
 
-    const response = await fetch(`${API_URL}/api/voice/transcribe`, {
+    const response = await fetch(`${BASE_URL}${ENDPOINTS.VOICE.TRANSCRIBE}`, {
       method: 'POST',
       headers: {
         ...headers,
@@ -53,7 +55,7 @@ export const voiceApi = {
         reader.readAsDataURL(audioBlob);
       });
 
-      const response = await fetch(`${API_URL}/api/voice/transcribe`, {
+      const response = await fetch(`${BASE_URL}${ENDPOINTS.VOICE.TRANSCRIBE}`, {
         method: 'POST',
         headers: {
           ...headers,
@@ -91,7 +93,7 @@ export const voiceApi = {
   getTranscript: async (transcriptId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`${API_URL}/api/voice/transcript/${transcriptId}`, {
+      const response = await fetch(`${BASE_URL}${ENDPOINTS.VOICE.TRANSCRIPT(transcriptId)}`, {
         method: 'GET',
         headers,
       });
@@ -117,7 +119,7 @@ export const voiceApi = {
   getHistory: async (childId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`${API_URL}/api/voice/history/${childId}`, {
+      const response = await fetch(`${BASE_URL}${ENDPOINTS.VOICE.HISTORY(childId)}`, {
         method: 'GET',
         headers,
       });
@@ -143,7 +145,7 @@ export const voiceApi = {
   getChallenge: async (challengeId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`${API_URL}/api/voice/challenge/${challengeId}`, {
+      const response = await fetch(`${BASE_URL}${ENDPOINTS.VOICE.CHALLENGE(challengeId)}`, {
         method: 'GET',
         headers,
       });

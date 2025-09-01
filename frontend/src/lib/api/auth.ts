@@ -1,4 +1,8 @@
-const API_URL = 'http://localhost:8000';
+import { API_CONFIG } from '@/constants/api';
+import { ERROR_MESSAGES } from '@/constants/messages';
+import { handleApiError } from '@/utils/error-handler';
+
+const { BASE_URL, ENDPOINTS } = API_CONFIG;
 
 /**
  * Firebase認証ヘッダーを取得
@@ -65,7 +69,7 @@ export const authApi = {
         idToken ? `${idToken.substring(0, 20)}...` : 'null'
       );
 
-      const response = await fetch(`${API_URL}/api/auth/login`, {
+      const response = await fetch(`${BASE_URL}${ENDPOINTS.AUTH.LOGIN}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,7 +100,7 @@ export const authApi = {
   getProfile: async () => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`${API_URL}/api/auth/profile`, {
+      const response = await fetch(`${BASE_URL}${ENDPOINTS.AUTH.PROFILE}`, {
         method: 'GET',
         headers,
       });
@@ -117,7 +121,7 @@ export const authApi = {
   test: async () => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`${API_URL}/api/auth/test`, {
+      const response = await fetch(`${BASE_URL}${ENDPOINTS.AUTH.TEST}`, {
         method: 'GET',
         headers,
       });
