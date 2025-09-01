@@ -61,11 +61,11 @@ async def get_current_user(
         print(f"✅ 認証成功: {user_info['email']}")  # デバッグ用
         return user_info
 
-    except Exception as e:
-        print(f"❌ 認証エラー: {str(e)}")  # デバッグ用
+    except Exception as error:
+        print(f"❌ 認証エラー: {str(error)}")  # デバッグ用
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"認証に失敗しました: {str(e)}",
+            detail=f"認証に失敗しました: {str(error)}",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -108,6 +108,6 @@ async def verify_firebase_token(token: str) -> Dict[str, Any]:
         decoded_token = auth.verify_id_token(token)
         return decoded_token
 
-    except Exception as e:
-        print(f"❌ トークン検証エラー: {str(e)}")
-        raise e
+    except Exception as error:
+        print(f"❌ トークン検証エラー: {str(error)}")
+        raise error

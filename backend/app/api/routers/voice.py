@@ -79,7 +79,7 @@ async def transcribe_text(request: TranscribeRequest, db: AsyncSession = Depends
             feedback = f"「{transcript}」と話してくれてありがとう！とても上手に話せていますね。これからも頑張ってください！"
 
         # Challenge更新
-        challenge.comment = feedback
+        challenge.ai_feedback = feedback
         db.add(challenge)
         await db.commit()
 
@@ -102,7 +102,7 @@ async def transcribe_text(request: TranscribeRequest, db: AsyncSession = Depends
         # エラーの場合もChallengeを更新しておく
         if "challenge" in locals():
             try:
-                challenge.comment = f"AIフィードバック生成エラー: {str(e)}"
+                challenge.ai_feedback = f"AIフィードバック生成エラー: {str(error)}"
                 db.add(challenge)
                 await db.commit()
             except Exception as commit_error:
@@ -134,7 +134,7 @@ async def get_transcript(transcript_id: str, db: AsyncSession = Depends(get_asyn
         "id": challenge.id,
         "child_id": challenge.child_id,
         "transcript": challenge.transcript,
-        "comment": challenge.comment,
+        "ai_feedback": challenge.ai_feedback,
         "created_at": challenge.created_at,
         "status": "completed" if challenge.transcript else "processing",
     }
@@ -160,7 +160,7 @@ async def get_voice_history(child_id: str, db: AsyncSession = Depends(get_async_
             {
                 "id": challenge.id,
                 "transcript": challenge.transcript,
-                "comment": challenge.comment,
+                "ai_feedback": challenge.ai_feedback,
                 "created_at": challenge.created_at,
             }
             for challenge in challenges
@@ -189,7 +189,7 @@ async def get_challenge_detail(challenge_id: str, db: AsyncSession = Depends(get
             "id": str(challenge.id),
             "child_id": str(challenge.child_id),
             "transcript": challenge.transcript,
-            "comment": challenge.comment,
+            "ai_feedback": challenge.ai_feedback,
             "created_at": challenge.created_at,
             "status": "completed" if challenge.transcript else "processing",
         }

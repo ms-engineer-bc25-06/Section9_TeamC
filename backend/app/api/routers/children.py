@@ -38,8 +38,8 @@ async def get_children(
         children = result.scalars().all()
         # Pydanticモデルに変換して返却
         return [ChildSchema.model_validate(child) for child in children]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=str(error))
 
 
 @router.get("/{child_id}", response_model=ChildSchema)
@@ -74,8 +74,8 @@ async def get_child(
         
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=str(error))
 
 
 @router.post("/", response_model=ChildSchema)
@@ -111,9 +111,9 @@ async def create_child(
 
         # Pydanticモデルに変換して返却
         return ChildSchema.model_validate(child)
-    except Exception as e:
+    except Exception as error:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(error))
 
 
 @router.put("/{child_id}", response_model=ChildSchema)
@@ -157,9 +157,9 @@ async def update_child(
 
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception as error:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(error))
 
 
 @router.delete("/{child_id}")
@@ -199,6 +199,6 @@ async def delete_child(
 
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception as error:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"削除処理中にエラーが発生しました: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"削除処理中にエラーが発生しました: {str(error)}")

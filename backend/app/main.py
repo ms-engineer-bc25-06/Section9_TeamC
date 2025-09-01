@@ -7,7 +7,7 @@ from app.utils.auth import verify_firebase_token
 from fastapi.security import HTTPAuthorizationCredentials
 from app.services.user_service import UserService
 from app.api.routers import children, auth, ai_feedback
-from app.api.voice.transcription import router as voice_router
+from app.api.routers.voice import router as voice_router
 
 
 # Pydanticモデル定義
@@ -60,8 +60,8 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
             }
         }
 
-    except Exception as e:
-        print(f"Firebase認証統合エラー: {e}")
+    except Exception as error:
+        print(f"Firebase認証統合エラー: {error}")
         raise HTTPException(status_code=500, detail="ログイン処理に失敗しました")
 
 

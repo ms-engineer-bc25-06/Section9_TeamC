@@ -11,10 +11,10 @@ class ChildBase(BaseModel):
 
     @field_validator("nickname")
     @classmethod
-    def nickname_must_not_be_empty(cls, v):
-        if not v or not v.strip():
+    def nickname_must_not_be_empty(cls, value):
+        if not value or not value.strip():
             raise ValueError("ニックネームは必須です")
-        return v.strip()
+        return value.strip()
 
 
 class ChildCreate(ChildBase):
