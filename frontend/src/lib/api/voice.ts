@@ -1,5 +1,6 @@
 import { ApiService } from '@/services/apiService';
 import { API_CONFIG } from '@/constants/api';
+import { logger } from '@/utils/logger';
 
 const { ENDPOINTS } = API_CONFIG;
 
@@ -18,7 +19,7 @@ export const voiceApi = {
         transcript: transcription,
       });
     } catch (error) {
-      console.error('❌ 文字起こしエラー:', error);
+      logger.error('文字起こしエラー:', error);
       throw error;
     }
   },
@@ -39,10 +40,10 @@ export const voiceApi = {
         child_id: childId,
       });
       
-      console.log('✅ 文字起こし成功:', result);
+      logger.debug('文字起こし成功:', result);
       return result;
     } catch (error) {
-      console.error('❌ 文字起こしに失敗:', error);
+      logger.error('文字起こしに失敗:', error);
       throw error;
     }
   },
@@ -52,7 +53,7 @@ export const voiceApi = {
     try {
       return await ApiService.get(ENDPOINTS.VOICE.TRANSCRIPT(transcriptId));
     } catch (error) {
-      console.error('音声認識結果の取得に失敗:', error);
+      logger.error('音声認識結果の取得に失敗:', error);
       throw error;
     }
   },
@@ -62,7 +63,7 @@ export const voiceApi = {
     try {
       return await ApiService.get(ENDPOINTS.VOICE.HISTORY(childId));
     } catch (error) {
-      console.error('音声履歴の取得に失敗:', error);
+      logger.error('音声履歴の取得に失敗:', error);
       throw error;
     }
   },
@@ -72,7 +73,7 @@ export const voiceApi = {
     try {
       return await ApiService.get(ENDPOINTS.VOICE.CHALLENGE(challengeId));
     } catch (error) {
-      console.error('チャレンジ詳細の取得に失敗:', error);
+      logger.error('チャレンジ詳細の取得に失敗:', error);
       throw error;
     }
   },

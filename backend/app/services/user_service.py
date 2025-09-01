@@ -14,10 +14,7 @@ class UserService:
     async def get_or_create_user_from_firebase(
         self, firebase_uid: str, email: str, name: str
     ) -> User:
-        print(f"🔍 ユーザー検索開始: {email}, Firebase UID: {firebase_uid}")
-
         try:
-            # 既存ユーザーを検索
             result = self.db.execute(select(User).where(User.firebase_uid == firebase_uid))
             user = result.scalars().first()
 
@@ -33,23 +30,19 @@ class UserService:
             self.db.commit()
             self.db.refresh(user)
 
-            print(f"✅ ユーザー作成完了: ID={user.id}")
             return user
 
         except Exception as error:
-            print(f"❌ get_or_create_user エラー: {error}")
             self.db.rollback()
             raise
 
     def get_user_by_firebase_uid(self, firebase_uid: str) -> Optional[User]:
-        """Firebase UIDでユーザーを検索（同期版）"""
         result = self.db.execute(
             select(User).where(User.firebase_uid == firebase_uid)
         )
         return result.scalars().first()
 
     def validate_user_access(self, firebase_uid: str, child_id: str) -> bool:
-        """ユーザーが指定した子どもにアクセス権があるかチェック"""
         from app.models.child import Child
         
         result = self.db.execute(
