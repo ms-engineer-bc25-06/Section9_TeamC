@@ -73,7 +73,7 @@ cd backend
 cd frontend
 npm run test              # Unit Test
 npm run test:coverage     # カバレッジ測定
-npm run test:e2e         # E2E Test
+npm run test:e2e          # E2E Test
 
 # 全体チェック
 npm run check:all
