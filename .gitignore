@@ -253,3 +253,8 @@ playwright-report/
 # Environment files
 frontend/.env.local
 backend/.env
+
+# allow env example files
+!.env*.example
+!.env*.template
+!frontend/.env.local.example
