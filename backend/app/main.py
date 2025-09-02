@@ -7,7 +7,20 @@ from app.utils.auth import verify_firebase_token
 from app.services.user_service import UserService
 from app.api.routers import children, auth, ai_feedback
 from app.api.routers.voice import router as voice_router
+from app.api.routers import logging_control
+from app.core.logging_config import setup_logging, get_logger
+from app.middleware.error_handler import ErrorHandlerMiddleware
+from app.middleware.performance_monitoring import PerformanceMonitoringMiddleware
+from app.middleware.traceability_logging import TraceabilityMiddleware
+from app.core.monitoring_task import start_monitoring
+import logging
 
+# ログ設定の初期化
+setup_logging()
+logger = get_logger(__name__)
+
+# 監視システム開始
+start_monitoring()
 
 # Pydanticモデル定義
 class LoginRequest(BaseModel):
@@ -15,6 +28,11 @@ class LoginRequest(BaseModel):
 
 
 app = FastAPI(title="BUD Backend API")
+
+# ミドルウェアを追加（順序重要：トレーサビリティ → 性能測定 → エラーハンドリング）
+app.add_middleware(TraceabilityMiddleware)
+app.add_middleware(PerformanceMonitoringMiddleware)  
+app.add_middleware(ErrorHandlerMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
@@ -69,6 +87,7 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
 app.include_router(children.router, prefix="/api/children", tags=["children"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(ai_feedback.router, prefix="/api")
+app.include_router(logging_control.router, prefix="/api/admin", tags=["admin"])
 
 
 # Voice Transcription API

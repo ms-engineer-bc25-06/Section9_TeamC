@@ -3,11 +3,15 @@ from sqlalchemy.ext.asyncio import AsyncSession  # 非同期Session
 from sqlalchemy import text  # テキストクエリ用
 from app.core.database import get_db, database
 from app.core.config import settings
+from app.core.logging_config import get_logger, log_server_status
+from app.core.cache import get_cache_stats
+from app.core.resource_monitor import resource_monitor, get_resource_summary
 import time
 import psutil
 from datetime import datetime, timezone
 
 router = APIRouter()
+logger = get_logger(__name__)
 
 
 @router.get("/")
@@ -34,6 +38,12 @@ async def detailed_health_check(db: AsyncSession = Depends(get_db)):
         "version": settings.VERSION,
         "environment": settings.ENVIRONMENT,
         "checks": {},
+        "performance_requirements": {
+            "response_time_target_ms": 200,
+            "throughput_target_req_sec": 100,
+            "error_rate_target_percent": 0.1,
+            "availability_target_percent": 99.5
+        }
     }
 
     # データベース接続チェック（非同期）
@@ -62,14 +72,40 @@ async def detailed_health_check(db: AsyncSession = Depends(get_db)):
     health_status["checks"]["async_database"] = {"status": async_db_status}
 
     # システムリソース情報を取得
+    cpu_percent = psutil.cpu_percent()
+    memory_percent = psutil.virtual_memory().percent
+    disk_percent = psutil.disk_usage("/").percent
+    
     health_status["system"] = {
-        "cpu_percent": psutil.cpu_percent(),  # CPU使用率
-        "memory_percent": psutil.virtual_memory().percent,  # メモリ使用率
-        "disk_percent": psutil.disk_usage("/").percent,  # ディスク使用率
+        "cpu_percent": cpu_percent,  # CPU使用率
+        "memory_percent": memory_percent,  # メモリ使用率
+        "disk_percent": disk_percent,  # ディスク使用率
+    }
+    
+    # サーバー状態をログに記録
+    log_server_status(cpu_percent, memory_percent, disk_percent)
+    logger.info(f"Health check performed - Status: {health_status['status']}")
+    
+    # リソース監視とアラート
+    resource_summary = get_resource_summary()
+    alerts = resource_monitor.check_resource_alerts(resource_summary["system_resources"])
+    
+    # キャッシュ統計
+    cache_stats = get_cache_stats()
+    
+    # 詳細情報を追加
+    health_status["resource_monitoring"] = {
+        "memory_usage_percent": memory_percent,
+        "cpu_usage_percent": cpu_percent,
+        "disk_usage_percent": disk_percent,
+        "active_alerts": alerts,
+        "cache_stats": cache_stats
     }
 
     # 異常時は503エラーを返す
-    if health_status["status"] == "unhealthy":
+    if health_status["status"] == "unhealthy" or alerts:
+        if alerts:
+            health_status["status"] = "degraded"
         raise HTTPException(status_code=503, detail=health_status)
 
     return health_status
