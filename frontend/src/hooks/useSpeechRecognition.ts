@@ -72,11 +72,8 @@ export const useSpeechRecognition = (): SpeechRecognitionHookResult => {
   
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
-  // ブラウザサポートチェック
   const isSupported = typeof window !== 'undefined' && 
     ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
-
-  // 音声認識の初期化
   const initializeRecognition = useCallback(() => {
     if (!isSupported) return null;
 

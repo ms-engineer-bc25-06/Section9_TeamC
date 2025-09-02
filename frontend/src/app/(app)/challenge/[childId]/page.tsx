@@ -94,12 +94,9 @@ export default function ChallengePage() {
     );
   }
 
-  // 録音終了処理
   const handleStopListening = () => {
     stopListening();
   };
-
-  // 保存処理
   const saveTranscription = async () => {
     if (!transcription.trim()) {
       alert('文字起こしされた内容がありません。');

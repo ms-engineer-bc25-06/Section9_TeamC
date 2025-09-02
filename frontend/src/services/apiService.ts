@@ -58,30 +58,18 @@ export class ApiService {
     }
   }
 
-  /**
-   * GET リクエスト
-   */
   static async get<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'GET' });
   }
 
-  /**
-   * POST リクエスト
-   */
   static async post<T>(endpoint: string, body: Record<string, unknown>): Promise<T> {
     return this.request<T>(endpoint, { method: 'POST', body });
   }
 
-  /**
-   * PUT リクエスト
-   */
   static async put<T>(endpoint: string, body: Record<string, unknown>): Promise<T> {
     return this.request<T>(endpoint, { method: 'PUT', body });
   }
 
-  /**
-   * DELETE リクエスト
-   */
   static async delete<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }

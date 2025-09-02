@@ -13,7 +13,6 @@ class Logger {
   };
 
   constructor() {
-    // 環境変数でログレベルを制御（本番では error のみ）
     this.currentLevel = (process.env.NODE_ENV === 'production') 
       ? 'error' 
       : (process.env.NEXT_PUBLIC_LOG_LEVEL as LogLevel) || 'debug';
@@ -54,10 +53,7 @@ class Logger {
   }
 }
 
-// シングルトンインスタンス
 export const logger = new Logger();
-
-// 開発時のみの便利関数
 export const devLog = (message: string, ...args: any[]): void => {
   if (process.env.NODE_ENV === 'development') {
     logger.debug(message, ...args);
