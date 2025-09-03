@@ -2,7 +2,7 @@
 
 from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy.exc import SQLAlchemyError
 from app.constants.messages import ERROR_MESSAGES
 import traceback
