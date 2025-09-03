@@ -11,7 +11,7 @@ BUD アプリケーションの性能要件、最適化手法、モニタリン�
 | **First Contentful Paint (FCP)**   | < 1.5 秒 | 高     |
 | **Largest Contentful Paint (LCP)** | < 2.5 秒 | 高     |
 | **Cumulative Layout Shift (CLS)**  | < 0.1    | 中     |
-| **First Input Delay (FID)**        | < 100ms  | 高     |
+| **First Input Delay (INP)**        | < 200ms  | 高     |
 | **Time to Interactive (TTI)**      | < 3 秒   | 中     |
 
 ### バックエンド API 性能目標
@@ -64,7 +64,7 @@ export function ProfileImage({ src, alt }: { src: string; alt: string }) {
 // 動的インポートでバンドルサイズ削減
 import dynamic from "next/dynamic";
 
-const VuiceRecorder = dynamic(() => import("../components/VoiceRecorder"), {
+const VoiceRecorder = dynamic(() => import("../components/VoiceRecorder"), {
   loading: () => <div>音声機能を読み込み中...</div>,
   ssr: false, // クライアントサイドでのみ必要な場合
 });
