@@ -134,6 +134,7 @@ git push -u origin feature/your-feature-name
 - [音声機能仕様](./docs/voice-feature.md)
 - [セキュリティ設計](./docs/security.md)
 - [テスト設計](./docs/test-design.md)
+- [コーディング規約](./docs/coding-guidelines.md)
 
 ### 🔧 詳細セットアップ
 
