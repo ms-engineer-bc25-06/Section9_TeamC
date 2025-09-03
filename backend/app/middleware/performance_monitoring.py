@@ -1,7 +1,7 @@
 """性能測定ミドルウェア - レスポンスタイムとスループット計測"""
 
 from fastapi import Request
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from app.core.logging_config import get_logger
 import time
 from typing import Dict
