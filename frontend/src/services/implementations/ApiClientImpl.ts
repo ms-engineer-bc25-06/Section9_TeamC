@@ -7,19 +7,12 @@ import { handleApiError } from '@/utils/error-handler';
 export class ApiClientImpl implements IApiClient {
   constructor(private authService: IAuthService) {}
 
-  async request<T>(
-    endpoint: string,
-    method: string,
-    body?: Record<string, unknown>
-  ): Promise<T> {
+  async request<T>(endpoint: string, method: string, body?: Record<string, unknown>): Promise<T> {
     try {
       const headers = await this.authService.getHeaders();
-      
+
       const controller = new AbortController();
-      const timeoutId = setTimeout(
-        () => controller.abort(), 
-        API_CONFIG.TIMEOUTS.DEFAULT
-      );
+      const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUTS.DEFAULT);
 
       const response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, {
         method,

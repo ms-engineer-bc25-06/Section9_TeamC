@@ -1,7 +1,8 @@
-import openai
+import asyncio
 import os
 from typing import Optional
-import asyncio
+
+import openai
 from fastapi import HTTPException
 
 

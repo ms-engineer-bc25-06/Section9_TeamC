@@ -20,14 +20,12 @@ export function ChallengeHeader({ childName, challengeStatus }: ChallengeHeaderP
         className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span>;‹</span>
+        <span>;ï¿½</span>
       </Link>
-      
+
       <div className="flex items-center gap-2">
         {challengeStatus.icon}
-        <span className={`font-medium ${challengeStatus.color}`}>
-          {challengeStatus.title}
-        </span>
+        <span className={`font-medium ${challengeStatus.color}`}>{challengeStatus.title}</span>
       </div>
     </header>
   );

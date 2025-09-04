@@ -22,7 +22,6 @@ export default function Home() {
     }
   }, [user, router]);
 
-
   if (loading || backendLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100">

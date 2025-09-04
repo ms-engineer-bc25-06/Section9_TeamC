@@ -21,9 +21,8 @@ export default function ChildrenPage() {
   const { children: apiChildren, isLoading: childrenLoading, error } = useChildren();
   const router = useRouter();
   const { displayUserName } = useUserProfile(user);
-  
-  const [children, setChildren] = useState<Child[]>([]);
 
+  const [children, setChildren] = useState<Child[]>([]);
 
   // API子どもデータを変換
   useEffect(() => {

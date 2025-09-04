@@ -1,7 +1,9 @@
 """AI クライアント - 依存性注入対応"""
 
 from abc import ABC, abstractmethod
+
 import openai
+
 from app.constants.ai_config import ai_config
 
 

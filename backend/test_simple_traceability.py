@@ -4,7 +4,6 @@ import json
 import time
 import uuid
 import logging
-from datetime import datetime
 
 # 簡単なログ設定
 logging.basicConfig(
@@ -16,12 +15,12 @@ logger = logging.getLogger("traceability_test")
 
 def test_traceability_logs():
     """トレーサビリティログの基本構造をテスト"""
-    
+
     print("🔍 トレーサビリティログ構造テスト開始...")
-    
+
     # 1. リクエスト追跡ログ
     request_id = str(uuid.uuid4())[:8]
-    
+
     request_start = {
         "event": "request_start",
         "request_id": request_id,
@@ -32,9 +31,9 @@ def test_traceability_logs():
         "user_agent": "Mozilla/5.0 (test)",
         "timestamp": time.time()
     }
-    
+
     logger.info(f"REQUEST_START | {json.dumps(request_start, ensure_ascii=False)}")
-    
+
     # 2. ユーザー操作ログ
     user_action = {
         "event": "user_action",
@@ -48,9 +47,9 @@ def test_traceability_logs():
         "request_id": request_id,
         "timestamp": time.time()
     }
-    
+
     logger.info(f"USER_ACTION | {json.dumps(user_action, ensure_ascii=False)}")
-    
+
     # 3. データアクセスログ
     data_access = {
         "event": "data_access",
@@ -61,9 +60,9 @@ def test_traceability_logs():
         "request_id": request_id,
         "timestamp": time.time()
     }
-    
+
     logger.info(f"DATA_ACCESS | {json.dumps(data_access, ensure_ascii=False)}")
-    
+
     # 4. セキュリティイベントログ
     security_event = {
         "event": "security_event",
@@ -77,9 +76,9 @@ def test_traceability_logs():
         "request_id": request_id,
         "timestamp": time.time()
     }
-    
+
     logger.info(f"SECURITY_INFO | {json.dumps(security_event, ensure_ascii=False)}")
-    
+
     # 5. 音声認識操作ログ
     voice_action = {
         "event": "user_action",
@@ -94,9 +93,9 @@ def test_traceability_logs():
         "request_id": request_id,
         "timestamp": time.time()
     }
-    
+
     logger.info(f"USER_ACTION | {json.dumps(voice_action, ensure_ascii=False)}")
-    
+
     # 6. リクエスト終了ログ
     request_end = {
         "event": "request_end",
@@ -108,9 +107,9 @@ def test_traceability_logs():
         "user_id": "user123",
         "timestamp": time.time()
     }
-    
+
     logger.info(f"REQUEST_END | {json.dumps(request_end, ensure_ascii=False)}")
-    
+
     # 7. エラーケース
     error_request = {
         "event": "request_end",
@@ -122,9 +121,9 @@ def test_traceability_logs():
         "user_id": "user456",
         "timestamp": time.time()
     }
-    
+
     logger.warning(f"REQUEST_ERROR | {json.dumps(error_request, ensure_ascii=False)}")
-    
+
     print("✅ トレーサビリティログ構造テスト完了")
     print("\n📋 実装されたトレーサビリティ項目:")
     print("- リクエストID追跡")

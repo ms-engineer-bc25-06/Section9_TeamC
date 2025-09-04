@@ -16,16 +16,16 @@ export const handleApiError = (error: unknown): AppError => {
   if (error instanceof AppError) {
     return error;
   }
-  
+
   if (error instanceof Error) {
     // ネットワークエラーの判定
     if (error.message.includes('fetch')) {
       return new AppError(ERROR_MESSAGES.NETWORK.CONNECTION_ERROR, 'NETWORK_ERROR');
     }
-    
+
     return new AppError(error.message, 'UNKNOWN_ERROR');
   }
-  
+
   return new AppError(ERROR_MESSAGES.NETWORK.SERVER_ERROR, 'SERVER_ERROR');
 };
 

@@ -17,7 +17,6 @@ export default function ChallengeDetailPage() {
 
   const { record, loading, error } = useRecordDetail(recordId, childId);
 
-
   // ローディング中の表示
   if (loading) {
     return (
