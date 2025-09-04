@@ -2,7 +2,13 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { DIProvider, useDI, IApiClient, IAuthService, ISpeechRecognition } from '@/services/DIContainer';
+import {
+  DIProvider,
+  useDI,
+  IApiClient,
+  IAuthService,
+  ISpeechRecognition,
+} from '@/services/DIContainer';
 
 // モックの実装
 const mockApiClient: IApiClient = {
@@ -29,7 +35,7 @@ const mockSpeechRecognition: ISpeechRecognition = {
 // テスト用コンポーネント
 const TestComponent = () => {
   const { apiClient, authService, speechRecognition } = useDI();
-  
+
   return (
     <div>
       <button onClick={() => apiClient.get('/test')}>API Test</button>
@@ -61,21 +67,17 @@ describe('依存性注入コンテナ', () => {
   it('Provider外でのuseDI使用時はエラーを投げる', () => {
     // エラーログを抑制
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     expect(() => {
       render(<TestComponent />);
     }).toThrow('useDI must be used within a DIProvider');
-    
+
     consoleSpy.mockRestore();
   });
 
   it('各サービスが個別に利用可能', async () => {
     const { result } = renderHook(() => useDI(), {
-      wrapper: ({ children }) => (
-        <DIProvider dependencies={dependencies}>
-          {children}
-        </DIProvider>
-      ),
+      wrapper: ({ children }) => <DIProvider dependencies={dependencies}>{children}</DIProvider>,
     });
 
     expect(result.current.apiClient).toBe(mockApiClient);

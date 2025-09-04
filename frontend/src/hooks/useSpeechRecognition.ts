@@ -69,17 +69,18 @@ export const useSpeechRecognition = (): SpeechRecognitionHookResult => {
   const [accumulatedTranscript, setAccumulatedTranscript] = useState('');
   // FIXME: 自動停止機能実装時に使用予定
   const [lastSpeechTime, setLastSpeechTime] = useState(Date.now());
-  
+
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
-  const isSupported = typeof window !== 'undefined' && 
+  const isSupported =
+    typeof window !== 'undefined' &&
     ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
   const initializeRecognition = useCallback(() => {
     if (!isSupported) return null;
 
     const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognitionClass();
-    
+
     recognition.continuous = SPEECH_CONFIG.CONTINUOUS;
     recognition.interimResults = SPEECH_CONFIG.INTERIM_RESULTS;
     recognition.lang = SPEECH_CONFIG.LANGUAGE;
@@ -104,7 +105,7 @@ export const useSpeechRecognition = (): SpeechRecognitionHookResult => {
       }
 
       if (finalTranscript) {
-        setAccumulatedTranscript(prev => prev + finalTranscript);
+        setAccumulatedTranscript((prev) => prev + finalTranscript);
         setLastSpeechTime(Date.now());
       }
 

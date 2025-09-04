@@ -39,7 +39,7 @@ export const voiceApi = {
         file: base64Audio,
         child_id: childId,
       });
-      
+
       logger.debug('文字起こし成功:', result);
       return result;
     } catch (error) {

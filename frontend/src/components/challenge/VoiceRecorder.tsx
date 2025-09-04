@@ -45,7 +45,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         <Button
           onClick={isListening ? stopListening : startListening}
           disabled={disabled || isProcessing}
-          variant={isListening ? "destructive" : "default"}
+          variant={isListening ? 'destructive' : 'default'}
           size="lg"
           className="min-w-[120px]"
         >

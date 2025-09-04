@@ -1,7 +1,9 @@
-from app.schemas.child import Child
-from pydantic import BaseModel, EmailStr
-from typing import Optional, List
 from datetime import datetime
+from typing import List, Optional
+
+from pydantic import BaseModel, EmailStr
+
+from app.schemas.child import Child
 
 
 class UserBase(BaseModel):

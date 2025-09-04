@@ -1,19 +1,18 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from app.core.database import get_db
-from app.utils.auth import verify_firebase_token
-from app.services.user_service import UserService
-from app.api.routers import children, auth, ai_feedback
+from sqlalchemy.orm import Session
+
+from app.api.routers import ai_feedback, auth, children, logging_control
 from app.api.routers.voice import router as voice_router
-from app.api.routers import logging_control
-from app.core.logging_config import setup_logging, get_logger
+from app.core.database import get_db
+from app.core.logging_config import get_logger, setup_logging
+from app.core.monitoring_task import start_monitoring
 from app.middleware.error_handler import ErrorHandlerMiddleware
 from app.middleware.performance_monitoring import PerformanceMonitoringMiddleware
 from app.middleware.traceability_logging import TraceabilityMiddleware
-from app.core.monitoring_task import start_monitoring
-import logging
+from app.services.user_service import UserService
+from app.utils.auth import verify_firebase_token
 
 # ログ設定の初期化
 setup_logging()
@@ -21,6 +20,7 @@ logger = get_logger(__name__)
 
 # 監視システム開始
 start_monitoring()
+
 
 # Pydanticモデル定義
 class LoginRequest(BaseModel):
@@ -31,7 +31,7 @@ app = FastAPI(title="BUD Backend API")
 
 # ミドルウェアを追加（順序重要：トレーサビリティ → 性能測定 → エラーハンドリング）
 app.add_middleware(TraceabilityMiddleware)
-app.add_middleware(PerformanceMonitoringMiddleware)  
+app.add_middleware(PerformanceMonitoringMiddleware)
 app.add_middleware(ErrorHandlerMiddleware)
 
 app.add_middleware(

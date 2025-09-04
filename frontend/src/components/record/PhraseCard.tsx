@@ -15,9 +15,7 @@ export function PhraseCard({ phraseData }: PhraseCardProps) {
   return (
     <Card className="w-full rounded-xl bg-blue-50/80 p-6 shadow-lg backdrop-blur-sm mb-8">
       <CardHeader className="p-0 pb-4">
-        <CardTitle className="text-lg font-bold text-blue-800">
-          💡 こんな言い方もあるよ！
-        </CardTitle>
+        <CardTitle className="text-lg font-bold text-blue-800">💡 こんな言い方もあるよ！</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <div className="bg-white/60 rounded-lg p-4">

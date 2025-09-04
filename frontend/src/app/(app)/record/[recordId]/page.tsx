@@ -60,12 +60,12 @@ export default function RecordCompletionPage() {
         setError(null);
 
         // 直後ページ用のAPI呼び出し（getTranscript）
-        const data = await api.voice.getTranscript(recordId) as TranscriptResponse;
+        const data = (await api.voice.getTranscript(recordId)) as TranscriptResponse;
 
         // 子ども情報も取得
         let childName = 'お子さま';
         try {
-          const childData = await api.children.get(data.child_id) as ChildResponse;
+          const childData = (await api.children.get(data.child_id)) as ChildResponse;
           childName = childData.nickname || childData.name || 'お子さま';
         } catch (childError) {
           console.error('子ども情報取得エラー:', childError);
@@ -161,7 +161,7 @@ export default function RecordCompletionPage() {
             <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
               {record.aiFeedback}
             </p>
-            
+
             {/* フレーズ提案の表示 */}
             {record.phraseSuggestion && (
               <div className="mt-6 p-4 bg-blue-50 rounded-lg">
@@ -170,7 +170,7 @@ export default function RecordCompletionPage() {
                 <p className="text-sm text-gray-600 mt-1">{record.phraseSuggestion.ja}</p>
               </div>
             )}
-            
+
             <div className="mt-6 text-sm text-gray-500">
               <p>記録日時: {format(record.timestamp, 'yyyy年MM月dd日 HH:mm', { locale: ja })}</p>
             </div>

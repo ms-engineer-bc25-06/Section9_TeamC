@@ -40,15 +40,8 @@ interface DIProviderProps {
   dependencies: Dependencies;
 }
 
-export const DIProvider: React.FC<DIProviderProps> = ({
-  children,
-  dependencies,
-}) => {
-  return (
-    <DIContext.Provider value={dependencies}>
-      {children}
-    </DIContext.Provider>
-  );
+export const DIProvider: React.FC<DIProviderProps> = ({ children, dependencies }) => {
+  return <DIContext.Provider value={dependencies}>{children}</DIContext.Provider>;
 };
 
 // カスタムフック
