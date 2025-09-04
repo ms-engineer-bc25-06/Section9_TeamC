@@ -1,5 +1,9 @@
 'use client';
 
+// NOTE: 開発専用デバッグページ - 本番環境では削除または無効化が必要
+// TODO: 本番ビルド時の自動除外設定を検討
+// SECURITY: 子ども情報を表示するため本番環境での公開は禁止
+
 import { useChildren } from '@/hooks/useChildren';
 import { useEffect } from 'react';
 

@@ -1,7 +1,9 @@
-from sqlalchemy import Column, Text, DateTime, func, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
+
+from sqlalchemy import Column, DateTime, ForeignKey, Text, func
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+
 from app.core.database import Base
 
 
@@ -13,7 +15,7 @@ class Challenge(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     child_id = Column(UUID(as_uuid=True), ForeignKey("children.id"), nullable=False)
     transcript = Column(Text, nullable=True, comment="音声の文字起こし結果")
-    comment = Column(Text, nullable=True, comment="AIフィードバック")
+    ai_feedback = Column(Text, nullable=True, comment="AIフィードバック")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # 双方向リレーション

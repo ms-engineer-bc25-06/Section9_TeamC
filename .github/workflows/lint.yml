@@ -1,5 +1,5 @@
-# コード品質チェック用ワークフロー
-name: Lint & Format Check
+# CI/CDパイプライン - テスト・ビルド・デプロイ自動化
+name: CI/CD Pipeline
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
     branches: [develop, main]
 
 jobs:
-  lint-frontend:
+  test-and-build-frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -28,13 +28,28 @@ jobs:
       - name: 依存パッケージをインストール
         run: npm ci
       
-      - name: ESLintでコードチェック（ローカルと同じ設定）
+      - name: ESLintでコードチェック
         run: npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0
       
       - name: Prettierでフォーマットチェック
         run: npx prettier --check .
+      
+      - name: Unit テスト実行
+        run: npm run test -- --run
+      
+      - name: E2E テスト実行
+        run: npx playwright install --with-deps && npm run test:e2e
+      
+      - name: ビルド実行
+        run: npm run build
+      
+      - name: ビルド成果物を保存
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/.next
 
-  lint-backend:
+  test-backend:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -53,10 +68,48 @@ jobs:
       - name: 依存関係をインストール
         run: |
           pip install -r requirements.txt
-          pip install ruff
+          pip install ruff pytest pytest-asyncio
       
       - name: Ruffでコードチェック
         run: ruff check . --diff
       
       - name: Ruffでフォーマットチェック
         run: ruff format . --check
+      
+      - name: Pytestでテスト実行
+        run: pytest tests/ -v
+
+  deploy-frontend:
+    needs: [test-and-build-frontend, test-backend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    defaults:
+      run:
+        working-directory: ./frontend
+    
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+      
+      - name: Node.jsをセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: 依存パッケージをインストール
+        run: npm ci
+      
+      - name: 本番ビルド実行
+        run: npm run build
+        env:
+          NODE_ENV: production
+      
+      
+      - name: GitHub Pagesへデプロイ
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./frontend/out
+          force_orphan: true

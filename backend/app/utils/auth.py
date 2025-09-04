@@ -1,28 +1,41 @@
 # Firebase認証ユーティリティ
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Dict, Any, Optional
-import firebase_admin
-from firebase_admin import auth, credentials
 import os
+from typing import Any, Dict, Optional
 
+import firebase_admin
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from firebase_admin import auth, credentials
 
 # 1. Firebase初期化（最初に1回だけ）
 if not firebase_admin._apps:
-    # 絶対パスで指定（最も確実）
-    import os
+    try:
+        # 絶対パスで指定（最も確実）
+        import os
 
-    # プロジェクトルートのパスを取得
-    current_file = os.path.abspath(__file__)  # auth.pyの絶対パス
-    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_file))))
-    cred_path = os.path.join(project_root, "app", "serviceAccountKey.json")
+        # Docker環境では /app/serviceAccountKey.json を使用
+        docker_cred_path = "/app/serviceAccountKey.json"
+        local_cred_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "serviceAccountKey.json"
+        )
 
-    print(f"🔍 Firebase認証ファイルパス: {cred_path}")
-    print(f"🔍 ファイル存在確認: {os.path.exists(cred_path)}")
+        if os.path.exists(docker_cred_path):
+            cred_path = docker_cred_path
+            print(f"🔍 Dockerパス使用: {cred_path}")
+        elif os.path.exists(local_cred_path):
+            cred_path = local_cred_path
+            print(f"🔍 ローカルパス使用: {cred_path}")
+        else:
+            raise FileNotFoundError("serviceAccountKey.jsonが見つかりません")
 
-    cred = credentials.Certificate(cred_path)
-    firebase_admin.initialize_app(cred)
+        cred = credentials.Certificate(cred_path)
+        firebase_admin.initialize_app(cred)
+        print("✅ Firebase初期化完了")
+    except Exception as e:
+        print(f"❌ Firebase初期化エラー: {e}")
+        print("⚠️ 正しいserviceAccountKey.jsonをプロジェクトルートに配置してください")
+        raise e
 
 # 2. トークンを取得するための仕組み
 security = HTTPBearer()
@@ -58,14 +71,14 @@ async def get_current_user(
             "email_verified": decoded_token.get("email_verified", False),
         }
 
-        print(f"✅ 認証成功: {user_info['email']}")  # デバッグ用
+        print(f"✅ 認証成功: {user_info['email']}")
         return user_info
 
-    except Exception as e:
-        print(f"❌ 認証エラー: {str(e)}")  # デバッグ用
+    except Exception as error:
+        print(f"❌ 認証に失敗しました: {error}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"認証に失敗しました: {str(e)}",
+            detail="認証に失敗しました",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -108,6 +121,6 @@ async def verify_firebase_token(token: str) -> Dict[str, Any]:
         decoded_token = auth.verify_id_token(token)
         return decoded_token
 
-    except Exception as e:
-        print(f"❌ トークン検証エラー: {str(e)}")
-        raise e
+    except Exception as error:
+        print(f"❌ トークン検証エラー: {str(error)}")
+        raise error

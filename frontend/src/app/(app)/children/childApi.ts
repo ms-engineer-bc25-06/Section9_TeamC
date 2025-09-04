@@ -4,20 +4,16 @@
  * @param token Firebase認証トークン
  * @returns API レスポンス
  */
-export async function createChild(data: { nickname: string; birthdate?: string }, token: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/children`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
+
+import { api } from '@/lib/api';
+
+export const createChild = async (
+  data: { nickname: string; birthdate?: string },
+  token?: string
+) => {
+  return api.children.create({
+    name: data.nickname,
+    nickname: data.nickname,
+    birthdate: data.birthdate,
   });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || '子ども登録に失敗しました');
-  }
-
-  return res.json();
-}
+};

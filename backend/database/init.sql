@@ -88,7 +88,8 @@ INSERT INTO users (id, email, name, firebase_uid) VALUES
 INSERT INTO children (id, user_id, nickname, birthdate) VALUES 
     ('660e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440001', 'ゆうくん', '2016-04-15'),
     ('660e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440001', 'あかりちゃん', '2018-08-20'),
-    ('660e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440002', 'そらちゃん', '2014-12-10');
+    ('660e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440002', 'そらちゃん', '2014-12-10'),
+    ('660e8400-e29b-41d4-a716-446655440004', '550e8400-e29b-41d4-a716-446655440002', 'つぼみちゃん', '2017-08-29');
 
 INSERT INTO challenges (child_id, transcript, comment) VALUES 
     -- ゆうくん（低学年）のチャレンジ
@@ -124,7 +125,11 @@ INSERT INTO challenges (child_id, transcript, comment) VALUES
     
     ('660e8400-e29b-41d4-a716-446655440003', 
      'Hi are you enjoying Japan yes Japan is amazing what did you visit today we visited temple and museum how was it very interesting Japanese culture is wonderful I am glad you like it', 
-     '日本の文化について英語で話せるようになったね！🏛️ 会話がとても自然で上手だよ！');
+     '日本の文化について英語で話せるようになったね！🏛️ 会話がとても自然で上手だよ！'),
+    
+    ('660e8400-e29b-41d4-a716-446655440004', 
+     'Hello My name is Tubomi Hello Tubomi I am looking for a good sushi restaurant Do you know one Slowly Please Oh sorry let me speak slowly Do you know any good sushi restaurant around here Um sushi restaurant Yes Thank you so much You are welcome',
+     '{"child_utterances": ["Hello My name is Tubomi", "Slowly Please", "Um sushi restaurant", "Yes"], "feedback_short": "素晴らしい勇気！分からない時に助けを求められたね。次も頑張ろう！", "phrase_suggestion": {"en": "Could you repeat that?", "ja": "もう一度言ってもらいたい時の表現"}, "note": ""}');
      
 -- アプリケーションユーザーに権限を付与
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO bud_user;

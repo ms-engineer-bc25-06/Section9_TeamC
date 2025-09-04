@@ -9,13 +9,34 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-// API連携用の型定義
+// API連携用の型定義（直後ページ用：シンプル）
 interface RecordData {
   id: string;
   childId: string;
   childName: string;
   timestamp: Date;
   aiFeedback: string;
+  phraseSuggestion?: {
+    en: string;
+    ja: string;
+  };
+}
+
+// APIレスポンスの型定義
+interface TranscriptResponse {
+  id: string;
+  child_id: string;
+  transcript: string;
+  ai_feedback?: string;
+  comment?: string;
+  created_at: string;
+  status: string;
+}
+
+interface ChildResponse {
+  id: string;
+  name?: string;
+  nickname?: string;
 }
 
 export default function RecordCompletionPage() {
@@ -38,16 +59,30 @@ export default function RecordCompletionPage() {
         setLoading(true);
         setError(null);
 
-        // 音声認識結果をAPIから取得
-        const data = await api.voice.getTranscript(recordId);
+        // 直後ページ用のAPI呼び出し（getTranscript）
+        const data = (await api.voice.getTranscript(recordId)) as TranscriptResponse;
 
         // 子ども情報も取得
         let childName = 'お子さま';
         try {
-          const childData = await api.children.get(data.child_id);
+          const childData = (await api.children.get(data.child_id)) as ChildResponse;
           childName = childData.nickname || childData.name || 'お子さま';
         } catch (childError) {
           console.error('子ども情報取得エラー:', childError);
+        }
+
+        // ai_feedbackをJSON.parseしてfeedback_shortを取得（失敗時は従来表示）
+        let aiText = data.ai_feedback || data.comment || 'AIフィードバックを生成中です...';
+        let phraseSuggestion = undefined;
+        try {
+          const feedbackData = data.ai_feedback || data.comment;
+          if (feedbackData && feedbackData !== 'AIフィードバックを生成中です...') {
+            const parsed = JSON.parse(feedbackData);
+            aiText = parsed?.feedback_short || aiText;
+            phraseSuggestion = parsed?.phrase_suggestion;
+          }
+        } catch {
+          // JSON parseに失敗した場合は元のテキストを使用（旧データ対応）
         }
 
         // APIレスポンスを画面表示用の形式に変換
@@ -56,7 +91,8 @@ export default function RecordCompletionPage() {
           childId: data.child_id,
           childName: childName,
           timestamp: new Date(data.created_at),
-          aiFeedback: data.comment || 'AIフィードバックを生成中です...',
+          aiFeedback: aiText, // JSON形式ならfeedback_short、旧形式なら元テキスト
+          phraseSuggestion: phraseSuggestion,
         });
       } catch (error) {
         console.error('記録取得エラー:', error);
@@ -113,6 +149,7 @@ export default function RecordCompletionPage() {
           よくがんばったね！
         </h1>
 
+        {/* メインのフィードバックカード */}
         <Card className="w-full rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm mb-8">
           <CardHeader className="p-0 pb-4">
             <CardTitle className="text-xl font-bold text-gray-800 sm:text-2xl">
@@ -120,15 +157,27 @@ export default function RecordCompletionPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 text-left">
+            {/* AIフィードバック表示（JSON形式ならfeedback_short、旧形式なら元テキスト） */}
             <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
               {record.aiFeedback}
             </p>
+
+            {/* フレーズ提案の表示 */}
+            {record.phraseSuggestion && (
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm font-semibold text-blue-800 mb-2">次回使えるフレーズ：</p>
+                <p className="text-lg font-bold text-blue-600">{record.phraseSuggestion.en}</p>
+                <p className="text-sm text-gray-600 mt-1">{record.phraseSuggestion.ja}</p>
+              </div>
+            )}
+
             <div className="mt-6 text-sm text-gray-500">
               <p>記録日時: {format(record.timestamp, 'yyyy年MM月dd日 HH:mm', { locale: ja })}</p>
             </div>
           </CardContent>
         </Card>
 
+        {/* ホームに戻るボタン */}
         <Link href="/children" passHref>
           <Button className="w-full max-w-xs py-4 sm:py-5 text-xl sm:text-2xl font-bold rounded-full shadow-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 bg-blue-400 text-white hover:bg-blue-500">
             ホームに戻る

@@ -1,12 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import select, text
 from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select, text
+from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.models.child import Child as ChildModel
-from app.schemas.child import ChildCreate, Child as ChildSchema
-from app.utils.auth import get_current_user
 from app.models.user import User
+from app.schemas.child import Child as ChildSchema
+from app.schemas.child import ChildCreate
+from app.utils.auth import get_current_user
 
 router = APIRouter()
 
@@ -38,8 +41,8 @@ async def get_children(
         children = result.scalars().all()
         # Pydanticモデルに変換して返却
         return [ChildSchema.model_validate(child) for child in children]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=str(error))
 
 
 @router.get("/{child_id}", response_model=ChildSchema)
@@ -71,11 +74,11 @@ async def get_child(
 
         # Pydanticモデルに変換して返却
         return ChildSchema.model_validate(child)
-        
+
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=str(error))
 
 
 @router.post("/", response_model=ChildSchema)
@@ -111,9 +114,9 @@ async def create_child(
 
         # Pydanticモデルに変換して返却
         return ChildSchema.model_validate(child)
-    except Exception as e:
+    except Exception as error:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(error))
 
 
 @router.put("/{child_id}", response_model=ChildSchema)
@@ -157,16 +160,14 @@ async def update_child(
 
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception as error:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(error))
 
 
 @router.delete("/{child_id}")
 async def delete_child(
-    child_id: str,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    child_id: str, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)
 ):
     """子ども情報を削除する（関連データも含めて）"""
     try:
@@ -199,6 +200,8 @@ async def delete_child(
 
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception as error:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"削除処理中にエラーが発生しました: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"削除処理中にエラーが発生しました: {str(error)}"
+        )

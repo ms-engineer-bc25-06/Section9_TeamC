@@ -1,10 +1,12 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.models.challenge import Challenge
 from app.models.child import Child
 from app.services.ai_feedback_service import AIFeedbackService
-from datetime import date
 
 router = APIRouter(prefix="/ai-feedback", tags=["ai-feedback"])
 
@@ -198,36 +200,27 @@ async def get_analysis_status(db: Session = Depends(get_db)):
         "total_with_transcript": total_with_transcript,
         "analyzed": analyzed,
         "unanalyzed": unanalyzed,
-        "analysis_rate": round((analyzed / total_with_transcript * 100), 1)
-        if total_with_transcript > 0
-        else 0,
+        "analysis_rate": (
+            round((analyzed / total_with_transcript * 100), 1) if total_with_transcript > 0 else 0
+        ),
     }
 
 
 @router.delete("/{challenge_id}")
 async def delete_challenge(challenge_id: str, db: Session = Depends(get_db)):
     """チャレンジ記録削除"""
-    
+
     challenge = db.query(Challenge).filter(Challenge.id == challenge_id).first()
-    
+
     if not challenge:
-        raise HTTPException(
-            status_code=404,
-            detail="チャレンジ記録が見つかりません"
-        )
-    
+        raise HTTPException(status_code=404, detail="チャレンジ記録が見つかりません")
+
     try:
         db.delete(challenge)
         db.commit()
-        
-        return {
-            "message": "チャレンジ記録を削除しました",
-            "deleted_id": challenge_id
-        }
-        
+
+        return {"message": "チャレンジ記録を削除しました", "deleted_id": challenge_id}
+
     except Exception as e:
         db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"削除中にエラーが発生しました: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"削除中にエラーが発生しました: {str(e)}")

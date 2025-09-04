@@ -235,10 +235,26 @@ yarn.lock
 pnpm-lock.yaml
 !frontend/pnpm-lock.yaml
 
+# セキュリティ・機密ファイル
 config/firebase-credentials.json
 serviceAccountKey.json
+**/serviceAccountKey.json
+
+# バックアップファイル（開発用）
+*.backup
+*.original
+*.bak
+
+# テスト出力
+test-results/
+playwright-report/
+.playwright/
 
 # Environment files
 frontend/.env.local
 backend/.env
-serviceAccountKey.json
+
+# allow env example files
+!.env*.example
+!.env*.template
+!frontend/.env.local.example
