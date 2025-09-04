@@ -34,21 +34,30 @@ def setup_logging():
 
     # ファイルハンドラー（全ログ）
     file_handler = logging.handlers.RotatingFileHandler(
-        LOG_DIR / "app.log", maxBytes=10485760, backupCount=5, encoding="utf-8"  # 10MB
+        LOG_DIR / "app.log",
+        maxBytes=10485760,
+        backupCount=5,
+        encoding="utf-8",  # 10MB
     )
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(detailed_formatter)
 
     # エラーログ専用ハンドラー
     error_handler = logging.handlers.RotatingFileHandler(
-        LOG_DIR / "error.log", maxBytes=10485760, backupCount=5, encoding="utf-8"  # 10MB
+        LOG_DIR / "error.log",
+        maxBytes=10485760,
+        backupCount=5,
+        encoding="utf-8",  # 10MB
     )
     error_handler.setLevel(logging.ERROR)
     error_handler.setFormatter(detailed_formatter)
 
     # アクセスログハンドラー
     access_handler = logging.handlers.RotatingFileHandler(
-        LOG_DIR / "access.log", maxBytes=10485760, backupCount=5, encoding="utf-8"  # 10MB
+        LOG_DIR / "access.log",
+        maxBytes=10485760,
+        backupCount=5,
+        encoding="utf-8",  # 10MB
     )
     access_handler.setLevel(logging.INFO)
     access_handler.setFormatter(simple_formatter)

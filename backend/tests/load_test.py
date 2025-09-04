@@ -3,6 +3,7 @@
 from locust import HttpUser, task, between
 import random
 
+
 class BudApiUser(HttpUser):
     """BUD APIの負荷テストユーザー"""
 
@@ -56,13 +57,11 @@ class BudApiUser(HttpUser):
         # 実際の音声ファイルの代わりにダミーデータ
         dummy_data = {
             "audio_data": "base64_encoded_audio_here",
-            "duration": random.randint(5, 30)  # 5-30秒の音声
+            "duration": random.randint(5, 30),  # 5-30秒の音声
         }
 
         with self.client.post(
-            "/api/voice/transcribe",
-            json=dummy_data,
-            catch_response=True
+            "/api/voice/transcribe", json=dummy_data, catch_response=True
         ) as response:
             if response.status_code in [200, 401, 422]:
                 response.success()

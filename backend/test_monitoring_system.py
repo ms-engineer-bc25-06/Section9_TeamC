@@ -2,13 +2,21 @@
 
 import time
 import sys
-sys.path.append('.')
 
-from app.core.alert_monitor import record_error, record_security_warning, record_auth_failure, record_slow_request, alert_monitor
+sys.path.append(".")
+
+from app.core.alert_monitor import (
+    record_error,
+    record_security_warning,
+    record_auth_failure,
+    record_slow_request,
+    alert_monitor,
+)
 from app.core.logging_config import setup_logging
 
 # ログ設定
 setup_logging()
+
 
 def test_alert_system():
     """アラートシステムテスト"""
@@ -67,6 +75,7 @@ def test_alert_system():
 
     print("\n✅ 監視・アラートシステムテスト完了")
     print("📄 アラートファイル確認: backend/logs/alerts.log")
+
 
 if __name__ == "__main__":
     test_alert_system()

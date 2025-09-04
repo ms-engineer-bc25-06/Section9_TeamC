@@ -12,6 +12,7 @@ CONCURRENT_USERS = 10  # 同時接続ユーザー数
 REQUESTS_PER_USER = 10  # 各ユーザーのリクエスト数
 TARGET_RESPONSE_TIME = 0.2  # 目標レスポンスタイム（秒）
 
+
 async def make_request(session: aiohttp.ClientSession, url: str) -> Dict:
     """単一リクエストを実行して結果を返す"""
     start_time = time.time()
@@ -22,15 +23,16 @@ async def make_request(session: aiohttp.ClientSession, url: str) -> Dict:
             return {
                 "status": response.status,
                 "response_time": response_time,
-                "success": response.status == 200
+                "success": response.status == 200,
             }
     except Exception as e:
         return {
             "status": 0,
             "response_time": time.time() - start_time,
             "success": False,
-            "error": str(e)
+            "error": str(e),
         }
+
 
 async def user_simulation(user_id: int) -> List[Dict]:
     """1ユーザーの動作をシミュレート"""
@@ -47,6 +49,7 @@ async def user_simulation(user_id: int) -> List[Dict]:
             await asyncio.sleep(0.5 + (i % 2) * 0.5)
 
     return results
+
 
 async def run_load_test():
     """負荷テストを実行"""
@@ -80,7 +83,9 @@ async def run_load_test():
         min_response_time = min(response_times)
         percentile_95 = statistics.quantiles(response_times, n=20)[18]  # 95パーセンタイル
     else:
-        avg_response_time = median_response_time = max_response_time = min_response_time = percentile_95 = 0
+        avg_response_time = median_response_time = max_response_time = min_response_time = (
+            percentile_95
+        ) = 0
 
     success_rate = (len(successful_requests) / len(results)) * 100 if results else 0
     throughput = len(results) / total_time
@@ -120,6 +125,7 @@ async def run_load_test():
         print("\n❌ エラー詳細:")
         for r in failed_requests[:5]:  # 最初の5件のみ表示
             print(f"  - {r.get('error', 'Unknown error')}")
+
 
 if __name__ == "__main__":
     print("=" * 50)

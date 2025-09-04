@@ -1,13 +1,20 @@
 """トレーサビリティログのテスト実行"""
 
 import sys
-sys.path.append('.')
+
+sys.path.append(".")
 
 from app.core.logging_config import setup_logging
-from app.middleware.traceability_logging import user_logger, log_authentication, log_voice_transcription, log_child_data_access
+from app.middleware.traceability_logging import (
+    user_logger,
+    log_authentication,
+    log_voice_transcription,
+    log_child_data_access,
+)
 
 # ログ設定
 setup_logging()
+
 
 def test_traceability_logging():
     """トレーサビリティログのテスト"""
@@ -24,10 +31,7 @@ def test_traceability_logging():
     # 3. ユーザー操作ログ
     print("3. ユーザー操作ログ")
     user_logger.log_user_action(
-        "page_view",
-        "user123",
-        {"page": "/children", "referrer": "/dashboard"},
-        "req_003"
+        "page_view", "user123", {"page": "/children", "referrer": "/dashboard"}, "req_003"
     )
 
     # 4. データアクセスログ
@@ -46,11 +50,12 @@ def test_traceability_logging():
         "user789",
         {"attempted_resource": "/api/admin", "ip_address": "10.0.0.1"},
         "warning",
-        "req_007"
+        "req_007",
     )
 
     print("✅ トレーサビリティログテスト完了")
     print("📄 ログファイルを確認: backend/logs/app.log")
+
 
 if __name__ == "__main__":
     test_traceability_logging()

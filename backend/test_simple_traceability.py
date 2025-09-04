@@ -7,11 +7,11 @@ import logging
 
 # 簡単なログ設定
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 logger = logging.getLogger("traceability_test")
+
 
 def test_traceability_logs():
     """トレーサビリティログの基本構造をテスト"""
@@ -29,7 +29,7 @@ def test_traceability_logs():
         "client_ip": "192.168.1.100",
         "user_id": "user123",
         "user_agent": "Mozilla/5.0 (test)",
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
 
     logger.info(f"REQUEST_START | {json.dumps(request_start, ensure_ascii=False)}")
@@ -39,13 +39,9 @@ def test_traceability_logs():
         "event": "user_action",
         "action": "create_child_profile",
         "user_id": "user123",
-        "details": {
-            "child_name": "太郎",
-            "child_age": 6,
-            "feature": "child_management"
-        },
+        "details": {"child_name": "太郎", "child_age": 6, "feature": "child_management"},
         "request_id": request_id,
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
 
     logger.info(f"USER_ACTION | {json.dumps(user_action, ensure_ascii=False)}")
@@ -58,7 +54,7 @@ def test_traceability_logs():
         "resource_id": "child_456",
         "user_id": "user123",
         "request_id": request_id,
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
 
     logger.info(f"DATA_ACCESS | {json.dumps(data_access, ensure_ascii=False)}")
@@ -69,12 +65,9 @@ def test_traceability_logs():
         "event_type": "login_success",
         "user_id": "user123",
         "severity": "info",
-        "details": {
-            "ip_address": "192.168.1.100",
-            "method": "firebase_auth"
-        },
+        "details": {"ip_address": "192.168.1.100", "method": "firebase_auth"},
         "request_id": request_id,
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
 
     logger.info(f"SECURITY_INFO | {json.dumps(security_event, ensure_ascii=False)}")
@@ -88,10 +81,10 @@ def test_traceability_logs():
             "child_id": "child_456",
             "file_size_bytes": 1024000,
             "duration_seconds": 15.5,
-            "feature": "speech_recognition"
+            "feature": "speech_recognition",
         },
         "request_id": request_id,
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
 
     logger.info(f"USER_ACTION | {json.dumps(voice_action, ensure_ascii=False)}")
@@ -105,7 +98,7 @@ def test_traceability_logs():
         "status_code": 201,
         "duration_ms": 245.67,
         "user_id": "user123",
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
 
     logger.info(f"REQUEST_END | {json.dumps(request_end, ensure_ascii=False)}")
@@ -119,7 +112,7 @@ def test_traceability_logs():
         "status_code": 403,
         "duration_ms": 12.34,
         "user_id": "user456",
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
 
     logger.warning(f"REQUEST_ERROR | {json.dumps(error_request, ensure_ascii=False)}")
@@ -132,6 +125,7 @@ def test_traceability_logs():
     print("- セキュリティイベント記録")
     print("- レスポンス時間計測")
     print("- エラー追跡")
+
 
 if __name__ == "__main__":
     test_traceability_logs()
