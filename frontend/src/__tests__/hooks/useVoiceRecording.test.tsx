@@ -11,7 +11,7 @@ class MockSpeechRecognition {
   onresult: ((this: SpeechRecognition, ev: any) => void) | null = null;
   onerror: ((this: SpeechRecognition, ev: any) => void) | null = null;
   onend: ((this: SpeechRecognition, ev: Event) => void) | null = null;
-  
+
   start = vi.fn(() => {
     setTimeout(() => {
       if (this.onstart) {
@@ -19,7 +19,7 @@ class MockSpeechRecognition {
       }
     }, 0);
   });
-  
+
   stop = vi.fn(() => {
     setTimeout(() => {
       if (this.onend) {
@@ -27,7 +27,7 @@ class MockSpeechRecognition {
       }
     }, 0);
   });
-  
+
   abort = vi.fn();
 }
 
@@ -59,7 +59,7 @@ describe('useVoiceRecording', () => {
       delete (global as any).webkitSpeechRecognition;
 
       const { result } = renderHook(() => useVoiceRecording());
-      
+
       expect(result.current.isSupported).toBe(false);
     });
   });
@@ -114,10 +114,10 @@ describe('useVoiceRecording', () => {
           {
             isFinal: true,
             0: { transcript: 'テスト音声', confidence: 0.9 },
-            length: 1
-          }
+            length: 1,
+          },
         ],
-        length: 1
+        length: 1,
       };
 
       await act(async () => {
@@ -142,10 +142,10 @@ describe('useVoiceRecording', () => {
           {
             isFinal: false,
             0: { transcript: 'テスト', confidence: 0.8 },
-            length: 1
-          }
+            length: 1,
+          },
         ],
-        length: 1
+        length: 1,
       };
 
       await act(async () => {
@@ -171,10 +171,10 @@ describe('useVoiceRecording', () => {
           {
             isFinal: true,
             0: { transcript: 'こんにちは', confidence: 0.9 },
-            length: 1
-          }
+            length: 1,
+          },
         ],
-        length: 1
+        length: 1,
       };
 
       await act(async () => {
@@ -191,10 +191,10 @@ describe('useVoiceRecording', () => {
           {
             isFinal: true,
             0: { transcript: '世界', confidence: 0.9 },
-            length: 1
-          }
+            length: 1,
+          },
         ],
-        length: 2
+        length: 2,
       };
 
       await act(async () => {
@@ -218,7 +218,7 @@ describe('useVoiceRecording', () => {
 
       const mockError = {
         error: 'network',
-        message: 'ネットワークエラー'
+        message: 'ネットワークエラー',
       };
 
       await act(async () => {
@@ -252,7 +252,7 @@ describe('useVoiceRecording', () => {
 
       const mockError = {
         error: 'network',
-        message: 'ネットワークエラー'
+        message: 'ネットワークエラー',
       };
 
       await act(async () => {
@@ -286,10 +286,10 @@ describe('useVoiceRecording', () => {
           {
             isFinal: true,
             0: { transcript: 'テスト音声', confidence: 0.9 },
-            length: 1
-          }
+            length: 1,
+          },
         ],
-        length: 1
+        length: 1,
       };
 
       await act(async () => {

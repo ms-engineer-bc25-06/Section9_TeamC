@@ -36,7 +36,7 @@ app.add_middleware(ErrorHandlerMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
-   allow_origins=[
+    allow_origins=[
         "http://localhost:3000",
         "https://section9-team-c.vercel.app",
         "https://*.vercel.app",

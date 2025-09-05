@@ -45,7 +45,7 @@ const SimpleForm: React.FC<SimpleFormProps> = ({ onSubmit, onError }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -138,9 +138,7 @@ describe('フォーム統合テスト', () => {
       await user.click(screen.getByRole('button', { name: /送信/ }));
 
       await waitFor(() => {
-        expect(screen.getByTestId('nickname-error')).toHaveTextContent(
-          'ニックネームは必須です'
-        );
+        expect(screen.getByTestId('nickname-error')).toHaveTextContent('ニックネームは必須です');
       });
 
       expect(mockOnSubmit).not.toHaveBeenCalled();
@@ -206,9 +204,10 @@ describe('フォーム統合テスト', () => {
     it('送信中はボタンが無効になる', async () => {
       let resolvePromise: () => void;
       const mockOnSubmit = vi.fn().mockImplementation(
-        () => new Promise<void>((resolve) => {
-          resolvePromise = resolve;
-        })
+        () =>
+          new Promise<void>((resolve) => {
+            resolvePromise = resolve;
+          })
       );
       const user = userEvent.setup();
 
@@ -227,7 +226,7 @@ describe('フォーム統合テスト', () => {
 
       // プロミスを解決
       resolvePromise!();
-      
+
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /送信$/ })).not.toBeDisabled();
       });

@@ -20,7 +20,7 @@ describe('履歴一覧画面テスト', () => {
     },
     {
       id: 'record-2',
-      childId: 'child-1', 
+      childId: 'child-1',
       date: '2024-01-14T09:15:00Z',
       summary: '挨拶の練習',
     },
@@ -56,26 +56,14 @@ describe('履歴一覧画面テスト', () => {
 
     it('記録が空の場合は適切なメッセージが表示される', () => {
       render(
-        <RecordsList
-          records={[]}
-          loading={false}
-          deletingId={null}
-          onDelete={mockOnDelete}
-        />
+        <RecordsList records={[]} loading={false} deletingId={null} onDelete={mockOnDelete} />
       );
 
       expect(screen.getByText('まだ記録がありません。')).toBeInTheDocument();
     });
 
     it('ローディング中は適切な表示がされる', () => {
-      render(
-        <RecordsList
-          records={[]}
-          loading={true}
-          deletingId={null}
-          onDelete={mockOnDelete}
-        />
-      );
+      render(<RecordsList records={[]} loading={true} deletingId={null} onDelete={mockOnDelete} />);
 
       expect(screen.getByText('読み込み中...')).toBeInTheDocument();
     });
@@ -92,12 +80,9 @@ describe('履歴一覧画面テスト', () => {
 
       const detailLinks = screen.getAllByText('詳細');
       expect(detailLinks).toHaveLength(3);
-      
+
       // 最初の記録の詳細リンクを確認
-      expect(detailLinks[0].closest('a')).toHaveAttribute(
-        'href',
-        '/history/child-1/record-1'
-      );
+      expect(detailLinks[0].closest('a')).toHaveAttribute('href', '/history/child-1/record-1');
     });
 
     it('削除ボタンが各記録に表示される', () => {
@@ -165,9 +150,9 @@ describe('履歴一覧画面テスト', () => {
         />
       );
 
-      const recordCards = screen.getAllByRole('generic').filter(
-        (element) => element.className.includes('rounded-xl bg-white/80')
-      );
+      const recordCards = screen
+        .getAllByRole('generic')
+        .filter((element) => element.className.includes('rounded-xl bg-white/80'));
       expect(recordCards.length).toBeGreaterThanOrEqual(3);
     });
   });
@@ -198,7 +183,7 @@ describe('履歴一覧画面テスト', () => {
 
     it('最初の10件の記録が表示される（仮想ページング想定）', () => {
       const firstTenRecords = mockRecords.slice(0, 2); // テスト用に2件のみ
-      
+
       render(
         <RecordsList
           records={firstTenRecords}
@@ -214,12 +199,7 @@ describe('履歴一覧画面テスト', () => {
 
     it('空のページでは適切なメッセージが表示される', () => {
       render(
-        <RecordsList
-          records={[]}
-          loading={false}
-          deletingId={null}
-          onDelete={mockOnDelete}
-        />
+        <RecordsList records={[]} loading={false} deletingId={null} onDelete={mockOnDelete} />
       );
 
       expect(screen.getByText('まだ記録がありません。')).toBeInTheDocument();
@@ -229,7 +209,7 @@ describe('履歴一覧画面テスト', () => {
   describe('削除機能テスト', () => {
     it('削除ボタンをクリックすると削除処理が呼ばれる', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <RecordsList
           records={mockRecords}
@@ -339,12 +319,14 @@ describe('履歴一覧画面テスト', () => {
 
   describe('エラーハンドリング', () => {
     it('不正な日付データでもクラッシュしない', () => {
-      const invalidDateRecord = [{
-        id: 'record-invalid',
-        childId: 'child-1',
-        date: 'invalid-date',
-        summary: '不正な日付の記録',
-      }];
+      const invalidDateRecord = [
+        {
+          id: 'record-invalid',
+          childId: 'child-1',
+          date: 'invalid-date',
+          summary: '不正な日付の記録',
+        },
+      ];
 
       // エラーをスローしないことを確認
       render(
@@ -361,12 +343,14 @@ describe('履歴一覧画面テスト', () => {
     });
 
     it('空文字のサマリーでも表示される', () => {
-      const emptyData = [{
-        id: 'record-empty',
-        childId: 'child-1',
-        date: '2024-01-15T10:30:00Z',
-        summary: '',
-      }];
+      const emptyData = [
+        {
+          id: 'record-empty',
+          childId: 'child-1',
+          date: '2024-01-15T10:30:00Z',
+          summary: '',
+        },
+      ];
 
       render(
         <RecordsList

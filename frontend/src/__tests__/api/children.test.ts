@@ -135,8 +135,8 @@ describe('子ども管理APIテスト', () => {
     describe('ニックネームのバリデーション', () => {
       it('有効なニックネームが通る', () => {
         const validNames = ['太郎', 'はなこ', 'Test123'];
-        
-        validNames.forEach(name => {
+
+        validNames.forEach((name) => {
           const error = validateNickname(name);
           expect(error).toBeNull();
         });
@@ -158,8 +158,8 @@ describe('子ども管理APIテスト', () => {
     describe('誕生日のバリデーション', () => {
       it('有効な日付が通る', () => {
         const validDates = ['2020-01-01', '2018-12-31'];
-        
-        validDates.forEach(date => {
+
+        validDates.forEach((date) => {
           const error = validateBirthdate(date);
           expect(error).toBeNull();
         });
@@ -174,7 +174,7 @@ describe('子ども管理APIテスト', () => {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         const tomorrowStr = tomorrow.toISOString().split('T')[0];
-        
+
         const error = validateBirthdate(tomorrowStr);
         expect(error).toBe('未来の日付は入力できません');
       });
@@ -186,9 +186,7 @@ describe('子ども管理APIテスト', () => {
       it('子ども作成時のネットワークエラー', async () => {
         vi.mocked(api.children.create).mockRejectedValue(new Error('Network error'));
 
-        await expect(
-          createChild({ nickname: 'テスト太郎' })
-        ).rejects.toThrow('Network error');
+        await expect(createChild({ nickname: 'テスト太郎' })).rejects.toThrow('Network error');
 
         expect(api.children.create).toHaveBeenCalled();
       });
@@ -197,27 +195,25 @@ describe('子ども管理APIテスト', () => {
         const notFoundError = new Error('Child not found');
         vi.mocked(api.children.get).mockRejectedValue(notFoundError);
 
-        await expect(
-          api.children.get('non-existent-id')
-        ).rejects.toThrow('Child not found');
+        await expect(api.children.get('non-existent-id')).rejects.toThrow('Child not found');
       });
 
       it('子ども更新時の権限エラー', async () => {
         const permissionError = new Error('Permission denied');
         vi.mocked(api.children.update).mockRejectedValue(permissionError);
 
-        await expect(
-          api.children.update('child-123', { nickname: '新しい名前' })
-        ).rejects.toThrow('Permission denied');
+        await expect(api.children.update('child-123', { nickname: '新しい名前' })).rejects.toThrow(
+          'Permission denied'
+        );
       });
 
       it('子ども削除時のエラー', async () => {
         const deleteError = new Error('Cannot delete child with records');
         vi.mocked(api.children.delete).mockRejectedValue(deleteError);
 
-        await expect(
-          api.children.delete('child-123')
-        ).rejects.toThrow('Cannot delete child with records');
+        await expect(api.children.delete('child-123')).rejects.toThrow(
+          'Cannot delete child with records'
+        );
       });
     });
 
@@ -226,18 +222,16 @@ describe('子ども管理APIテスト', () => {
         const duplicateError = new Error('Nickname already exists');
         vi.mocked(api.children.create).mockRejectedValue(duplicateError);
 
-        await expect(
-          createChild({ nickname: '既存の名前' })
-        ).rejects.toThrow('Nickname already exists');
+        await expect(createChild({ nickname: '既存の名前' })).rejects.toThrow(
+          'Nickname already exists'
+        );
       });
 
       it('不正なデータ形式エラー', async () => {
         const invalidDataError = new Error('Invalid data format');
         vi.mocked(api.children.create).mockRejectedValue(invalidDataError);
 
-        await expect(
-          createChild({ nickname: null as any })
-        ).rejects.toThrow('Invalid data format');
+        await expect(createChild({ nickname: null as any })).rejects.toThrow('Invalid data format');
       });
     });
 
@@ -246,18 +240,14 @@ describe('子ども管理APIテスト', () => {
         const authError = new Error('Authentication required');
         vi.mocked(api.children.list).mockRejectedValue(authError);
 
-        await expect(
-          api.children.list()
-        ).rejects.toThrow('Authentication required');
+        await expect(api.children.list()).rejects.toThrow('Authentication required');
       });
 
       it('認可エラー', async () => {
         const authorizationError = new Error('Access denied');
         vi.mocked(api.children.get).mockRejectedValue(authorizationError);
 
-        await expect(
-          api.children.get('other-user-child')
-        ).rejects.toThrow('Access denied');
+        await expect(api.children.get('other-user-child')).rejects.toThrow('Access denied');
       });
     });
   });
@@ -286,12 +276,17 @@ describe('子ども管理APIテスト', () => {
   describe('統合テスト（最低限）', () => {
     it('子ども作成から取得までの一連の流れ', async () => {
       const childData = { nickname: 'テスト太郎', birthdate: '2020-01-01' };
-      const createdChild = { id: 'child-123', name: 'テスト太郎', nickname: 'テスト太郎', birthdate: '2020-01-01' };
+      const createdChild = {
+        id: 'child-123',
+        name: 'テスト太郎',
+        nickname: 'テスト太郎',
+        birthdate: '2020-01-01',
+      };
 
       // 作成
       vi.mocked(api.children.create).mockResolvedValue(createdChild);
-      const createResult = await createChild(childData) as typeof createdChild;
-      
+      const createResult = (await createChild(childData)) as typeof createdChild;
+
       // 取得
       vi.mocked(api.children.get).mockResolvedValue(createdChild);
       const getResult = await api.children.get(createResult.id);
@@ -303,10 +298,10 @@ describe('子ども管理APIテスト', () => {
     it('バリデーションエラーがある場合は作成しない', async () => {
       // バリデーションでエラーが出る場合
       const invalidData = { nickname: '' }; // 空のニックネーム
-      
+
       const nicknameError = validateNickname(invalidData.nickname);
       expect(nicknameError).toBe('ニックネームは必須です');
-      
+
       // バリデーションエラーがある場合はAPIを呼ばない想定
       expect(api.children.create).not.toHaveBeenCalled();
     });
