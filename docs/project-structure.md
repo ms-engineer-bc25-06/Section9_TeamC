@@ -174,7 +174,7 @@ frontend/src/lib/api/[機能名].ts
 frontend/src/hooks/use[機能名].ts
 ```
 
-### 新しいAPI追加
+### 新しい API 追加
 
 ```bash
 # 1. APIルーター作成
@@ -225,9 +225,9 @@ cd frontend && npm run dev
 
 ### ディレクトリ命名
 
-- **kebab-case**: URL関連（`/challenge/[childId]`）
-- **camelCase**: React関連（`useChildren`, `getChild`）
-- **snake_case**: Python関連（`get_current_user`, `ai_feedback`）
+- **kebab-case**: URL 関連（`/challenge/[childId]`）
+- **camelCase**: React 関連（`useChildren`, `getChild`）
+- **snake_case**: Python 関連（`get_current_user`, `ai_feedback`）
 
 ### ファイル命名
 
@@ -264,13 +264,15 @@ cd frontend && npm run dev
 
 ### よくある問題
 
-1. **Firebase認証エラー**
+1. **Firebase 認証エラー**
+
    - `serviceAccountKey.json`の配置確認
    - 環境変数`FIREBASE_PROJECT_ID`の設定確認
 
-2. **DB接続エラー**
-   - Docker Composeでの起動確認
-   - PostgreSQL接続情報の確認
+2. **DB 接続エラー**
+
+   - Docker Compose での起動確認
+   - PostgreSQL 接続情報の確認
 
 3. **ビルドエラー**
    - Node.js/Python バージョン確認
@@ -278,6 +280,6 @@ cd frontend && npm run dev
 
 ### 助けが必要な場合
 
-- **Issue作成**: GitHub Issueでバグ報告
+- **Issue 作成**: GitHub Issue でバグ報告
 - **開発相談**: Slack `#section9-teamc`チャンネル
 - **設計相談**: `docs/`配下の設計書を確認

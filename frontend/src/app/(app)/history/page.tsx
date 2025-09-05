@@ -15,16 +15,9 @@ import { useEffect, useState } from 'react';
 export default function ChallengeHistoryPage() {
   const { children, isLoading: childrenLoading } = useChildren();
   const [selectedChildId, setSelectedChildId] = useState<string>('');
-  
-  const {
-    records,
-    thisMonthChallengeCount,
-    loading,
-    error,
-    deletingId,
-    handleDelete,
-  } = useHistoryRecords(selectedChildId);
 
+  const { records, thisMonthChallengeCount, loading, error, deletingId, handleDelete } =
+    useHistoryRecords(selectedChildId);
 
   useEffect(() => {
     if (!childrenLoading && children.length > 0 && !selectedChildId) {

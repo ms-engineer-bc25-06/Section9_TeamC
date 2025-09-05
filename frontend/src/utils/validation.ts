@@ -13,23 +13,23 @@ export const validateNickname = (value: string): string | null => {
 
 export const validateBirthdate = (value: string): string | null => {
   if (!value) return null; // 任意項目
-  
+
   const date = new Date(value);
   if (isNaN(date.getTime())) {
     return '正しい日付を入力してください';
   }
-  
+
   const today = new Date();
   if (date > today) {
     return '未来の日付は入力できません';
   }
-  
+
   const minDate = new Date();
   minDate.setFullYear(today.getFullYear() - UI_CONFIG.MAX_AGE_YEARS);
   if (date < minDate) {
     return `${UI_CONFIG.MAX_AGE_YEARS}歳以下の子どもを登録してください`;
   }
-  
+
   return null;
 };
 

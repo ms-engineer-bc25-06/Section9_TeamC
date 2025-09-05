@@ -55,12 +55,13 @@ export function useVoiceRecording() {
   const [isListening, setIsListening] = useState(false);
   const [transcription, setTranscription] = useState('');
   const [shouldKeepListening, setShouldKeepListening] = useState(false);
-  
+
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const accumulatedTranscriptRef = useRef<string>('');
   const lastSpeechTimeRef = useRef<number>(Date.now());
 
-  const isSupported = typeof window !== 'undefined' && 
+  const isSupported =
+    typeof window !== 'undefined' &&
     ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
 
   useEffect(() => {
@@ -112,25 +113,23 @@ export function useVoiceRecording() {
       if (finalTranscript) {
         const currentTime = Date.now();
         const timeSinceLastSpeech = currentTime - lastSpeechTimeRef.current;
-        
-        const separator = 
-          timeSinceLastSpeech > 3000 && accumulatedTranscriptRef.current.length > 0 
-            ? '\n\n' 
-            : '';
-        
+
+        const separator =
+          timeSinceLastSpeech > 3000 && accumulatedTranscriptRef.current.length > 0 ? '\n\n' : '';
+
         accumulatedTranscriptRef.current += separator + finalTranscript;
         lastSpeechTimeRef.current = currentTime;
       }
 
-      const displayText = accumulatedTranscriptRef.current + 
-        (interimTranscript ? ' ' + interimTranscript : '');
-      
+      const displayText =
+        accumulatedTranscriptRef.current + (interimTranscript ? ' ' + interimTranscript : '');
+
       setTranscription(displayText);
     };
 
     recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('音声認識エラー:', event.error);
-      
+
       if (shouldKeepListening) {
         setTimeout(() => {
           if (shouldKeepListening) {

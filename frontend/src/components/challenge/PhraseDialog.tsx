@@ -16,10 +16,30 @@ interface PhraseDialogProps {
 
 // フレーズデータ
 const phrases = [
-  { english: 'Hello!', japanese: 'こんにちは！', color: 'text-blue-600', audio: '/audio/hello.mp3' },
-  { english: 'Thank you!', japanese: 'ありがとう！', color: 'text-green-600', audio: '/audio/thank-you.mp3' },
-  { english: 'Excuse me', japanese: 'すみません', color: 'text-purple-600', audio: '/audio/excuse-me.mp3' },
-  { english: 'How much?', japanese: 'いくら？', color: 'text-orange-600', audio: '/audio/how-much.mp3' },
+  {
+    english: 'Hello!',
+    japanese: 'こんにちは！',
+    color: 'text-blue-600',
+    audio: '/audio/hello.mp3',
+  },
+  {
+    english: 'Thank you!',
+    japanese: 'ありがとう！',
+    color: 'text-green-600',
+    audio: '/audio/thank-you.mp3',
+  },
+  {
+    english: 'Excuse me',
+    japanese: 'すみません',
+    color: 'text-purple-600',
+    audio: '/audio/excuse-me.mp3',
+  },
+  {
+    english: 'How much?',
+    japanese: 'いくら？',
+    color: 'text-orange-600',
+    audio: '/audio/how-much.mp3',
+  },
   { english: 'Where?', japanese: 'どこ？', color: 'text-pink-600', audio: '/audio/where.mp3' },
   { english: 'Help me', japanese: 'たすけて', color: 'text-red-600', audio: '/audio/help-me.mp3' },
 ];

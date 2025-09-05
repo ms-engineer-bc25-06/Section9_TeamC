@@ -60,12 +60,7 @@ export function ChildCard({ child }: ChildCardProps) {
             >
               <Edit3 className="w-4 h-4" />
             </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleDelete}
-              className="flex-1"
-            >
+            <Button variant="destructive" size="sm" onClick={handleDelete} className="flex-1">
               <Trash2 className="w-4 h-4" />
             </Button>
           </div>

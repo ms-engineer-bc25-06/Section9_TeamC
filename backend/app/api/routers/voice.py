@@ -1,15 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_async_db
-from app.models.child import Child
 from app.models.challenge import Challenge
+from app.models.child import Child
 from app.models.user import User
 from app.services.ai_feedback_service import AIFeedbackService
 from app.utils.auth import get_current_user
-from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/api/voice", tags=["voice-transcription"])
 
@@ -31,9 +33,9 @@ def test_endpoint():
 
 @router.post("/transcribe")
 async def transcribe_text(
-    request: TranscribeRequest, 
+    request: TranscribeRequest,
     db: AsyncSession = Depends(get_async_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """文字起こし結果を受け取りDBに保存し、AIフィードバックを生成"""
     transcript = request.transcript
@@ -46,7 +48,9 @@ async def transcribe_text(
 
     try:
         # 現在のユーザーを取得
-        user_result = await db.execute(select(User).where(User.firebase_uid == current_user["user_id"]))
+        user_result = await db.execute(
+            select(User).where(User.firebase_uid == current_user["user_id"])
+        )
         user = user_result.scalars().first()
         if not user:
             raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
@@ -54,16 +58,12 @@ async def transcribe_text(
         # 親子関係を検証してから子どもを取得
         child_uuid = UUID(child_id)
         result = await db.execute(
-            select(Child).where(
-                Child.id == child_uuid,
-                Child.user_id == user.id
-            )
+            select(Child).where(Child.id == child_uuid, Child.user_id == user.id)
         )
         child = result.scalars().first()
         if not child:
             raise HTTPException(
-                status_code=403, 
-                detail="この子供への音声データ投稿権限がありません"
+                status_code=403, detail="この子供への音声データ投稿権限がありません"
             )
 
         # Challenge作成
@@ -250,7 +250,9 @@ async def get_challenge_detail(
         print(f"🔍 チャレンジ詳細取得開始: challenge_id={challenge_id}")
 
         # 現在のユーザーを取得
-        user_result = await db.execute(select(User).where(User.firebase_uid == current_user["user_id"]))
+        user_result = await db.execute(
+            select(User).where(User.firebase_uid == current_user["user_id"])
+        )
         user = user_result.scalars().first()
         if not user:
             raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
@@ -271,7 +273,9 @@ async def get_challenge_detail(
         )
         child = child_result.scalars().first()
         if not child:
-            raise HTTPException(status_code=403, detail="このチャレンジにアクセスする権限がありません")
+            raise HTTPException(
+                status_code=403, detail="このチャレンジにアクセスする権限がありません"
+            )
 
         print(f"✅ チャレンジ詳細取得成功: {challenge_id}")
 

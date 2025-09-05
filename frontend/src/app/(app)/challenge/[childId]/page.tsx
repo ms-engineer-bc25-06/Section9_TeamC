@@ -45,15 +45,15 @@ export default function ChallengePage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showMamaPhraseDialog, setShowMamaPhraseDialog] = useState(false);
   const [showChildPhraseDialog, setShowChildPhraseDialog] = useState(false);
-  
+
   // 音声録音フック
-  const { 
-    isListening, 
-    transcription, 
+  const {
+    isListening,
+    transcription,
     isSupported,
-    startListening, 
+    startListening,
     stopListening,
-    resetTranscription 
+    resetTranscription,
   } = useVoiceRecording();
 
   // 子供の名前を取得（UUIDで検索）
@@ -111,7 +111,7 @@ export default function ChallengePage() {
         childId,
         transcription,
       });
-      
+
       if (result && typeof result === 'object' && 'transcript_id' in result) {
         router.push(`/record/${result.transcript_id}`);
       } else {

@@ -36,9 +36,7 @@ export function RecordsList({ records, loading, deletingId, onDelete }: RecordsL
   if (records.length === 0) {
     return (
       <Card className="w-full rounded-xl bg-white/80 p-6 shadow-md backdrop-blur-sm text-center">
-        <CardContent className="p-0 text-gray-600 text-lg">
-          まだ記録がありません。
-        </CardContent>
+        <CardContent className="p-0 text-gray-600 text-lg">まだ記録がありません。</CardContent>
       </Card>
     );
   }

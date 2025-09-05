@@ -32,9 +32,7 @@ export function AIFeedbackCard({ aiFeedback }: AIFeedbackCardProps) {
               <MessageSquareHeart className="h-5 w-5 text-pink-500" />
               アドバイス
             </h3>
-            <p className="text-gray-700 text-base leading-relaxed">
-              {aiFeedback.advice}
-            </p>
+            <p className="text-gray-700 text-base leading-relaxed">{aiFeedback.advice}</p>
           </div>
         )}
       </CardContent>

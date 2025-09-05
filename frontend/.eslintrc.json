@@ -1,4 +1,11 @@
 {
-  "extends": ["next"],
-  "ignorePatterns": [".next", "node_modules", "dist", "build"]
+  "extends": ["next", "prettier"],
+  "ignorePatterns": [".next", "node_modules", "dist", "build", "coverage"],
+  "overrides": [
+    {
+      "files": ["/tests//.", "**/.test."],
+      "rules": { "@typescript-eslint/no-explicit-any": "off" }
+    }
+  ],
+  "rules": { "react/no-children-prop": "off", "@typescript-eslint/no-require-imports": "off" }
 }

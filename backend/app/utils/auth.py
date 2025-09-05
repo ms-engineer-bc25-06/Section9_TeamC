@@ -1,12 +1,12 @@
 # Firebase認証ユーティリティ
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Dict, Any, Optional
-import firebase_admin
-from firebase_admin import auth, credentials
 import os
+from typing import Any, Dict, Optional
 
+import firebase_admin
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from firebase_admin import auth, credentials
 
 # 1. Firebase初期化（最初に1回だけ）
 if not firebase_admin._apps:

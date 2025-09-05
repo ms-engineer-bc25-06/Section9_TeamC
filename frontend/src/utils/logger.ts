@@ -7,15 +7,16 @@ class Logger {
   private readonly levels: Record<LogLevel, number> = {
     debug: 0,
     info: 1,
-    warn: 2, 
+    warn: 2,
     error: 3,
     none: 4,
   };
 
   constructor() {
-    this.currentLevel = (process.env.NODE_ENV === 'production') 
-      ? 'error' 
-      : (process.env.NEXT_PUBLIC_LOG_LEVEL as LogLevel) || 'debug';
+    this.currentLevel =
+      process.env.NODE_ENV === 'production'
+        ? 'error'
+        : (process.env.NEXT_PUBLIC_LOG_LEVEL as LogLevel) || 'debug';
   }
 
   private shouldLog(level: LogLevel): boolean {

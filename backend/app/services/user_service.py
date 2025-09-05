@@ -1,9 +1,11 @@
 """ユーザー管理サービス - Firebase UID検索の重複を解消"""
 
-from sqlalchemy.orm import Session
-from sqlalchemy import select
-from app.models.user import User
 from typing import Optional
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app.models.user import User
 
 
 class UserService:

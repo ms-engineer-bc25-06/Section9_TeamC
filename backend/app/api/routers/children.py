@@ -1,12 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import select, text
 from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select, text
+from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.models.child import Child as ChildModel
-from app.schemas.child import ChildCreate, Child as ChildSchema
-from app.utils.auth import get_current_user
 from app.models.user import User
+from app.schemas.child import Child as ChildSchema
+from app.schemas.child import ChildCreate
+from app.utils.auth import get_current_user
 
 router = APIRouter()
 

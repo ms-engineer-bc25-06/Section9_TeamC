@@ -18,15 +18,12 @@ export class ApiService {
   /**
    * 統一されたAPI通信処理
    */
-  static async request<T>(
-    endpoint: string, 
-    options: ApiOptions = {}
-  ): Promise<T> {
+  static async request<T>(endpoint: string, options: ApiOptions = {}): Promise<T> {
     try {
       const { method = 'GET', body, timeout = API_CONFIG.TIMEOUTS.DEFAULT } = options;
-      
+
       const headers = await getAuthHeaders();
-      
+
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
