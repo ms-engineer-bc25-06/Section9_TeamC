@@ -103,6 +103,20 @@ async def create_child(
             db.commit()
             db.refresh(user)
 
+        # 同一ユーザー内での重複ニックネームチェック
+        existing_child = db.execute(
+            select(ChildModel).where(
+                ChildModel.user_id == user.id,
+                ChildModel.nickname == child_data.nickname.strip()
+            )
+        ).scalars().first()
+        
+        if existing_child:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"ニックネーム「{child_data.nickname}」は既に使用されています"
+            )
+
         # リクエストデータを辞書形式に変換
         child_dict = child_data.model_dump()
 
@@ -146,6 +160,24 @@ async def update_child(
 
         if not child:
             raise HTTPException(status_code=404, detail="Child not found")
+
+        # ニックネーム更新の場合は重複チェック
+        if hasattr(child_data, 'nickname') and child_data.nickname:
+            nickname_to_check = child_data.nickname.strip()
+            if nickname_to_check != child.nickname:  # 現在のニックネームと異なる場合のみチェック
+                existing_child = db.execute(
+                    select(ChildModel).where(
+                        ChildModel.user_id == user.id,
+                        ChildModel.nickname == nickname_to_check,
+                        ChildModel.id != child.id  # 自分以外
+                    )
+                ).scalars().first()
+                
+                if existing_child:
+                    raise HTTPException(
+                        status_code=400, 
+                        detail=f"ニックネーム「{nickname_to_check}」は既に使用されています"
+                    )
 
         # 子ども情報を更新
         child_dict = child_data.model_dump(exclude_unset=True)
