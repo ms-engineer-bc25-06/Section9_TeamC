@@ -104,17 +104,21 @@ async def create_child(
             db.refresh(user)
 
         # 同一ユーザー内での重複ニックネームチェック
-        existing_child = db.execute(
-            select(ChildModel).where(
-                ChildModel.user_id == user.id,
-                ChildModel.nickname == child_data.nickname.strip()
+        existing_child = (
+            db.execute(
+                select(ChildModel).where(
+                    ChildModel.user_id == user.id,
+                    ChildModel.nickname == child_data.nickname.strip(),
+                )
             )
-        ).scalars().first()
-        
+            .scalars()
+            .first()
+        )
+
         if existing_child:
             raise HTTPException(
-                status_code=400, 
-                detail=f"ニックネーム「{child_data.nickname}」は既に使用されています"
+                status_code=400,
+                detail=f"ニックネーム「{child_data.nickname}」は既に使用されています",
             )
 
         # リクエストデータを辞書形式に変換
@@ -162,21 +166,25 @@ async def update_child(
             raise HTTPException(status_code=404, detail="Child not found")
 
         # ニックネーム更新の場合は重複チェック
-        if hasattr(child_data, 'nickname') and child_data.nickname:
+        if hasattr(child_data, "nickname") and child_data.nickname:
             nickname_to_check = child_data.nickname.strip()
             if nickname_to_check != child.nickname:  # 現在のニックネームと異なる場合のみチェック
-                existing_child = db.execute(
-                    select(ChildModel).where(
-                        ChildModel.user_id == user.id,
-                        ChildModel.nickname == nickname_to_check,
-                        ChildModel.id != child.id  # 自分以外
+                existing_child = (
+                    db.execute(
+                        select(ChildModel).where(
+                            ChildModel.user_id == user.id,
+                            ChildModel.nickname == nickname_to_check,
+                            ChildModel.id != child.id,  # 自分以外
+                        )
                     )
-                ).scalars().first()
-                
+                    .scalars()
+                    .first()
+                )
+
                 if existing_child:
                     raise HTTPException(
-                        status_code=400, 
-                        detail=f"ニックネーム「{nickname_to_check}」は既に使用されています"
+                        status_code=400,
+                        detail=f"ニックネーム「{nickname_to_check}」は既に使用されています",
                     )
 
         # 子ども情報を更新

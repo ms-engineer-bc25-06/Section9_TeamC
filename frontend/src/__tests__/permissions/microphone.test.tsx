@@ -51,9 +51,9 @@ describe('マイク権限テスト', () => {
       const error = new DOMException('Permission denied', 'NotAllowedError');
       mockNavigator.mediaDevices.getUserMedia.mockRejectedValue(error);
 
-      await expect(
-        navigator.mediaDevices.getUserMedia({ audio: true })
-      ).rejects.toThrow('Permission denied');
+      await expect(navigator.mediaDevices.getUserMedia({ audio: true })).rejects.toThrow(
+        'Permission denied'
+      );
 
       expect(mockNavigator.mediaDevices.getUserMedia).toHaveBeenCalledWith({ audio: true });
     });
@@ -62,18 +62,18 @@ describe('マイク権限テスト', () => {
       const error = new DOMException('Requested device not found', 'NotFoundError');
       mockNavigator.mediaDevices.getUserMedia.mockRejectedValue(error);
 
-      await expect(
-        navigator.mediaDevices.getUserMedia({ audio: true })
-      ).rejects.toThrow('Requested device not found');
+      await expect(navigator.mediaDevices.getUserMedia({ audio: true })).rejects.toThrow(
+        'Requested device not found'
+      );
     });
 
     it('セキュリティエラーの場合', async () => {
       const error = new DOMException('Permission denied by system', 'SecurityError');
       mockNavigator.mediaDevices.getUserMedia.mockRejectedValue(error);
 
-      await expect(
-        navigator.mediaDevices.getUserMedia({ audio: true })
-      ).rejects.toThrow('Permission denied by system');
+      await expect(navigator.mediaDevices.getUserMedia({ audio: true })).rejects.toThrow(
+        'Permission denied by system'
+      );
     });
   });
 
@@ -87,7 +87,9 @@ describe('マイク権限テスト', () => {
 
       mockNavigator.permissions.query.mockResolvedValue(mockPermissionStatus);
 
-      const permission = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+      const permission = await navigator.permissions.query({
+        name: 'microphone' as PermissionName,
+      });
 
       expect(mockNavigator.permissions.query).toHaveBeenCalledWith({ name: 'microphone' });
       expect(permission.state).toBe('granted');
@@ -102,7 +104,9 @@ describe('マイク権限テスト', () => {
 
       mockNavigator.permissions.query.mockResolvedValue(mockPermissionStatus);
 
-      const permission = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+      const permission = await navigator.permissions.query({
+        name: 'microphone' as PermissionName,
+      });
 
       expect(permission.state).toBe('denied');
     });
@@ -116,7 +120,9 @@ describe('マイク権限テスト', () => {
 
       mockNavigator.permissions.query.mockResolvedValue(mockPermissionStatus);
 
-      const permission = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+      const permission = await navigator.permissions.query({
+        name: 'microphone' as PermissionName,
+      });
 
       expect(permission.state).toBe('prompt');
     });
@@ -130,7 +136,9 @@ describe('マイク権限テスト', () => {
 
       mockNavigator.permissions.query.mockResolvedValue(mockPermissionStatus);
 
-      const permission = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+      const permission = await navigator.permissions.query({
+        name: 'microphone' as PermissionName,
+      });
       const changeHandler = vi.fn();
 
       permission.addEventListener('change', changeHandler);
@@ -162,7 +170,7 @@ describe('マイク権限テスト', () => {
       mockNavigator.mediaDevices.enumerateDevices.mockResolvedValue(mockDevices);
 
       const devices = await navigator.mediaDevices.enumerateDevices();
-      const audioInputs = devices.filter(device => device.kind === 'audioinput');
+      const audioInputs = devices.filter((device) => device.kind === 'audioinput');
 
       expect(audioInputs).toHaveLength(2);
       expect(audioInputs[0].label).toBe('Default Microphone');
@@ -204,7 +212,7 @@ describe('マイク権限テスト', () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const tracks = stream.getTracks();
 
-      tracks.forEach(track => track.stop());
+      tracks.forEach((track) => track.stop());
 
       expect(stopMock).toHaveBeenCalled();
     });
@@ -215,8 +223,12 @@ describe('マイク権限テスト', () => {
         getTracks: vi.fn(() => [
           {
             kind: 'audio',
-            get enabled() { return trackEnabled; },
-            set enabled(value: boolean) { trackEnabled = value; },
+            get enabled() {
+              return trackEnabled;
+            },
+            set enabled(value: boolean) {
+              trackEnabled = value;
+            },
             stop: vi.fn(),
           },
         ]),
@@ -252,14 +264,14 @@ describe('マイク権限テスト', () => {
 
       // 最初は失敗
       mockNavigator.mediaDevices.getUserMedia.mockRejectedValueOnce(error);
-      
+
       // 2回目は成功
       mockNavigator.mediaDevices.getUserMedia.mockResolvedValueOnce(mockStream);
 
       // 最初の試行
-      await expect(
-        navigator.mediaDevices.getUserMedia({ audio: true })
-      ).rejects.toThrow('Permission denied');
+      await expect(navigator.mediaDevices.getUserMedia({ audio: true })).rejects.toThrow(
+        'Permission denied'
+      );
 
       // 再試行
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -273,9 +285,9 @@ describe('マイク権限テスト', () => {
       mockNavigator.mediaDevices.getUserMedia.mockRejectedValue(error);
 
       for (let i = 0; i < 3; i++) {
-        await expect(
-          navigator.mediaDevices.getUserMedia({ audio: true })
-        ).rejects.toThrow('Permission denied');
+        await expect(navigator.mediaDevices.getUserMedia({ audio: true })).rejects.toThrow(
+          'Permission denied'
+        );
       }
 
       expect(mockNavigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(3);

@@ -9,7 +9,7 @@ describe('記録詳細画面テスト', () => {
     describe('TranscriptCard - 文字起こし表示', () => {
       it('文字起こし内容が正しく表示される', () => {
         const transcript = 'Hello, my name is Taro. How are you?';
-        
+
         render(<TranscriptCard transcript={transcript} />);
 
         expect(screen.getByText('話したこと')).toBeInTheDocument();
@@ -18,7 +18,7 @@ describe('記録詳細画面テスト', () => {
 
       it('長い文字起こしも適切に表示される', () => {
         const longTranscript = '今日は天気がとてもよくて、公園に行きました。'.repeat(10);
-        
+
         render(<TranscriptCard transcript={longTranscript} />);
 
         expect(screen.getByText('話したこと')).toBeInTheDocument();
@@ -33,14 +33,16 @@ describe('記録詳細画面テスト', () => {
 
       it('改行を含む文字起こしが正しく表示される', () => {
         const multilineTranscript = '最初の文です。\n\n次の文です。\n最後の文です。';
-        
+
         render(<TranscriptCard transcript={multilineTranscript} />);
 
         // 改行が含まれている場合、より具体的なセレクタでマッチング
         const transcriptElement = screen.getByText((_content, element) => {
-          return element?.tagName === 'DIV' && 
-                 element.classList.contains('relative') &&
-                 element.textContent === multilineTranscript;
+          return (
+            element?.tagName === 'DIV' &&
+            element.classList.contains('relative') &&
+            element.textContent === multilineTranscript
+          );
         });
         expect(transcriptElement).toBeInTheDocument();
       });
@@ -203,7 +205,9 @@ describe('記録詳細画面テスト', () => {
       render(<AIFeedbackCard aiFeedback={feedbackWithHTML} />);
 
       // HTMLタグがそのまま文字列として表示されることを確認
-      expect(screen.getByText('Your <strong>pronunciation</strong> was excellent!')).toBeInTheDocument();
+      expect(
+        screen.getByText('Your <strong>pronunciation</strong> was excellent!')
+      ).toBeInTheDocument();
     });
 
     it('空のフィードバックでも表示構造は保持される', () => {

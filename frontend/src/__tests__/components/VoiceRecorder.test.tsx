@@ -111,12 +111,7 @@ describe('VoiceRecorder - UI操作テスト', () => {
     });
 
     it('disabledプロパティが設定されている場合、ボタンが無効になる', () => {
-      render(
-        <VoiceRecorder 
-          onTranscriptionSave={mockOnTranscriptionSave} 
-          disabled={true} 
-        />
-      );
+      render(<VoiceRecorder onTranscriptionSave={mockOnTranscriptionSave} disabled={true} />);
 
       const recordButton = screen.getByRole('button', { name: /録音開始/i });
       expect(recordButton).toBeDisabled();
@@ -180,7 +175,7 @@ describe('VoiceRecorder - UI操作テスト', () => {
     it('保存ボタンをクリックすると保存処理が実行される', async () => {
       const resetTranscription = vi.fn();
       const transcriptionText = 'テスト音声';
-      
+
       mockUseSpeechRecognition.mockReturnValue({
         ...defaultMockReturn,
         transcription: transcriptionText,
@@ -202,7 +197,7 @@ describe('VoiceRecorder - UI操作テスト', () => {
       const resetTranscription = vi.fn();
       const transcriptionText = 'テスト音声';
       const savePromise = vi.fn().mockResolvedValue(undefined);
-      
+
       mockUseSpeechRecognition.mockReturnValue({
         ...defaultMockReturn,
         transcription: transcriptionText,
@@ -290,10 +285,8 @@ describe('VoiceRecorder - UI操作テスト', () => {
     it('複数回の録音開始/停止が正しく動作する', async () => {
       const startListening = vi.fn();
       const stopListening = vi.fn();
-      
-      const { rerender } = render(
-        <VoiceRecorder onTranscriptionSave={mockOnTranscriptionSave} />
-      );
+
+      const { rerender } = render(<VoiceRecorder onTranscriptionSave={mockOnTranscriptionSave} />);
 
       // 最初は録音停止状態
       mockUseSpeechRecognition.mockReturnValue({
@@ -304,7 +297,7 @@ describe('VoiceRecorder - UI操作テスト', () => {
       });
 
       rerender(<VoiceRecorder onTranscriptionSave={mockOnTranscriptionSave} />);
-      
+
       // 録音開始
       const startButton = screen.getByRole('button', { name: /録音開始/i });
       await userEvent.click(startButton);

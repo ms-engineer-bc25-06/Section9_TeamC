@@ -6,13 +6,13 @@ from sqlalchemy.orm import Session
 from app.api.routers import ai_feedback, auth, children, logging_control
 from app.api.routers.voice import router as voice_router
 from app.core.database import get_db
+from app.utils.auth import verify_firebase_token
 from app.core.logging_config import get_logger, setup_logging
 from app.core.monitoring_task import start_monitoring
 from app.middleware.error_handler import ErrorHandlerMiddleware
 from app.middleware.performance_monitoring import PerformanceMonitoringMiddleware
 from app.middleware.traceability_logging import TraceabilityMiddleware
 from app.services.user_service import UserService
-from app.utils.auth import verify_firebase_token
 
 # ログ設定の初期化
 setup_logging()
@@ -36,7 +36,11 @@ app.add_middleware(ErrorHandlerMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://section9-team-c.vercel.app",
+        "https://*.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -82,15 +86,10 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
 
 
 # API ルーター
-
-
 app.include_router(children.router, prefix="/api/children", tags=["children"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(ai_feedback.router, prefix="/api")
 app.include_router(logging_control.router, prefix="/api/admin", tags=["admin"])
 
-
 # Voice Transcription API
-
-
 app.include_router(voice_router)

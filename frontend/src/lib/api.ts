@@ -2,7 +2,7 @@ import { authApi } from './api/auth';
 import { childrenApi } from './api/children';
 import { voiceApi } from './api/voice';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export const api = {
   // ヘルスチェック
