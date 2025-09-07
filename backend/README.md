@@ -64,9 +64,10 @@ curl http://localhost:8000/health
 
 ### 外部サービス
 
-- AI: OpenAI API (Whisper + GPT)
+- AI: OpenAI API (GPT-4 による学習フィードバック)
 - Auth: Firebase Authentication
 - Database: PostgreSQL (Docker)
+- 音声処理: Web Speech API (フロントエンド)
 
 ---
 
@@ -175,10 +176,11 @@ docker-compose up -d
 ### 主要エンドポイント
 
 - GET /health — ヘルスチェック
-- POST /api/auth/login — ユーザーログイン
-- GET /api/children — 子ども一覧取得
-- POST /api/children — 子ども登録
-- POST /api/voice/analyze — 音声分析
+- GET /auth/test — Firebase 認証テスト
+- GET /children — 子ども一覧取得
+- POST /children — 子ども登録
+- POST /api/voice/transcribe — 文字起こし保存・AI フィードバック生成
+- GET /api/voice/history/{childId} — 子どもの音声履歴取得
 
 ### Swagger UI
 
