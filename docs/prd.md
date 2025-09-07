@@ -70,7 +70,7 @@
 
 **画面設計図：**
 
-![画面設計図](./docs/images/screen-design-v1.png)
+![画面設計図](images/screen-design-v1.png)
 
 ## 8. 非機能要件（Non-functional Requirements）
 
